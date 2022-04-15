@@ -1,0 +1,13 @@
+{
+  "formation": {
+    "web": {
+      "quantity": 2
+    },
+    "worker": {
+      "quantity": 1
+    },
+    "beat": {
+      "quantity": 1
+    }
+  }
+}
