@@ -11,11 +11,7 @@ from django.urls import reverse
 from game.users.forms import UserAdminChangeForm
 from game.users.models import User
 from game.users.tests.factories import UserFactory
-from game.users.views import (
-    UserRedirectView,
-    UserUpdateView,
-    user_detail_view,
-)
+from game.users.views import UserRedirectView, UserUpdateView, user_detail_view
 
 pytestmark = pytest.mark.django_db
 
