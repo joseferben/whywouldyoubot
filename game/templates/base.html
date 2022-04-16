@@ -10,9 +10,12 @@
     <meta name="author" content="Josef Erben">
 
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700;800&family=Roboto:ital,wght@0,100;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 
     {% block css %}
-    <!-- Latest compiled and minified Bootstrap CSS -->
+      <!-- Latest compiled and minified Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" integrity="sha512-GQGU0fMMi238uA+a/bdWJfpUGKUkBdgfFdgBm72SUQ6BeyWjoY/ton0tEjH+OSH9iP4Dfh+7HM0I9f5eR0L/4w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Your stuff: Third-party CSS libraries go here -->
 
@@ -40,6 +43,7 @@
 
   <body>
 
+  {% block navigation %}
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
         <div class="container-fluid">
@@ -81,8 +85,8 @@
           </div>
         </div>
       </nav>
-
     </div>
+    {% endblock navigation %}
 
     <div class="container">
 
