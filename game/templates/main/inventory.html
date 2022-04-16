@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block navigation %}
+{% endblock navigation %}
+
+{% block content %}
+  <div class="vh-100">
+
+    <!-- Inventory -->
+    <div class="card my-1" style="height:60%;">
+      <div class="card-header">
+        <h5 class="card-title">Inventory</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Gold (245)</h6>
+      </div>
+
+      <!-- Items -->
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><a href="#">Jar of honey</a> - <a href="#">Eat</a></li>
+        <li class="list-group-item"><a href="#">Mango salad</a> - <a href="#">Eat</a></li>
+        <li class="list-group-item"><a href="#">Easter salad</a> - <a href="#">Eat</a></li>
+      </ul>
+    </div>
+
+    <!-- Navigation -->
+    <div class="my-1" style="max-height:10%;">
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Map</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Inventory</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Character</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Settings</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Chat -->
+    <div class="overflow-auto" style="max-height:30%;">
+      <ul class="list-group">
+        <li class="list-group-item">(1:15pm) The world is online and alive.</li>
+        <li class="list-group-item">josef: (1:20pm): finally it works :)</li>
+        <li class="list-group-item">(1:30pm) A meteorite hit the world somewhere.</li>
+        <li class="list-group-item">josef: (1:49pm): buuuuuuuuuuuuugs everywhere</li>
+        <li class="list-group-item">tylmarple (1:51pm): how did I land here?</li>
+        <li class="list-group-item">nunchi__ (1:55pm): pumpernickel!</li>
+      </ul>
+    </div>
+  </div>
+{% endblock content %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block navigation %}
+{% endblock navigation %}
+
+{% block content %}
+  <div class="vh-100">
+
+    <!-- Field -->
+    <div class="card my-1" style="max-height:30%;">
+      <div class="card-header">
+        <h5 class="card-title">Laketown</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Meadows</h6>
+        <span>To the north you see the sun reflected in big lakes.</span>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><a href="#">Wizard</a> (4) - <a href="#">Attack</a></li>
+        <li class="list-group-item"><a href="#">Shopkeeper</a> - <a href="#">Trade</a></li>
+        <li class="list-group-item"><a href="#">Bee</a> (1) - <a href="#">Attack</a></li>
+        <li class="list-group-item"><a href="#">Jar of honey</a> - <a href="#">Pick up</a></li>
+        <li class="list-group-item"><a href="#">Gold</a> (245) - <a href="#">Pick up</a></li>
+      </ul>
+    </div>
+
+    <!-- Minimap -->
+    <div class="overflow-hidden" style="max-height:30%;">
+      <img class="img-fluid" src="{% static 'images/map.png' %}"></img>
+    </div>
+
+    <!-- Navigation -->
+    <div class="my-1" style="max-height:10%;">
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Map</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Inventory</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Character</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Settings</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Chat -->
+    <div class="overflow-auto" style="max-height:30%;">
+      <ul class="list-group">
+        <li class="list-group-item">tylmarple: (1:15pm) Time to make easter salaaaad</li>
+        <li class="list-group-item">josef: (1:20pm): finally it works :)</li>
+        <li class="list-group-item">(1:30pm) A meteorite hit the world somewhere.</li>
+        <li class="list-group-item">josef: (1:49pm): buuuuuuuuuuuuugs everywhere</li>
+        <li class="list-group-item">tylmarple (1:51pm): how did I land here?</li>
+        <li class="list-group-item">nunchi__ (1:55pm): pumpernickel!</li>
+      </ul>
+    </div>
+  </div>
+{% endblock content %}
