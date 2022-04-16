@@ -8,41 +8,32 @@
 {% block content %}
   <div class="vh-100">
 
-    <!-- Field -->
-    <div style="max-height:30%;">
-      <h4>Meadows - Laketown</h4>
-      <span>To the north you see the sun reflected in big lakes.</span>
-
-      <div class="row">
-        <!-- NPCs -->
-        <div class="col">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item"><a href="#">Wizard</a> (4) - <a href="#">Attack</a></li>
-            <li class="list-group-item"><a href="#">Shopkeeper</a> - <a href="#">Trade</a></li>
-            <li class="list-group-item"><a href="#">Bee</a> (1) - <a href="#">Attack</a></li>
-          </ul>
+    <!-- Top -->
+    {% block main_top %}
+      <div class="card my-1" style="height:60%;">
+        <div class="card-header">
+          <h5 class="card-title">
+            {% block main_title %}
+              Override main_title
+            {% endblock main_title %}
+          </h5>
+          <h6 class="card-subtitle mb-2 text-muted">
+            {% block main_subtitle %}
+              Override main_subtitle
+            {% endblock main_subtitle %}
+          </h6>
         </div>
-
-        <!-- Items -->
-        <div class="col">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item"><a href="#">Jar of honey</a> - <a href="#">Pick up</a></li>
-            <li class="list-group-item"><a href="#">Gold</a> (245) - <a href="#">Pick up</a></li>
-          </ul>
-        </div>
+        {% block main_top_content %}
+          Override main_top_content
+        {% endblock main_top_content %}
       </div>
-    </div>
-
-    <!-- Minimap -->
-    <div class="overflow-hidden" style="max-height:30%;">
-      <img class="img-fluid" src="{% static 'images/map.png' %}"></img>
-    </div>
+    {% endblock main_top %}
 
     <!-- Navigation -->
     <div class="my-1" style="max-height:10%;">
       <ul class="nav nav-pills">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Map</a>
+          <a class="nav-link" href="#">Map</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">Inventory</a>
