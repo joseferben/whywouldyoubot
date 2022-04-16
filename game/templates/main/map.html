@@ -5,26 +5,29 @@
 {% block navigation %}
 {% endblock navigation %}
 
-{% block main_top %}
-  <!-- Field -->
-  <div class="card my-1" style="max-height:30%;">
-    <div class="card-header">
-      <h5 class="card-title">Laketown</h5>
-      <h6 class="card-subtitle mb-2 text-muted">Meadows</h6>
-      <span>To the north you see the sun reflected in big lakes.</span>
-    </div>
+{% block main_title %}
+  Laketown
+{% endblock main_title %}
 
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item"><a href="#">Wizard</a> (4) - <a href="#">Attack</a></li>
-      <li class="list-group-item"><a href="#">Shopkeeper</a> - <a href="#">Trade</a></li>
-      <li class="list-group-item"><a href="#">Bee</a> (1) - <a href="#">Attack</a></li>
-      <li class="list-group-item"><a href="#">Jar of honey</a> - <a href="#">Pick up</a></li>
-      <li class="list-group-item"><a href="#">Gold</a> (245) - <a href="#">Pick up</a></li>
-    </ul>
-  </div>
+{% block main_subtitle %}
+  Meadows
+{% endblock main_subtitle %}
+
+{% block main_description %}
+  To the north you see the sun reflected in big lakes.
+{% endblock main_description %}
+
+{% block main_top_content %}
+  <ul class="list-group list-group-flush overflow-auto" style="height:60%;">
+    <li class="list-group-item"><a href="#">Wizard</a> (4) - <a href="#">Attack</a></li>
+    <li class="list-group-item"><a href="#">Shopkeeper</a> - <a href="#">Trade</a></li>
+    <li class="list-group-item"><a href="#">Bee</a> (1) - <a href="#">Attack</a></li>
+    <li class="list-group-item"><a href="#">Jar of honey</a> - <a href="#">Pick up</a></li>
+    <li class="list-group-item"><a href="#">Gold</a> (245) - <a href="#">Pick up</a></li>
+  </ul>
 
   <!-- Minimap -->
-  <div class="overflow-hidden" style="max-height:30%;">
+  <div class="overflow-hidden" style="">
     <img class="img-fluid" src="{% static 'images/map.png' %}"></img>
   </div>
-{% endblock main_top %}
+{% endblock main_top_content %}
