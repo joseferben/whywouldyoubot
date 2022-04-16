@@ -17,3 +17,7 @@ body {
   font-family: "Roboto", sans-serif;
   font-size: 0.8rem !important;
 }
+
+.nav-link {
+  padding: 0.25rem 0.5rem;
+}
