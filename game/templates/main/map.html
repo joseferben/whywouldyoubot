@@ -30,27 +30,27 @@
   <div class="overflow-hidden">
     <div class="d-flex">
       {% for tile in map|slice:":7" %}
-        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}"></img>
       {% endfor %}
     </div>
     <div class="d-flex">
       {% for tile in map|slice:"7:14" %}
-        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}"></img>
       {% endfor %}
     </div>
     <div class="d-flex">
       {% for tile in map|slice:"14:21" %}
-        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}"></img>
       {% endfor %}
     </div>
     <div class="d-flex">
       {% for tile in map|slice:"21:28" %}
-        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}"></img>
       {% endfor %}
     </div>
     <div class="d-flex">
       {% for tile in map|slice:"28:35" %}
-        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}"></img>
       {% endfor %}
     </div>
   </div>

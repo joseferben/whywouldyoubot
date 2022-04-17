@@ -3,12 +3,12 @@ from typing import Any, Dict
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.forms import BaseForm
 from django.http.response import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic.base import ContextMixin, TemplateView, View
 from django.views.generic.edit import FormMixin
 
 from .chat import Chat
-from .forms import ChatCreateForm
+from .forms import ChatCreateForm, MapWalkForm
 from .models import Player
 
 
@@ -46,6 +46,32 @@ class CharacterView(LoginRequiredMixin, ChatMixin, TemplateView):
 
 class SettingsView(LoginRequiredMixin, ChatMixin, TemplateView):
     template_name = "main/settings.html"
+
+
+class MapWalkView(PlayerMixin, FormMixin, View):
+    form_class = MapWalkForm
+    fields = ["x", "y"]
+
+    def post(self, request, *args, **kwargs):
+        form: BaseForm = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form: BaseForm) -> HttpResponse:
+        player: Player = self.get_player()
+        player.walk(x=form.cleaned_data["x"], y=form.cleaned_data["y"])
+        player.save()
+        return redirect("main:map")
+
+    def form_invalid(self, form: BaseForm) -> HttpResponse:
+        pass
+        # context = self.get_context_data()
+        # context["error"] = "Could not send chat message"
+        # return render(
+        #     self.request, template_name=self.template_name, context=context, status=400
+        # )
 
 
 class ChatCreateView(PlayerMixin, ChatMixin, FormMixin, View):

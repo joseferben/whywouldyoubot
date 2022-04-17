@@ -26,3 +26,18 @@ def test_chat(client: Client, player: Player, chat_line: ChatLine):
 
     assert response.status_code == 200
     assert chat_line.message in str(response.content)
+
+
+@pytest.mark.django_db
+def test_walk(client: Client, player: Player):
+    player.x = 30
+    player.y = 29
+    player.save()
+
+    client.force_login(player.user)
+
+    response = client.post(reverse("main:walk"), data={"x": 30, "y": 30}, follow=True)
+
+    assert response.status_code == 200
+    player.refresh_from_db()
+    assert player.y == 30

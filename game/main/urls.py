@@ -1,11 +1,19 @@
 from django.urls import path
 
-from .views import CharacterView, ChatCreateView, InventoryView, MapView, SettingsView
+from .views import (
+    CharacterView,
+    ChatCreateView,
+    InventoryView,
+    MapView,
+    MapWalkView,
+    SettingsView,
+)
 
 app_name = "main"
 
 urlpatterns = [
     path("map/", MapView.as_view(), name="map"),
+    path("map/walk/", MapWalkView.as_view(), name="walk"),
     path("character/", CharacterView.as_view(), name="character"),
     path("inventory/", InventoryView.as_view(), name="inventory"),
     path("settings/", SettingsView.as_view(), name="settings"),

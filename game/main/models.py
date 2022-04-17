@@ -27,6 +27,13 @@ class ChatLine(TimeStampedModel):
     message = models.TextField()
 
 
+class Tile:
+    def __init__(self, x: int, y: int, image_path: PurePosixPath) -> None:
+        self.x = x
+        self.y = y
+        self.image_path = image_path
+
+
 class Player(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     x = models.PositiveIntegerField(default=45)
@@ -40,15 +47,15 @@ class Player(TimeStampedModel):
     def create(user: User) -> Player:
         return Player.objects.create(user=user)
 
-    def get_map(self) -> List[PurePosixPath]:
-        result: List[PurePosixPath] = []
+    def get_map(self) -> List[Tile]:
+        result: List[Tile] = []
         for layer in tiled_map.layers:
             try:
                 for x, y, image in layer.tiles():
                     if abs(self.x - x) <= 3 and abs(self.y - y) <= 2:
                         image_path = PurePosixPath(image[0])
                         image_path = image_path.relative_to(APPS_DIR / "static")
-                        result.append(image_path)
+                        result.append(Tile(x=x, y=y, image_path=image_path))
             except Exception as e:
                 logger.error(e)
         return result
@@ -60,3 +67,12 @@ class Player(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.user.username
+
+    def _is_adjacent(self, x: int, y: int) -> bool:
+        return abs(x - self.x) <= 1 and abs(y - self.y) <= 1
+
+    def walk(self, x: int, y: int) -> None:
+        if not self._is_adjacent(x, y):
+            raise Exception("Can only walk on adjacent tiles")
+        self.x = x
+        self.y = y
