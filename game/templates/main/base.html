@@ -31,20 +31,22 @@
 
     <!-- Navigation -->
     <div class="my-1" style="max-height:10%;">
-      <ul class="nav nav-pills">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Map</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="#">Inventory (256gp)</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Character (12/16)</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Settings</a>
-        </li>
-      </ul>
+      {% with request.resolver_match.url_name as url_name %}
+        <ul class="nav nav-pills">
+          <li class="nav-item">
+            <a class="nav-link {% if url_name == 'map' %}active{% endif %}" href="{% url 'main:map' %}">Map</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if url_name == 'inventory' %}active{% endif %}" href="{% url 'main:inventory' %}">Inventory (256gp)</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if url_name == 'character' %}active{% endif %}" href="{% url 'main:character' %}">Character (12/16)</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if url_name == 'settings' %}active{% endif %}" href="{% url 'main:settings' %}">Settings</a>
+          </li>
+        </ul>
+      {% endwith %}
     </div>
 
     <!-- Chat -->
