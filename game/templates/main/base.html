@@ -48,15 +48,7 @@
     </div>
 
     <!-- Chat -->
-    <div class="overflow-auto" style="max-height:30%;">
-      <ul class="list-group">
-        <li class="list-group-item">world (1:15pm) The world is online and alive.</li>
-        <li class="list-group-item">josef: (1:20pm): finally it works :)</li>
-        <li class="list-group-item">world (1:30pm): A meteorite hit the world somewhere.</li>
-        <li class="list-group-item">josef (1:49pm): buuuuuuuuuuuuugs everywhere</li>
-        <li class="list-group-item">tylmarple (1:51pm): how did I land here?</li>
-        <li class="list-group-item">nunchi__ (1:55pm): pumpernickel!</li>
-      </ul>
-    </div>
+    {% include 'main/_chat.html' %}
+
   </div>
 {% endblock content %}

@@ -1,0 +1,14 @@
+<div id="chat-lines-fragment" class="overflow-auto" style="max-height:27%;">
+  <ul class="list-group">
+    {% for chat in chat_lines %}
+      <li class="list-group-item">{{ chat.sayer }} ({{ chat.created }}) {{ chat.message }}</li>
+    {% empty %}
+      <li class="list-group-item">Nothing was ever said.</li>
+    {% endfor %}
+  </ul>
+</div>
+<div id="chat-input-fragment" hx-swap-oob="true" class="input-group mb-3" style="max-height:3%;">
+  <input type="text" class="form-control form-control-sm" placeholder="Tell the world" aria-label="Chat input field" aria-describedby="chat-input">
+  <button class="btn btn-outline-primary" type="button" id="chat-input">Say</button>
+</div>
+{% include 'main/_toast.html' %}

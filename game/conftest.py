@@ -1,5 +1,7 @@
 import pytest
 
+from game.main.models import ChatLine, Player
+from game.main.tests.factories import ChatLineFactory, PlayerFactory
 from game.users.models import User
 from game.users.tests.factories import UserFactory
 
@@ -11,4 +13,14 @@ def media_storage(settings, tmpdir):
 
 @pytest.fixture
 def user() -> User:
-    return UserFactory()
+    return UserFactory.create()
+
+
+@pytest.fixture
+def player() -> Player:
+    return PlayerFactory.create()
+
+
+@pytest.fixture
+def chat_line() -> ChatLine:
+    return ChatLineFactory.create()

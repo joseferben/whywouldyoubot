@@ -7,17 +7,7 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    path("map/", TemplateView.as_view(template_name="main/map.html"), name="map"),
-    path(
-        "character/",
-        TemplateView.as_view(template_name="main/character.html"),
-        name="character",
-    ),
-    path(
-        "inventory/",
-        TemplateView.as_view(template_name="main/inventory.html"),
-        name="inventory",
-    ),
+    path("game/", include("game.main.urls", namespace="main")),
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
     ),

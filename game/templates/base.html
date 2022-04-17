@@ -1,4 +1,5 @@
-{% load static i18n compress%}<!DOCTYPE html>
+{% load static i18n compress%}
+<!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
 <html lang="{{ LANGUAGE_CODE }}">
   <head>
@@ -89,6 +90,8 @@
     {% endblock navigation %}
 
     <div class="container">
+
+      <div id="toast"></div>
 
       {% if messages %}
         {% for message in messages %}
