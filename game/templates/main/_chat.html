@@ -1,14 +1,16 @@
-<div id="chat-lines-fragment" class="overflow-auto" style="max-height:27%;">
+<form id="chat-input-fragment" hx-target="#chat-lines-fragment" hx-swap-oob="true" hx-post="{% url 'main:chat_create' %}" hx-swap="outerHTML" style="min-height:38px;max-height:4%;">
+  <div class="input-group">
+    <input name="message" type="text" class="form-control form-control-sm" placeholder="Tell the world" aria-label="Chat input field" aria-describedby="chat-input" autofocus>
+    <button class="btn btn-outline-primary" type="submit" id="chat-input">Say</button>
+  </div>
+</form>
+<div id="chat-lines-fragment" class="overflow-auto" style="max-height:26%;">
   <ul class="list-group">
     {% for chat in chat_lines %}
-      <li class="list-group-item">{{ chat.sayer }} ({{ chat.created }}) {{ chat.message }}</li>
+      <li class="list-group-item">{{ chat.sayer }} ({{ chat.created }}): {{ chat.message }}</li>
     {% empty %}
       <li class="list-group-item">Nothing was ever said.</li>
     {% endfor %}
   </ul>
-</div>
-<div id="chat-input-fragment" hx-swap-oob="true" class="input-group mb-3" style="max-height:3%;">
-  <input type="text" class="form-control form-control-sm" placeholder="Tell the world" aria-label="Chat input field" aria-describedby="chat-input">
-  <button class="btn btn-outline-primary" type="button" id="chat-input">Say</button>
 </div>
 {% include 'main/_toast.html' %}

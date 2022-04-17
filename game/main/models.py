@@ -30,4 +30,7 @@ class Player(TimeStampedModel):
     def chat_list(
         self,
     ) -> QuerySet[ChatLine]:
-        return ChatLine.objects.order_by("created").all()[:25]
+        return ChatLine.objects.order_by("-created").all()[:25]
+
+    def __str__(self) -> str:
+        return self.user.username
