@@ -1,4 +1,4 @@
-{% load static i18n compress%}
+{% load static i18n compress django_htmx %}
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
 <html lang="{{ LANGUAGE_CODE }}">
@@ -35,6 +35,8 @@
 
       <!-- place project specific Javascript in this file -->
       {% compress js %}
+      <script defer src="{% static 'js/vendor/htmx.min.js' %}"></script>
+      {% django_htmx_script %}
       <script defer src="{% static 'js/project.js' %}"></script>
       {% endcompress %}
 
