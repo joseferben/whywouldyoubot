@@ -27,7 +27,31 @@
   </ul>
 
   <!-- Minimap -->
-  <div class="overflow-hidden" style="">
-    <img class="img-fluid" src="{% static 'images/map.png' %}"></img>
+  <div class="overflow-hidden">
+    <div class="d-flex">
+      {% for tile in map|slice:":7" %}
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+      {% endfor %}
+    </div>
+    <div class="d-flex">
+      {% for tile in map|slice:"7:14" %}
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+      {% endfor %}
+    </div>
+    <div class="d-flex">
+      {% for tile in map|slice:"14:21" %}
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+      {% endfor %}
+    </div>
+    <div class="d-flex">
+      {% for tile in map|slice:"21:28" %}
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+      {% endfor %}
+    </div>
+    <div class="d-flex">
+      {% for tile in map|slice:"28:35" %}
+        <img class="tile-image img-fluid" width="128" height="128" src="{% static tile %}"></img>
+      {% endfor %}
+    </div>
   </div>
 {% endblock main_top_content %}

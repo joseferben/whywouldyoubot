@@ -17,7 +17,7 @@ class ChatMixin(ContextMixin):
         assert self.request.user.is_authenticated  # type: ignore
         player: Player = Player.of_user(self.request.user)  # type:ignore
         context = super().get_context_data(**kwargs)
-        context["chat_lines"] = player.chat_list()
+        context["chat_lines"] = player.get_chat_list()
         return context
 
 
@@ -27,8 +27,13 @@ class PlayerMixin(LoginRequiredMixin):
         return Player.of_user(self.request.user)  # type:ignore
 
 
-class MapView(LoginRequiredMixin, ChatMixin, TemplateView):
+class MapView(PlayerMixin, ChatMixin, TemplateView):
     template_name = "main/map.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["map"] = self.get_player().get_map()
+        return context
 
 
 class InventoryView(LoginRequiredMixin, ChatMixin, TemplateView):
