@@ -96,10 +96,16 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "game.users",
+    "game.main"
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+
+# django-extensions
+# ------------------------------------------------------------------------------
+# https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
+INSTALLED_APPS += ["django_extensions"]  # noqa F405
 
 # MIGRATIONS
 # ------------------------------------------------------------------------------
