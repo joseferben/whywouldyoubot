@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path, PurePosixPath
-from typing import List
+from typing import Dict, List, Tuple
 
 import pytmx
 from django.conf import settings
@@ -13,6 +13,7 @@ from django.db.models.query import QuerySet
 from django_extensions.db.models import TimeStampedModel
 
 from config.settings.base import APPS_DIR
+from game.main.map import Tile
 from game.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -25,13 +26,6 @@ class ChatLine(TimeStampedModel):
         "main.Player", on_delete=models.CASCADE, blank=True, null=True
     )
     message = models.TextField()
-
-
-class Tile:
-    def __init__(self, x: int, y: int, image_path: PurePosixPath) -> None:
-        self.x = x
-        self.y = y
-        self.image_path = image_path
 
 
 class Player(TimeStampedModel):
@@ -47,17 +41,36 @@ class Player(TimeStampedModel):
     def create(user: User) -> Player:
         return Player.objects.create(user=user)
 
-    def get_map(self) -> List[Tile]:
-        result: List[Tile] = []
+    def _get_dict(
+        self,
+    ) -> Dict[int, Dict[int, Tuple[List[PurePosixPath], int, int, bool]]]:
+        result: Dict[int, Dict[int, Tuple[List[PurePosixPath], int, int, bool]]] = {}
         for layer in tiled_map.layers:
             try:
                 for x, y, image in layer.tiles():
-                    if abs(self.x - x) <= 3 and abs(self.y - y) <= 2:
+                    if abs(self.x - x) <= 4 and abs(self.y - y) <= 2:
                         image_path = PurePosixPath(image[0])
                         image_path = image_path.relative_to(APPS_DIR / "static")
-                        result.append(Tile(x=x, y=y, image_path=image_path))
+                        if result.get(y) is None:
+                            result[y] = {}
+                            result[y][x] = ([image_path], x, y, self._is_adjacent(x, y))
+                        elif result.get(y).get(x) is None:  # type: ignore
+                            result[y][x] = ([image_path], x, y, self._is_adjacent(x, y))
+                        else:
+                            (image_paths, _, _, _) = result[y][x]
+                            image_paths.append(image_path)
             except Exception as e:
                 logger.error(e)
+        return result
+
+    def get_map(self) -> List[Tile]:
+        d = self._get_dict()
+        result: List[Tile] = []
+        for rows in d.values():
+            for image_paths, x, y, walkable in rows.values():
+                result.append(
+                    Tile(x=x, y=y, walkable=walkable, image_paths=image_paths)
+                )
         return result
 
     def get_chat_list(

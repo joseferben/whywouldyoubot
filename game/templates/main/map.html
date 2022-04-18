@@ -10,7 +10,7 @@
 {% endblock main_title %}
 
 {% block main_subtitle %}
-  Meadows (25, 12)
+  Meadows ({{ player.x }}, {{ player.y }})
 {% endblock main_subtitle %}
 
 {% block main_description %}
@@ -18,7 +18,7 @@
 {% endblock main_description %}
 
 {% block main_top_content %}
-  <ul class="list-group list-group-flush overflow-auto" style="height:50%;">
+  <ul class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
     <li class="list-group-item"><a href="#">Wizard</a> (4) - <a href="#">Attack</a></li>
     <li class="list-group-item"><a href="#">Shopkeeper</a> - <a href="#">Trade</a></li>
     <li class="list-group-item"><a href="#">Bee</a> (1) - <a href="#">Attack</a></li>
@@ -29,57 +29,92 @@
   <!-- Minimap -->
   <div class="overflow-hidden">
     <div style="margin-bottom:-6px;" class="d-flex">
-      {% for tile in map|slice:":7" %}
-        <form action="{% url 'main:walk' %}" method="POST">
+      {% for tile in map|slice:":9" %}
+        <form class="position-relative" action="{% url 'main:walk' %}" method="POST">
           {% csrf_token %}
           <input type="hidden" name="x" value="{{ tile.x }}">
           <input type="hidden" name="y" value="{{ tile.y }}">
-          <input type="image" name="image" class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}">
-          </a>
+          {% for image_path in tile.image_paths reversed %}
+            {% if forloop.last %}
+              <img class="tile-image img-fluid" width="128" height="128" src="{% static image_path %}" />
+            {% elif forloop.first %}
+              <input type="image" name="image" class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}">
+            {% else %}
+              <img class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}"/>
+            {% endif %}
+          {% endfor %}
         </form>
       {% endfor %}
     </div>
     <div style="margin-bottom:-6px;" class="d-flex">
-      {% for tile in map|slice:"7:14" %}
-        <form action="{% url 'main:walk' %}" method="POST">
+      {% for tile in map|slice:"9:18" %}
+        <form class="position-relative" action="{% url 'main:walk' %}" method="POST">
           {% csrf_token %}
           <input type="hidden" name="x" value="{{ tile.x }}">
           <input type="hidden" name="y" value="{{ tile.y }}">
-          <input type="image" name="image" class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}">
-          </a>
+          {% for image_path in tile.image_paths reversed %}
+            {% if forloop.first %}
+              <input type="image" name="image" class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}">
+            {% elif forloop.last %}
+              <img class="tile-image img-fluid" width="128" height="128" src="{% static image_path %}" />
+            {% else %}
+              <img class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}"/>
+            {% endif %}
+          {% endfor %}
         </form>
       {% endfor %}
     </div>
-  <div style="margin-bottom:-6px;" class="d-flex">
-      {% for tile in map|slice:"14:21" %}
-        <form action="{% url 'main:walk' %}" method="POST">
+    <div style="margin-bottom:-6px;" class="d-flex">
+      {% for tile in map|slice:"18:27" %}
+        <form class="position-relative" action="{% url 'main:walk' %}" method="POST">
           {% csrf_token %}
           <input type="hidden" name="x" value="{{ tile.x }}">
           <input type="hidden" name="y" value="{{ tile.y }}">
-          <input style="{% if tile.x == player.x and tile.y == player.y %}filter: brightness(0.5);{% endif %}" type="image" name="image" class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}">
-          </a>
+          {% for image_path in tile.image_paths reversed %}
+            {% if forloop.last %}
+              <img class="tile-image img-fluid" width="128" height="128" src="{% static image_path %}" />
+            {% elif forloop.first %}
+              <input style="{% if tile.x == player.x and tile.y == player.y %}filter: brightness(0.5);{% endif %}" type="image" name="image" class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}">
+            {% else %}
+              <img class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}"/>
+            {% endif %}
+          {% endfor %}
         </form>
       {% endfor %}
     </div>
-  <div style="margin-bottom:-6px;" class="d-flex">
-      {% for tile in map|slice:"21:28" %}
-        <form action="{% url 'main:walk' %}" method="POST">
+    <div style="margin-bottom:-6px;" class="d-flex">
+      {% for tile in map|slice:"27:36" %}
+        <form class="position-relative" action="{% url 'main:walk' %}" method="POST">
           {% csrf_token %}
           <input type="hidden" name="x" value="{{ tile.x }}">
           <input type="hidden" name="y" value="{{ tile.y }}">
-          <input type="image" name="image" class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}">
-          </a>
+          {% for image_path in tile.image_paths reversed %}
+            {% if forloop.last %}
+              <img class="tile-image img-fluid" width="128" height="128" src="{% static image_path %}" />
+            {% elif forloop.first %}
+              <input type="image" name="image" class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}">
+            {% else %}
+              <img class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}"/>
+            {% endif %}
+          {% endfor %}
         </form>
       {% endfor %}
     </div>
-  <div style="margin-bottom:-6px;" class="d-flex">
-      {% for tile in map|slice:"28:35" %}
-        <form action="{% url 'main:walk' %}" method="POST">
+    <div style="margin-bottom:-6px;" class="d-flex">
+      {% for tile in map|slice:"36:45" %}
+        <form class="position-relative" action="{% url 'main:walk' %}" method="POST">
           {% csrf_token %}
           <input type="hidden" name="x" value="{{ tile.x }}">
           <input type="hidden" name="y" value="{{ tile.y }}">
-          <input type="image" name="image" class="tile-image img-fluid" width="128" height="128" src="{% static tile.image_path %}">
-          </a>
+          {% for image_path in tile.image_paths reversed %}
+            {% if forloop.last %}
+              <img class="tile-image img-fluid" width="128" height="128" src="{% static image_path %}" />
+            {% elif forloop.first %}
+              <input type="image" name="image" class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}">
+            {% else %}
+              <img class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}"/>
+            {% endif %}
+          {% endfor %}
         </form>
       {% endfor %}
     </div>
