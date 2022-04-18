@@ -33,6 +33,7 @@ class MapView(PlayerMixin, ChatMixin, TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["map"] = self.get_player().get_map()
+        context["player"] = self.get_player()
         return context
 
 
@@ -50,7 +51,6 @@ class SettingsView(LoginRequiredMixin, ChatMixin, TemplateView):
 
 class MapWalkView(PlayerMixin, FormMixin, View):
     form_class = MapWalkForm
-    fields = ["x", "y"]
 
     def post(self, request, *args, **kwargs):
         form: BaseForm = self.get_form()
