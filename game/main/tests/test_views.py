@@ -2,6 +2,7 @@ import pytest
 from django.test import Client
 from django.urls.base import reverse
 
+from game.main.map import WorldMap
 from game.main.models import ChatLine, Player
 
 
@@ -29,15 +30,15 @@ def test_chat(client: Client, player: Player, chat_line: ChatLine):
 
 
 @pytest.mark.django_db
-def test_walk(client: Client, player: Player):
-    player.x = 30
-    player.y = 29
+def test_walk(client: Client, player: Player, map_small: WorldMap):
+    player.x = 0
+    player.y = 0
     player.save()
 
     client.force_login(player.user)
 
-    response = client.post(reverse("main:walk"), data={"x": 30, "y": 30}, follow=True)
+    response = client.post(reverse("main:walk"), data={"x": 0, "y": 1}, follow=True)
 
     assert response.status_code == 200
     player.refresh_from_db()
-    assert player.y == 30
+    assert player.y == 1

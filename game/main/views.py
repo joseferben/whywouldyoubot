@@ -7,6 +7,8 @@ from django.shortcuts import redirect, render
 from django.views.generic.base import ContextMixin, TemplateView, View
 from django.views.generic.edit import FormMixin
 
+from game.main.map import world_map_cache
+
 from .chat import Chat
 from .forms import ChatCreateForm, MapWalkForm
 from .models import Player
@@ -32,7 +34,7 @@ class MapView(PlayerMixin, ChatMixin, TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["map"] = self.get_player().get_map()
+        context["mini_map"] = self.get_player().get_mini_map()
         context["player"] = self.get_player()
         return context
 
@@ -61,17 +63,18 @@ class MapWalkView(PlayerMixin, FormMixin, View):
 
     def form_valid(self, form: BaseForm) -> HttpResponse:
         player: Player = self.get_player()
-        player.walk(x=form.cleaned_data["x"], y=form.cleaned_data["y"])
+
+        player.walk(
+            x=form.cleaned_data["x"],
+            y=form.cleaned_data["y"],
+            world_map=world_map_cache.world_map,
+        )
         player.save()
         return redirect("main:map")
 
     def form_invalid(self, form: BaseForm) -> HttpResponse:
-        pass
-        # context = self.get_context_data()
-        # context["error"] = "Could not send chat message"
-        # return render(
-        #     self.request, template_name=self.template_name, context=context, status=400
-        # )
+        # TODO consider HTMX
+        raise Exception("form_invalid()")
 
 
 class ChatCreateView(PlayerMixin, ChatMixin, FormMixin, View):

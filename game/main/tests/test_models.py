@@ -1,26 +1,28 @@
 import pytest
 
+from game.main.map import WorldMap
 from game.main.models import Player
 
 
 @pytest.mark.django_db
-def test_walk(player: Player):
-    player.x = 30
-    player.y = 31
+def test_walk(player: Player, map_small: WorldMap):
+    player.x = 0
+    player.y = 0
 
-    player.walk(31, 31)
-
-    assert player.x == 31
-    assert player.y == 31
-
-
-@pytest.mark.django_db
-def test_walk_fails(player: Player):
+    # own location
+    assert player.can_walk(0, 0, map_small) is False
     with pytest.raises(Exception):
-        player.x = 20
-        player.y = 31
+        player.walk(0, 0, map_small)
 
-        player.walk(31, 31)
+    # non adjacent tiles
+    assert player.can_walk(2, 2, map_small) is False
+    with pytest.raises(Exception):
+        player.walk(2, 2, map_small)
 
-        assert player.x == 31
-        assert player.y == 31
+    # obstacle
+    assert player.can_walk(1, 0, map_small) is False
+    with pytest.raises(Exception):
+        player.walk(1, 0, map_small)
+
+    assert player.can_walk(0, 1, map_small)
+    player.walk(0, 1, map_small)

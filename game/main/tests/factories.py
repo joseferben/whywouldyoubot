@@ -10,6 +10,8 @@ class PlayerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Player
 
+    x = 2
+    y = 2
     user = factory.SubFactory(UserFactory)
 
 

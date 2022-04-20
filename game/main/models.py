@@ -13,7 +13,7 @@ from django.db.models.query import QuerySet
 from django_extensions.db.models import TimeStampedModel
 
 from config.settings.base import APPS_DIR
-from game.main.map import Tile
+from game.main.map import MINI_MAP_ROW_LENGTH, MiniMapTile, WorldMap
 from game.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -43,14 +43,14 @@ class Player(TimeStampedModel):
 
     def _get_dict(
         self,
-    ) -> Dict[int, Dict[int, Tuple[List[PurePosixPath], int, int, bool]]]:
-        result: Dict[int, Dict[int, Tuple[List[PurePosixPath], int, int, bool]]] = {}
+    ) -> Dict[int, Dict[int, Tuple[List[str], int, int, bool]]]:
+        result: Dict[int, Dict[int, Tuple[List[str], int, int, bool]]] = {}
         for layer in tiled_map.layers:
             try:
                 for x, y, image in layer.tiles():
                     if abs(self.x - x) <= 4 and abs(self.y - y) <= 2:
                         image_path = PurePosixPath(image[0])
-                        image_path = image_path.relative_to(APPS_DIR / "static")
+                        image_path = str(image_path.relative_to(APPS_DIR / "static"))
                         if result.get(y) is None:
                             result[y] = {}
                             result[y][x] = ([image_path], x, y, self._is_adjacent(x, y))
@@ -63,14 +63,18 @@ class Player(TimeStampedModel):
                 logger.error(e)
         return result
 
-    def get_map(self) -> List[Tile]:
+    def get_mini_map(self) -> List[List[MiniMapTile]]:
         d = self._get_dict()
-        result: List[Tile] = []
+        result_all: List[MiniMapTile] = []
         for rows in d.values():
             for image_paths, x, y, walkable in rows.values():
-                result.append(
-                    Tile(x=x, y=y, walkable=walkable, image_paths=image_paths)
+                result_all.append(
+                    MiniMapTile(x=x, y=y, walkable=walkable, image_paths=image_paths)
                 )
+        result: List[List[MiniMapTile]] = [
+            result_all[i : i + MINI_MAP_ROW_LENGTH]
+            for i in range(0, len(result_all), MINI_MAP_ROW_LENGTH)
+        ]
         return result
 
     def get_chat_list(
@@ -84,8 +88,15 @@ class Player(TimeStampedModel):
     def _is_adjacent(self, x: int, y: int) -> bool:
         return abs(x - self.x) <= 1 and abs(y - self.y) <= 1
 
-    def walk(self, x: int, y: int) -> None:
-        if not self._is_adjacent(x, y):
+    def can_walk(self, x: int, y: int, world_map: WorldMap) -> bool:
+        return (
+            self._is_adjacent(x, y)
+            and not ((self.x == x) and (self.y == y))
+            and world_map.get(x, y).walkable
+        )
+
+    def walk(self, x: int, y: int, world_map: WorldMap) -> None:
+        if not self.can_walk(x, y, world_map):
             raise Exception("Can only walk on adjacent tiles")
         self.x = x
         self.y = y

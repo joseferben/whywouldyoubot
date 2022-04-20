@@ -1,5 +1,6 @@
 import pytest
 
+from game.main.map import WorldMap, WorldTile, world_map_cache
 from game.main.models import ChatLine, Player
 from game.main.tests.factories import ChatLineFactory, PlayerFactory
 from game.users.models import User
@@ -18,9 +19,22 @@ def user() -> User:
 
 @pytest.fixture
 def player() -> Player:
-    return PlayerFactory.create()
+    return PlayerFactory.create()  # type: ignore
 
 
 @pytest.fixture
 def chat_line() -> ChatLine:
     return ChatLineFactory.create()
+
+
+@pytest.fixture
+def map_small() -> WorldMap:
+    world_map = WorldMap(
+        tiles=[
+            [WorldTile(), WorldTile(walkable=False), WorldTile()],
+            [WorldTile(), WorldTile(), WorldTile()],
+            [WorldTile(), WorldTile(), WorldTile()],
+        ]
+    )
+    world_map_cache.world_map = world_map
+    return world_map
