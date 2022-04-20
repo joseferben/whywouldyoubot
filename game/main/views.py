@@ -1,3 +1,4 @@
+from re import template
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -5,7 +6,7 @@ from django.forms.forms import BaseForm
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic.base import ContextMixin, TemplateView, View
-from django.views.generic.edit import FormMixin
+from django.views.generic.edit import FormMixin, ProcessFormView
 
 from game.main.map import world_map_cache
 

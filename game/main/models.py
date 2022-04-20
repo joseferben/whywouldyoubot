@@ -44,6 +44,7 @@ class Player(TimeStampedModel):
     def _get_dict(
         self,
     ) -> Dict[int, Dict[int, Tuple[List[str], int, int, bool]]]:
+        # TODO use WorldMap as input
         result: Dict[int, Dict[int, Tuple[List[str], int, int, bool]]] = {}
         for layer in tiled_map.layers:
             try:
@@ -64,6 +65,7 @@ class Player(TimeStampedModel):
         return result
 
     def get_mini_map(self) -> List[List[MiniMapTile]]:
+        # TODO use WorldMap as input
         d = self._get_dict()
         result_all: List[MiniMapTile] = []
         for rows in d.values():
@@ -97,6 +99,6 @@ class Player(TimeStampedModel):
 
     def walk(self, x: int, y: int, world_map: WorldMap) -> None:
         if not self.can_walk(x, y, world_map):
-            raise Exception("Can only walk on adjacent tiles")
+            raise Exception("Can not walk there")
         self.x = x
         self.y = y

@@ -31,9 +31,13 @@ def chat_line() -> ChatLine:
 def map_small() -> WorldMap:
     world_map = WorldMap(
         tiles=[
-            [WorldTile(), WorldTile(walkable=False), WorldTile()],
-            [WorldTile(), WorldTile(), WorldTile()],
-            [WorldTile(), WorldTile(), WorldTile()],
+            [
+                WorldTile(x=0, y=0),
+                WorldTile(walkable=False, x=1, y=0),
+                WorldTile(x=2, y=0),
+            ],
+            [WorldTile(x=0, y=1), WorldTile(x=1, y=1), WorldTile(x=2, y=1)],
+            [WorldTile(x=0, y=2), WorldTile(x=1, y=2), WorldTile(x=2, y=2)],
         ]
     )
     world_map_cache.world_map = world_map
