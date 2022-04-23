@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path, PurePosixPath
-from typing import Dict, List, Tuple
+from pathlib import Path
 
 import pytmx
 from django.conf import settings
@@ -12,8 +11,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 from django_extensions.db.models import TimeStampedModel
 
-from config.settings.base import APPS_DIR
-from game.main.map import MINI_MAP_ROW_LENGTH, MiniMapTile, WorldMap
+from game.main.map import MiniMap, WorldMap, world_map_cache
 from game.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -41,43 +39,8 @@ class Player(TimeStampedModel):
     def create(user: User) -> Player:
         return Player.objects.create(user=user)
 
-    def _get_dict(
-        self,
-    ) -> Dict[int, Dict[int, Tuple[List[str], int, int, bool]]]:
-        # TODO use WorldMap as input
-        result: Dict[int, Dict[int, Tuple[List[str], int, int, bool]]] = {}
-        for layer in tiled_map.layers:
-            try:
-                for x, y, image in layer.tiles():
-                    if abs(self.x - x) <= 4 and abs(self.y - y) <= 2:
-                        image_path = PurePosixPath(image[0])
-                        image_path = str(image_path.relative_to(APPS_DIR / "static"))
-                        if result.get(y) is None:
-                            result[y] = {}
-                            result[y][x] = ([image_path], x, y, self._is_adjacent(x, y))
-                        elif result.get(y).get(x) is None:  # type: ignore
-                            result[y][x] = ([image_path], x, y, self._is_adjacent(x, y))
-                        else:
-                            (image_paths, _, _, _) = result[y][x]
-                            image_paths.append(image_path)
-            except Exception as e:
-                logger.error(e)
-        return result
-
-    def get_mini_map(self) -> List[List[MiniMapTile]]:
-        # TODO use WorldMap as input
-        d = self._get_dict()
-        result_all: List[MiniMapTile] = []
-        for rows in d.values():
-            for image_paths, x, y, walkable in rows.values():
-                result_all.append(
-                    MiniMapTile(x=x, y=y, walkable=walkable, image_paths=image_paths)
-                )
-        result: List[List[MiniMapTile]] = [
-            result_all[i : i + MINI_MAP_ROW_LENGTH]
-            for i in range(0, len(result_all), MINI_MAP_ROW_LENGTH)
-        ]
-        return result
+    def get_mini_map(self) -> MiniMap:
+        return world_map_cache.world_map.get_mini_map(self.x, self.y)
 
     def get_chat_list(
         self,

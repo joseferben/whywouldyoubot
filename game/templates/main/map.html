@@ -28,7 +28,7 @@
 
   <!-- Mini map -->
   <div id="mini-map" class="overflow-hidden">
-    {% for row in mini_map|slice:":9" %}
+    {% for row in mini_map.renderable_tiles %}
       <div style="margin-bottom:-6px;" class="d-flex">
         {% for tile in row %}
           <div class="d-flex">

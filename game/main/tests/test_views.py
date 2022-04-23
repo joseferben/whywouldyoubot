@@ -37,8 +37,9 @@ def test_walk(client: Client, player: Player, map_small: WorldMap):
 
     client.force_login(player.user)
 
-    response = client.post(reverse("main:walk"), data={"x": 0, "y": 1}, follow=True)
+    response = client.post(reverse("main:walk"), data={"x": 1, "y": 0}, follow=True)
 
     assert response.status_code == 200
     player.refresh_from_db()
-    assert player.y == 1
+    assert player.x == 1
+    assert player.y == 0
