@@ -8,6 +8,7 @@ from django.views.generic.base import ContextMixin, TemplateView, View
 from django.views.generic.edit import FormMixin
 
 from game.main.map import world_map_cache
+from game.main.world import MiniMap, World
 
 from .chat import Chat
 from .forms import ChatCreateForm, MapWalkForm
@@ -23,10 +24,15 @@ class ChatMixin(ContextMixin):
         return context
 
 
-class PlayerMixin(LoginRequiredMixin):
+class PlayerMixin(LoginRequiredMixin, ContextMixin):
     def get_player(self) -> Player:
         assert self.request.user.is_authenticated  # type: ignore
         return Player.of_user(self.request.user)  # type:ignore
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["player"] = self.get_player()
+        return context
 
 
 class MapView(PlayerMixin, ChatMixin, TemplateView):
@@ -34,13 +40,10 @@ class MapView(PlayerMixin, ChatMixin, TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["mini_map"] = self.get_player().get_mini_map()
         player = self.get_player()
-        context["player"] = player
-        context["players"] = Player.objects.filter(x=player.x, y=player.y).exclude(
-            pk=player.id
-        )
-        context["tile"] = world_map_cache.world_map.get(player.x, player.y)
+        context["mini_map"] = MiniMap.get_by_location(player.x, player.y)
+        context["other_players"] = World.get_other_player_list(player)
+        context["tile"] = World.get(player.x, player.y)
         return context
 
 

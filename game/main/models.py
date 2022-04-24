@@ -11,7 +11,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 from django_extensions.db.models import TimeStampedModel
 
-from game.main.map import Map, world_map_cache
+from game.main.map import Map
 from game.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -45,9 +45,6 @@ class Player(TimeStampedModel):
     @staticmethod
     def create(user: User) -> Player:
         return Player.objects.create(user=user)
-
-    def get_mini_map(self) -> Map:
-        return world_map_cache.world_map.get_mini_map(self.x, self.y)
 
     def get_chat_list(
         self,
