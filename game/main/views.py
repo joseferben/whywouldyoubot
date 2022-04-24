@@ -1,9 +1,10 @@
+import logging
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.forms import BaseForm
 from django.http.response import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.views.generic.base import ContextMixin, TemplateView, View
 from django.views.generic.edit import FormMixin
 
@@ -11,8 +12,10 @@ from game.main.map import world_map_cache
 from game.main.world import MiniMap, World
 
 from .chat import Chat
-from .forms import ChatCreateForm, MapWalkForm
+from .forms import ChatCreateForm
 from .models import CanNotWalkException, Player
+
+logger = logging.getLogger(__name__)
 
 
 class ChatMixin(ContextMixin):
@@ -35,9 +38,7 @@ class PlayerMixin(LoginRequiredMixin, ContextMixin):
         return context
 
 
-class MapView(PlayerMixin, ChatMixin, TemplateView):
-    template_name = "main/map.html"
-
+class MapContextMixin(PlayerMixin):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         player = self.get_player()
@@ -45,6 +46,10 @@ class MapView(PlayerMixin, ChatMixin, TemplateView):
         context["other_players"] = World.get_other_player_list(player)
         context["tile"] = World.get(player.x, player.y)
         return context
+
+
+class MapView(MapContextMixin, ChatMixin, TemplateView):
+    template_name = "main/map.html"
 
 
 class InventoryView(LoginRequiredMixin, ChatMixin, TemplateView):
@@ -59,32 +64,28 @@ class SettingsView(LoginRequiredMixin, ChatMixin, TemplateView):
     template_name = "main/settings.html"
 
 
-class MapWalkView(PlayerMixin, FormMixin, View):
-    form_class = MapWalkForm
+class MapWalkView(MapContextMixin, View):
+    template_name = "main/_map.html"
 
     def post(self, request, *args, **kwargs):
-        form: BaseForm = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    def form_valid(self, form: BaseForm) -> HttpResponse:
         player: Player = self.get_player()
-
+        x = kwargs["x"]
+        y = kwargs["y"]
         try:
             player.walk(
-                x=form.cleaned_data["x"],
-                y=form.cleaned_data["y"],
+                x=x,
+                y=y,
                 world_map=world_map_cache.world_map,
             )
+            player.save()
         except CanNotWalkException:
-            return redirect("main:map")
-        player.save()
-        return redirect("main:map")
+            logging.warn(f"player {player} could not walk to {x}/{y}")
 
-    def form_invalid(self, form: BaseForm) -> HttpResponse:
-        return redirect("main:map")
+        return render(
+            self.request,
+            template_name=self.template_name,
+            context=self.get_context_data(),
+        )
 
 
 class ChatCreateView(PlayerMixin, ChatMixin, FormMixin, View):

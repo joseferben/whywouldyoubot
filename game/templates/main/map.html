@@ -31,41 +31,6 @@
   </ul>
 
   <!-- Mini map -->
-  <div id="mini-map" class="overflow-hidden">
-    {% for row in mini_map.renderable_tiles %}
-      <div style="margin-bottom:-6px;" class="d-flex">
-        {% for tile in row %}
-          <div class="d-flex">
-            <form style="
-              {% if tile.x < player.x|add:-1 or tile.y < player.y|add:-1 or tile.x > player.x|add:1 or tile.y > player.y|add:1 %}filter: brightness(0.7);{% endif %}
-              "
-              class="position-relative" action="{% url 'main:walk' %}" method="POST">
-              {% csrf_token %}
-              <input type="hidden" name="x" value="{{ tile.x }}">
-              <input type="hidden" name="y" value="{{ tile.y }}">
-              {% if tile.x == player.x and tile.y == player.y %}
-                <img class="position-absolute img-fluid crispy" width="128" height="128" src="{% static player.avatar_path %}" alt="The player's avatar"></img>
-              {% endif %}
-              {% for player in tile.players %}
-                <img class="position-absolute img-fluid crispy" width="128" height="128" src="{% static player.avatar_path %}" alt="The player's avatar"></img>
-              {% endfor %}
-              {% for image_path in tile.image_paths reversed %}
-                {% if forloop.first %}
-                  {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
-                    <input type="image" name="image" class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} crispy img-fluid" width="128" height="128" src="{% static image_path %}">
-                  {% else %}
-                    <img class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
-                  {% endif %}
-                {% elif forloop.last %}
-                  <img class="crispy img-fluid" width="128" height="128" src="{% static image_path %}" />
-                {% else %}
-                  <img class="position-absolute crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
-                {% endif %}
-              {% endfor %}
-            </form>
-          </div>
-        {% endfor %}
-      </div>
-    {% endfor %}
-  </div>
+  {% include 'main/_map.html' %}
+
 {% endblock main_top_content %}

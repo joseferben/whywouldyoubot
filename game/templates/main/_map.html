@@ -1,0 +1,38 @@
+{% load static %}
+
+<div id="mini-map" class="overflow-hidden">
+  {% for row in mini_map.renderable_tiles %}
+    <div style="margin-bottom:-6px;" class="d-flex">
+      {% for tile in row %}
+        <div class="d-flex">
+          {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
+            <a href="#" hx-target="#mini-map" hx-swap="outerHTML" hx-post="{% url 'main:walk' x=tile.x y=tile.y %}">
+          {% endif %}
+          <div style="
+            {% if tile.x < player.x|add:-1 or tile.y < player.y|add:-1 or tile.x > player.x|add:1 or tile.y > player.y|add:1 %}filter: brightness(0.8);{% endif %}
+            "
+            class="position-relative">
+            {% csrf_token %}
+            <input type="hidden" name="x" value="{{ tile.x }}">
+            <input type="hidden" name="y" value="{{ tile.y }}">
+            {% for player in tile.players %}
+              <img class="position-absolute img-fluid crispy" width="128" height="128" src="{% static player.avatar_path %}" alt="The player's avatar"></img>
+            {% endfor %}
+            {% for image_path in tile.image_paths reversed %}
+              {% if forloop.first %}
+                <img class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
+              {% elif forloop.last %}
+                <img class="crispy img-fluid" width="128" height="128" src="{% static image_path %}" />
+              {% else %}
+                <img class="position-absolute crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
+            </a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
