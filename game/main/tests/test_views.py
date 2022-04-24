@@ -1,7 +1,8 @@
 import pytest
-from django.test import Client
+from django.test import Client, client
 from django.urls.base import reverse
 
+from game.conftest import player
 from game.main.map import Map
 from game.main.models import ChatLine, Player
 
@@ -43,3 +44,22 @@ def test_walk(client: Client, player: Player, map_small: Map):
     player.refresh_from_db()
     assert player.x == 1
     assert player.y == 0
+
+
+player_1 = player
+player_2 = player
+
+
+@pytest.mark.django_db
+def test_field_other_players(client: Client, player_1: Player, player_2: Player):
+    player_1.x = player_2.x = 1
+    player_1.y = player_2.y = 1
+    player_1.save()
+    player_2.save()
+
+    client.force_login(player_1.user)
+
+    response = client.get(reverse("main:map"))
+
+    assert response.status_code == 200
+    assert player_2.user.username in str(response.content)

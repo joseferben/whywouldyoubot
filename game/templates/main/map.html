@@ -18,12 +18,11 @@
 {% endblock main_description %}
 
 {% block main_top_content %}
+  <!-- Top content -->
   <ul class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
-    <li class="list-group-item"><a href="#">Wizard</a> (4) - <a href="#">Attack</a></li>
-    <li class="list-group-item"><a href="#">Shopkeeper</a> - <a href="#">Trade</a></li>
-    <li class="list-group-item"><a href="#">Bee</a> (1) - <a href="#">Attack</a></li>
-    <li class="list-group-item"><a href="#">Jar of honey</a> - <a href="#">Pick up</a></li>
-    <li class="list-group-item"><a href="#">Gold</a> (245) - <a href="#">Pick up</a></li>
+    {% for player in players %}
+      <li class="list-group-item"><a href="#">{{ player.user.username }}</a> ({{ player.lavel }})</li>
+    {% endfor %}
   </ul>
 
   <!-- Mini map -->

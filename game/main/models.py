@@ -31,6 +31,8 @@ class CanNotWalkException(Exception):
 
 
 class Player(TimeStampedModel):
+    id: int
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     x = models.PositiveIntegerField(default=45)
     y = models.PositiveIntegerField(default=42)

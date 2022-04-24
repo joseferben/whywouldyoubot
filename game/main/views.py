@@ -35,7 +35,11 @@ class MapView(PlayerMixin, ChatMixin, TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["mini_map"] = self.get_player().get_mini_map()
-        context["player"] = self.get_player()
+        player = self.get_player()
+        context["player"] = player
+        context["players"] = Player.objects.filter(x=player.x, y=player.y).exclude(
+            pk=player.id
+        )
         return context
 
 
