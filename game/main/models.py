@@ -26,6 +26,10 @@ class ChatLine(TimeStampedModel):
     message = models.TextField()
 
 
+class CanNotWalkException(Exception):
+    pass
+
+
 class Player(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     x = models.PositiveIntegerField(default=45)
@@ -62,6 +66,6 @@ class Player(TimeStampedModel):
 
     def walk(self, x: int, y: int, world_map: Map) -> None:
         if not self.can_walk(x, y, world_map):
-            raise Exception("Can not walk there")
+            raise CanNotWalkException("Can not walk there")
         self.x = x
         self.y = y

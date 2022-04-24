@@ -11,7 +11,7 @@ from game.main.map import world_map_cache
 
 from .chat import Chat
 from .forms import ChatCreateForm, MapWalkForm
-from .models import Player
+from .models import CanNotWalkException, Player
 
 
 class ChatMixin(ContextMixin):
@@ -64,17 +64,19 @@ class MapWalkView(PlayerMixin, FormMixin, View):
     def form_valid(self, form: BaseForm) -> HttpResponse:
         player: Player = self.get_player()
 
-        player.walk(
-            x=form.cleaned_data["x"],
-            y=form.cleaned_data["y"],
-            world_map=world_map_cache.world_map,
-        )
+        try:
+            player.walk(
+                x=form.cleaned_data["x"],
+                y=form.cleaned_data["y"],
+                world_map=world_map_cache.world_map,
+            )
+        except CanNotWalkException:
+            return redirect("main:map")
         player.save()
         return redirect("main:map")
 
     def form_invalid(self, form: BaseForm) -> HttpResponse:
-        # TODO consider HTMX
-        raise Exception("form_invalid()")
+        return redirect("main:map")
 
 
 class ChatCreateView(PlayerMixin, ChatMixin, FormMixin, View):
