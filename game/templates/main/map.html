@@ -34,23 +34,25 @@
           <div class="d-flex">
             <form style="
               {% if tile.x < player.x|add:-1 or tile.y < player.y|add:-1 or tile.x > player.x|add:1 or tile.y > player.y|add:1 %}filter: brightness(0.7);{% endif %}
-              {% if tile.x == player.x and tile.y == player.y %}filter: brightness(0.4);{% endif %}
               "
               class="position-relative" action="{% url 'main:walk' %}" method="POST">
               {% csrf_token %}
               <input type="hidden" name="x" value="{{ tile.x }}">
               <input type="hidden" name="y" value="{{ tile.y }}">
               {% for image_path in tile.image_paths reversed %}
+                {% if tile.x == player.x and tile.y == player.y %}
+                  <img class="position-absolute img-fluid crispy" width="128" height="128" src="{% static player.avatar_path %}" alt="The player's avatar"></img>
+                {% endif %}
                 {% if forloop.first %}
-                  {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 %}
-                    <input type="image" name="image" class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} tile-image img-fluid" width="128" height="128" src="{% static image_path %}">
+                  {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
+                    <input type="image" name="image" class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} crispy img-fluid" width="128" height="128" src="{% static image_path %}">
                   {% else %}
-                    <img class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} tile-image img-fluid" width="128" height="128" src="{% static image_path %}"/>
+                    <img class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
                   {% endif %}
                 {% elif forloop.last %}
-                  <img class="tile-image img-fluid" width="128" height="128" src="{% static image_path %}" />
+                  <img class="crispy img-fluid" width="128" height="128" src="{% static image_path %}" />
                 {% else %}
-                  <img class="position-absolute tile-image img-fluid" width="128" height="128" src="{% static image_path %}"/>
+                  <img class="position-absolute crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
                 {% endif %}
               {% endfor %}
             </form>

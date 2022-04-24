@@ -22,7 +22,7 @@ body {
   padding: 0.25rem 0.5rem;
 }
 
-.tile-image {
+.crispy {
   image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-crisp-edges;
   image-rendering: pixelated;

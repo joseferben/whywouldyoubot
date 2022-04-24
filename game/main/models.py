@@ -34,6 +34,11 @@ class Player(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     x = models.PositiveIntegerField(default=45)
     y = models.PositiveIntegerField(default=42)
+    avatar = models.PositiveIntegerField(default=1)
+
+    @property
+    def avatar_path(self) -> str:
+        return f"assets/avatars/{self.avatar}.png"
 
     @staticmethod
     def of_user(user: AbstractBaseUser | AnonymousUser) -> Player:
