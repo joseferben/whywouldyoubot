@@ -13,24 +13,6 @@
   Meadows
 {% endblock main_subtitle %}
 
-{% block main_description %}
-  To the north you see the sun reflected in big lakes.
-{% endblock main_description %}
-
 {% block main_top_content %}
-  <!-- Top content -->
-  <ul class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
-    {% if tile.description %}
-      <div class="p-2 mb-1">
-        {{ tile.description }}
-      </div>
-    {% endif %}
-    {% for player in other_players %}
-      <li class="list-group-item"><a href="#">{{ player.user.username }}</a> ({{ player.level}})</li>
-    {% endfor %}
-  </ul>
-
-  <!-- Mini map -->
   {% include 'main/_map.html' %}
-
 {% endblock main_top_content %}

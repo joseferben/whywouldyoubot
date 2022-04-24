@@ -1,12 +1,25 @@
 {% load static %}
 
-<div id="mini-map" class="overflow-hidden">
+<!-- Field -->
+<ul id="field" class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
+  {% if tile.description %}
+    <div class="p-2 mb-1">
+      {{ tile.description }}
+    </div>
+  {% endif %}
+  {% for player in other_players %}
+    <li class="list-group-item"><a href="#">{{ player.user.username }}</a> ({{ player.level}})</li>
+  {% endfor %}
+</ul>
+
+<!-- Mini map -->
+<div id="mini-map" hx-swap-oob="true" class="overflow-hidden">
   {% for row in mini_map.renderable_tiles %}
     <div style="margin-bottom:-6px;" class="d-flex">
       {% for tile in row %}
         <div class="d-flex">
           {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
-            <a href="#" hx-target="#mini-map" hx-swap="outerHTML" hx-post="{% url 'main:walk' x=tile.x y=tile.y %}">
+            <a href="#" hx-target="#field" hx-swap="outerHTML" hx-post="{% url 'main:walk' x=tile.x y=tile.y %}">
           {% endif %}
           <div style="
             {% if tile.x < player.x|add:-1 or tile.y < player.y|add:-1 or tile.x > player.x|add:1 or tile.y > player.y|add:1 %}filter: brightness(0.8);{% endif %}

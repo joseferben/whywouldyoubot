@@ -38,7 +38,7 @@ class PlayerMixin(LoginRequiredMixin, ContextMixin):
         return context
 
 
-class MapContextMixin(PlayerMixin):
+class MapMixin(PlayerMixin):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         player = self.get_player()
@@ -48,7 +48,7 @@ class MapContextMixin(PlayerMixin):
         return context
 
 
-class MapView(MapContextMixin, ChatMixin, TemplateView):
+class MapView(MapMixin, ChatMixin, TemplateView):
     template_name = "main/map.html"
 
 
@@ -64,7 +64,7 @@ class SettingsView(LoginRequiredMixin, ChatMixin, TemplateView):
     template_name = "main/settings.html"
 
 
-class MapWalkView(MapContextMixin, View):
+class MapWalkView(MapMixin, View):
     template_name = "main/_map.html"
 
     def post(self, request, *args, **kwargs):
