@@ -40,6 +40,7 @@ class MapView(PlayerMixin, ChatMixin, TemplateView):
         context["players"] = Player.objects.filter(x=player.x, y=player.y).exclude(
             pk=player.id
         )
+        context["tile"] = world_map_cache.world_map.get(player.x, player.y)
         return context
 
 

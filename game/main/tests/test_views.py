@@ -1,5 +1,5 @@
 import pytest
-from django.test import Client, client
+from django.test import Client
 from django.urls.base import reverse
 
 from game.conftest import player
@@ -21,7 +21,7 @@ def test_chat_create_view(client: Client, player: Player):
 
 
 @pytest.mark.django_db
-def test_chat(client: Client, player: Player, chat_line: ChatLine):
+def test_chat(client: Client, player: Player, chat_line: ChatLine, map_small: Map):
     client.force_login(player.user)
 
     response = client.get(reverse("main:map"))

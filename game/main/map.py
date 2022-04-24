@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from math import floor
 from pathlib import Path, PurePosixPath
-from typing import Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 import pytmx
 from django.conf import settings
@@ -27,12 +27,20 @@ class TileDoesNotExistError(BaseException):
 
 class Tile:
     def __init__(
-        self, x: int, y: int, image_paths: List[str] = [], obstacle: bool = True
+        self,
+        x: int,
+        y: int,
+        gid: int = 0,
+        description: Optional[str] = None,
+        image_paths: List[str] = [],
+        obstacle: bool = True,
     ) -> None:
         self.x = x
         self.y = y
+        self.gid = gid
         self.image_paths = image_paths
         self.obstacle = obstacle
+        self.description = description
 
     def __repr__(self) -> str:
         return f'{self.x}/{self.y} {"w" if self.obstacle else "nw"}'
@@ -50,26 +58,40 @@ class Map:
         return [*zip(*self.tiles)]
 
     @staticmethod
+    def process_tile(
+        tile: Any, layer: TiledTileLayer, tiles: List[List[Optional[Tile]]]
+    ) -> None:
+        (x, y, image) = tile
+        image_path = PurePosixPath(image[0])
+        image_path = str(image_path.relative_to(APPS_DIR / "static"))
+        if tiles[x][y] is None:
+            tiles[x][y] = Tile(
+                x=x,
+                y=y,
+                gid=layer.data[x][y],
+                image_paths=[image_path],
+            )
+            properties = tiled_map.get_tile_properties_by_gid(layer.data[x][y])
+            if properties:
+                tiles[x][y].description = properties.get("description")  # type: ignore
+        else:
+            tiles[x][y].image_paths.append(image_path)  # type: ignore
+
+        # Process obstacle layer
+        if layer.name == OBSTACLE_LAYER_NAME:
+            tiles[x][y].obstacle = False  # type:ignore
+
+    @staticmethod
     def of_file(tiled_map: TiledMap) -> Map:
         tiles: List[List[Optional[Tile]]] = [
             [None] * tiled_map.height for i in range(tiled_map.width)
         ]
 
         for layer in tiled_map.layers:
-            # object layer don't have tiles
+            # Object layers don't have tiles
             if type(layer) == TiledTileLayer:
                 for tile in layer.tiles():
-                    (x, y, image) = tile
-                    image_path = PurePosixPath(image[0])
-                    image_path = str(image_path.relative_to(APPS_DIR / "static"))
-                    if tiles[x][y] is None:
-                        tiles[x][y] = Tile(x=x, y=y, image_paths=[image_path])
-                    else:
-                        tiles[x][y].image_paths.append(image_path)  # type: ignore
-
-                    # Process obstacle layer
-                    if layer.name == OBSTACLE_LAYER_NAME:
-                        tiles[x][y].obstacle = False  # type:ignore
+                    Map.process_tile(tile, layer, tiles)
         return Map(tiles=tiles)  # type: ignore
 
     def __init__(

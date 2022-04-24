@@ -20,6 +20,11 @@
 {% block main_top_content %}
   <!-- Top content -->
   <ul class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
+    {% if tile.description %}
+      <div class="p-2 mb-1">
+        {{ tile.description }}
+      </div>
+    {% endif %}
     {% for player in players %}
       <li class="list-group-item"><a href="#">{{ player.user.username }}</a> ({{ player.lavel }})</li>
     {% endfor %}

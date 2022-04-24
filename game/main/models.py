@@ -34,8 +34,8 @@ class Player(TimeStampedModel):
     id: int
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    x = models.PositiveIntegerField(default=45)
-    y = models.PositiveIntegerField(default=42)
+    x = models.PositiveIntegerField(default=530)
+    y = models.PositiveIntegerField(default=540)
     avatar = models.PositiveIntegerField(default=1)
 
     @property
