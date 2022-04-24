@@ -10,7 +10,7 @@
 {% endblock main_title %}
 
 {% block main_subtitle %}
-  Meadows ({{ player.x }}, {{ player.y }})
+  Meadows
 {% endblock main_subtitle %}
 
 {% block main_description %}
@@ -26,7 +26,7 @@
       </div>
     {% endif %}
     {% for player in players %}
-      <li class="list-group-item"><a href="#">{{ player.user.username }}</a> ({{ player.lavel }})</li>
+      <li class="list-group-item"><a href="#">{{ player.user.username }}</a> ({{ player.level}})</li>
     {% endfor %}
   </ul>
 

@@ -38,10 +38,6 @@ class Player(TimeStampedModel):
     y = models.PositiveIntegerField(default=540)
     avatar = models.PositiveIntegerField(default=1)
 
-    @property
-    def avatar_path(self) -> str:
-        return f"assets/avatars/{self.avatar}.png"
-
     @staticmethod
     def of_user(user: AbstractBaseUser | AnonymousUser) -> Player:
         return Player.objects.get(user=user)
@@ -76,3 +72,11 @@ class Player(TimeStampedModel):
             raise CanNotWalkException("Can not walk there")
         self.x = x
         self.y = y
+
+    @property
+    def level(self) -> int:
+        return 42
+
+    @property
+    def avatar_path(self) -> str:
+        return f"assets/avatars/{self.avatar}.png"

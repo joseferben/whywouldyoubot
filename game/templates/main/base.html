@@ -6,8 +6,7 @@
 {% endblock navigation %}
 
 {% block content %}
-  <div class="vh-100">
-
+  <div style="max-width:600px;" class="mx-auto vh-100">
     <!-- Top content -->
     {% block main_top %}
       <div class="d-flex card my-1" style="height:60%;">
@@ -34,7 +33,7 @@
       {% with request.resolver_match.url_name as url_name %}
         <ul class="nav nav-pills">
           <li class="nav-item">
-            <a class="nav-link {% if url_name == 'map' %}active{% endif %}" href="{% url 'main:map' %}">Map</a>
+            <a class="nav-link {% if url_name == 'map' %}active{% endif %}" href="{% url 'main:map' %}">Map ({{ player.x }}, {{ player.y }})</a>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if url_name == 'inventory' %}active{% endif %}" href="{% url 'main:inventory' %}">Inventory (256gp)</a>
