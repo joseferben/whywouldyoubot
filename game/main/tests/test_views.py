@@ -2,7 +2,7 @@ import pytest
 from django.test import Client
 from django.urls.base import reverse
 
-from game.main.map import WorldMap
+from game.main.map import Map
 from game.main.models import ChatLine, Player
 
 
@@ -30,7 +30,7 @@ def test_chat(client: Client, player: Player, chat_line: ChatLine):
 
 
 @pytest.mark.django_db
-def test_walk(client: Client, player: Player, map_small: WorldMap):
+def test_walk(client: Client, player: Player, map_small: Map):
     player.x = 0
     player.y = 0
     player.save()

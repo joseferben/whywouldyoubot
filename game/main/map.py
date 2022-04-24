@@ -27,39 +27,30 @@ class TileDoesNotExistError(BaseException):
 
 class Tile:
     def __init__(
-        self, x: int, y: int, image_paths: List[str] = [], walkable: bool = True
+        self, x: int, y: int, image_paths: List[str] = [], obstacle: bool = True
     ) -> None:
         self.x = x
         self.y = y
         self.image_paths = image_paths
-        self.walkable = walkable
+        self.obstacle = obstacle
 
     def __repr__(self) -> str:
-        return f'{self.x}/{self.y} {"w" if self.walkable else "nw"}'
+        return f'{self.x}/{self.y} {"w" if self.obstacle else "nw"}'
 
 
 class Map:
-    tiles: List[List[Tile]]
-
-    def __init__(self, tiles: List[List[Tile]]) -> None:
-        self.tiles = tiles
-
     def __str__(self) -> str:
         return "\n".join("".join(repr(i)) for i in self.tiles)
 
     def __repr__(self) -> str:
         return self.__str__()
 
-
-class MiniMap(Map):
     @property
     def renderable_tiles(self) -> Iterable[Iterable[Tile]]:
         return [*zip(*self.tiles)]
 
-
-class WorldMap(Map):
     @staticmethod
-    def of_file(tiled_map: TiledMap) -> WorldMap:
+    def of_file(tiled_map: TiledMap) -> Map:
         tiles: List[List[Optional[Tile]]] = [
             [None] * tiled_map.height for i in range(tiled_map.width)
         ]
@@ -78,8 +69,8 @@ class WorldMap(Map):
 
                     # Process obstacle layer
                     if layer.name == OBSTACLE_LAYER_NAME:
-                        tiles[x][y].walkable = False  # type:ignore
-        return WorldMap(tiles=tiles)  # type: ignore
+                        tiles[x][y].obstacle = False  # type:ignore
+        return Map(tiles=tiles)  # type: ignore
 
     def __init__(
         self, tiles: List[List[Tile]] = [], tiled_map: Optional[TiledMap] = None
@@ -89,7 +80,7 @@ class WorldMap(Map):
                 "Provide either a list of tiles or a Tiled file to create a WorldMap"
             )
         if tiled_map is not None:
-            world_map = WorldMap.of_file(tiled_map)
+            world_map = Map.of_file(tiled_map)
             self.tiles = world_map.tiles
         else:
             self.tiles = tiles
@@ -106,18 +97,18 @@ class WorldMap(Map):
         y: int,
         width: int = MINI_MAP_WIDTH,
         height: int = MINI_MAP_HEIGHT,
-    ) -> MiniMap:
+    ) -> Map:
         tiles = []
         x_padding = floor(width / 2)
         y_padding = floor(height / 2)
         for col in world_map_cache.world_map.tiles[x - x_padding : x + x_padding + 1]:
             tiles.append(col[y - y_padding : y + y_padding + 1])
-        return MiniMap(tiles=tiles)
+        return Map(tiles=tiles)
 
 
-class WorldMapCache:
-    def __init__(self, world_map: WorldMap) -> None:
+class MapCache:
+    def __init__(self, world_map: Map) -> None:
         self.world_map = world_map
 
 
-world_map_cache = WorldMapCache(WorldMap(tiled_map=tiled_map))
+world_map_cache = MapCache(Map(tiled_map=tiled_map))

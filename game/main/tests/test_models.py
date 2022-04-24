@@ -1,11 +1,11 @@
 import pytest
 
-from game.main.map import WorldMap
+from game.main.map import Map
 from game.main.models import Player
 
 
 @pytest.mark.django_db
-def test_walk(player: Player, map_small: WorldMap):
+def test_walk(player: Player, map_small: Map):
     player.x = 0
     player.y = 0
 

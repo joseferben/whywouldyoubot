@@ -11,7 +11,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 from django_extensions.db.models import TimeStampedModel
 
-from game.main.map import MiniMap, WorldMap, world_map_cache
+from game.main.map import Map, world_map_cache
 from game.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class Player(TimeStampedModel):
     def create(user: User) -> Player:
         return Player.objects.create(user=user)
 
-    def get_mini_map(self) -> MiniMap:
+    def get_mini_map(self) -> Map:
         return world_map_cache.world_map.get_mini_map(self.x, self.y)
 
     def get_chat_list(
@@ -53,14 +53,14 @@ class Player(TimeStampedModel):
     def _is_adjacent(self, x: int, y: int) -> bool:
         return abs(x - self.x) <= 1 and abs(y - self.y) <= 1
 
-    def can_walk(self, x: int, y: int, world_map: WorldMap) -> bool:
+    def can_walk(self, x: int, y: int, world_map: Map) -> bool:
         return (
             self._is_adjacent(x, y)
             and not ((self.x == x) and (self.y == y))
-            and world_map.get(x, y).walkable
+            and world_map.get(x, y).obstacle
         )
 
-    def walk(self, x: int, y: int, world_map: WorldMap) -> None:
+    def walk(self, x: int, y: int, world_map: Map) -> None:
         if not self.can_walk(x, y, world_map):
             raise Exception("Can not walk there")
         self.x = x
