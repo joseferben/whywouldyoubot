@@ -1,12 +1,32 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-  <h3>Welcome</h3>
-  <div class="col-md-6 offset-md-3">
-    TODO screenshots, short description, call-to-action (login with twitch)<br><br><br>
-    <p>If you already have an account:</p>
-    <a href="{% url 'account_login' %}" class="btn btn-xl btn-primary">Sign In</a><br><br>
-    <p>Otherwise</p>
-    <a href="{% url 'account_signup' %}" class="btn btn-xl btn-primary">Sign Up</a>
+  <div class="row">
+    <div class="col-sm-12 col-md-8 col-lg-6 mx-auto">
+      <h2>Welcome</h2>
+      <div class="">
+        <p>This is a MMORPG (or more like MORPG until I figure out how to scale it <b>M</b>assively) that runs in the browser. Explore the world, slay monsters, find treasures, amass wealth as a merchant or just simply enjoy the breeze on the meadows.</p>
+        <p>This game very early stage, you might lose all your progress at this point.</p>
+      </div>
+      <img class="mb-3 img-fluid w-100" src="{% static 'images/map_hero_1.png' %}"></img>
+      <section class="d-flex justify-content-center mb-4">
+        <div class="text-center">
+          <p>If you already have an account</p>
+          <a href="{% url 'account_login' %}" class="btn btn-xl btn-primary">Sign In</a>
+        </div>
+      </section>
+      <img class="mb-3 img-fluid w-100" src="{% static 'images/map_hero_3.png' %}"></img>
+      <section class="d-flex justify-content-center mb-4">
+        <div class="text-center">
+          <p>otherwise</p>
+          <a href="{% url 'account_signup' %}" class="btn btn-xl btn-primary">Sign Up</a>
+        </div>
+      </section>
+      <img class="mb-3 img-fluid w-100" src="{% static 'images/map_hero_2.png' %}"></img>
+      <section class="mb-5 text-center">
+        (this game might contain traces of cheese)
+      </section>
+    </div>
   </div>
 {% endblock content %}
