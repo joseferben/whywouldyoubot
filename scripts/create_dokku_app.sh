@@ -35,13 +35,13 @@ ssh root@${DOKKU_HOST} -f 'echo "    alias /var/lib/dokku/data/storage/game;" >>
 ssh root@${DOKKU_HOST} -f 'echo "}" >> /home/dokku/game/nginx.conf.d/media.conf'
 ssh root@${DOKKU_HOST} -f 'chown -R dokku:dokku /home/dokku/game/nginx.conf.d'
 
-echo "test backup to s3"
-ssh -t dokku@${DOKKU_HOST} postgres:backup game-database ${AWS_S3_BACKUP_PATH}
-
 echo "set up daily backups to s3"
 ssh -t dokku@${DOKKU_HOST} postgres:backup-set-encryption game-database ${BACKUP_ENCRYPTION_KEY}
 ssh -t dokku@${DOKKU_HOST} postgres:backup-auth game-database ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}
 ssh -t dokku@${DOKKU_HOST} postgres:backup-schedule game-database @daily ${AWS_S3_BACKUP_PATH}
+
+echo "test backup to s3"
+ssh -t dokku@${DOKKU_HOST} postgres:backup game-database ${AWS_S3_BACKUP_PATH}
 
 echo "add dokku host as git remote"
 git remote add dokku dokku@${DOKKU_HOST}:game
