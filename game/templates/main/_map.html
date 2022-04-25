@@ -25,16 +25,18 @@
             {% if tile.x < player.x|add:-1 or tile.y < player.y|add:-1 or tile.x > player.x|add:1 or tile.y > player.y|add:1 %}filter: brightness(0.8);{% endif %}
             "
             class="position-relative">
+            <!-- Players -->
             {% for player in tile.players %}
-              <img class="position-absolute img-fluid crispy" width="128" height="128" src="{% static player.avatar_path %}" alt="The player's avatar"></img>
+              <img style="z-index:100;" class="position-absolute img-fluid crispy" width="128" height="128" src="{% static player.avatar_path %}" alt="The player's avatar"></img>
             {% endfor %}
+            <!-- Map tiles -->
             {% for image_path in tile.image_paths reversed %}
               {% if forloop.first %}
-                <img class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
+                <img style="z-index:50;" class="{% if tile.image_paths|length > 1 %}position-absolute{% endif %} crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
               {% elif forloop.last %}
-                <img class="crispy img-fluid" width="128" height="128" src="{% static image_path %}" />
+                <img style="z-index:10;" class="crispy img-fluid" width="128" height="128" src="{% static image_path %}" />
               {% else %}
-                <img class="position-absolute crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
+                <img style="z-index:25;" class="position-absolute crispy img-fluid" width="128" height="128" src="{% static image_path %}"/>
               {% endif %}
             {% endfor %}
           </div>
