@@ -1,7 +1,7 @@
 {% load static %}
 
 <!-- Field -->
-<ul id="field" class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
+<ul id="field" hx-target="#field" hx-swap="outerHTML" hx-get="{% url "main:map" %}" hx-trigger="every 1s" class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
   {% if tile.description %}
     <div class="p-2 mb-1">
       {{ tile.description }}
@@ -48,3 +48,7 @@
     </div>
   {% endfor %}
 </div>
+
+{% if request.htmx %}
+  {% include 'main/_chat_lines.html' %}
+{% endif %}

@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.forms import BaseForm
+from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.generic.base import ContextMixin, TemplateView, View
@@ -50,6 +51,13 @@ class MapMixin(PlayerMixin):
 
 class MapView(MapMixin, ChatMixin, TemplateView):
     template_name = "main/map.html"
+    htmx_template_name = "main/_map.html"
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        if not request.htmx:  # type: ignore
+            return super().get(request, *args, **kwargs)
+        else:
+            return render(request, self.htmx_template_name, self.get_context_data())
 
 
 class InventoryView(LoginRequiredMixin, ChatMixin, TemplateView):

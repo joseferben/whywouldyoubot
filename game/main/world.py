@@ -74,7 +74,7 @@ class MiniMap:
             x__lte=x + x_padding,
             y__gte=y - y_padding,
             y__lte=y + y_padding,
-        )
+        ).filter(logged_in=True)
         players_dict = MiniMap._player_lookup_dict(players)
         for idx_x, col in enumerate(
             world_map_cache.world_map.tiles[x - x_padding : x + x_padding + 1]
@@ -97,7 +97,9 @@ class World:
 
     @staticmethod
     def get_other_player_list(player: Player) -> QuerySet[Player]:
-        return Player.objects.filter(x=player.x, y=player.y).exclude(pk=player.id)
+        return Player.objects.filter(x=player.x, y=player.y, logged_in=True).exclude(
+            pk=player.id
+        )
 
     @staticmethod
     def get_mini_map_of_player(player: Player) -> MiniMap:

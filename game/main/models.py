@@ -37,6 +37,10 @@ class Player(TimeStampedModel):
     x = models.PositiveIntegerField(default=530)
     y = models.PositiveIntegerField(default=540)
     avatar = models.PositiveIntegerField(default=1)
+    logged_in = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_interacted_at = models.DateTimeField(auto_now=True)
 
     @staticmethod
     def of_user(user: AbstractBaseUser | AnonymousUser) -> Player:

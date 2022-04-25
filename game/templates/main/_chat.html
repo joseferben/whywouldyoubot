@@ -4,13 +4,6 @@
     <button class="btn btn-outline-primary" type="submit" id="chat-input">Say</button>
   </div>
 </form>
-<div id="chat-lines-fragment" class="overflow-auto" style="max-height:26%;">
-  <ul class="list-group">
-    {% for chat in chat_lines %}
-      <li class="list-group-item">{{ chat.sayer }} ({{ chat.created }}): {{ chat.message }}</li>
-    {% empty %}
-      <li class="list-group-item">Nothing was ever said.</li>
-    {% endfor %}
-  </ul>
-</div>
+
+{% include 'main/_chat_lines.html' %}
 {% include 'main/_toast.html' %}

@@ -6,31 +6,31 @@
 {% endblock navigation %}
 
 {% block content %}
-  <div style="max-width:600px;" class="mx-auto vh-100">
-    <!-- Top content -->
-    {% block main_top %}
-      <div class="d-flex card my-1" style="height:60%;">
-        <div class="card-header">
-          <h5 class="card-title">
-            {% block main_title %}
-              Override main_title
-            {% endblock main_title %}
-          </h5>
-          <h6 class="card-subtitle mb-2 text-muted">
-            {% block main_subtitle %}
-              Override main_subtitle
-            {% endblock main_subtitle %}
-          </h6>
+  {% with request.resolver_match.url_name as url_name %}
+    <div style="max-width:600px;" class="mx-auto vh-100">
+      <!-- Top content -->
+      {% block main_top %}
+        <div class="d-flex card my-1" style="height:60%;">
+          <div class="card-header">
+            <h5 class="card-title">
+              {% block main_title %}
+                Override main_title
+              {% endblock main_title %}
+            </h5>
+            <h6 class="card-subtitle mb-2 text-muted">
+              {% block main_subtitle %}
+                Override main_subtitle
+              {% endblock main_subtitle %}
+            </h6>
+          </div>
+          {% block main_top_content %}
+            Override main_top_content
+          {% endblock main_top_content %}
         </div>
-        {% block main_top_content %}
-          Override main_top_content
-        {% endblock main_top_content %}
-      </div>
-    {% endblock main_top %}
+      {% endblock main_top %}
 
-    <!-- Navigation -->
-    <div class="my-1" style="max-height:10%;">
-      {% with request.resolver_match.url_name as url_name %}
+      <!-- Navigation -->
+      <div class="my-1" style="max-height:10%;">
         <ul class="nav nav-pills">
           <li class="nav-item">
             <a class="nav-link {% if url_name == 'map' %}active{% endif %}" href="{% url 'main:map' %}">Map ({{ player.x }}, {{ player.y }})</a>
@@ -45,11 +45,10 @@
             <a class="nav-link {% if url_name == 'settings' %}active{% endif %}" href="{% url 'main:settings' %}">Settings</a>
           </li>
         </ul>
-      {% endwith %}
+      </div>
+
+      <!-- Chat -->
+      {% include 'main/_chat.html' %}
     </div>
-
-    <!-- Chat -->
-    {% include 'main/_chat.html' %}
-
-  </div>
+  {% endwith %}
 {% endblock content %}
