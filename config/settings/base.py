@@ -306,6 +306,22 @@ CELERY_TASK_TIME_LIMIT = 5 * 60
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-soft-time-limit
 # TODO: set to whatever value is adequate in your circumstances
 CELERY_TASK_SOFT_TIME_LIMIT = 60
+
+CELERY_BEAT_SCHEDULE = {
+    # "send-summary-every-hour": {
+    #     "task": "summary",
+    #     # There are 4 ways we can handle time, read further
+    #     "schedule": 3600.0,
+    #     # If you're using any arguments
+    #     "args": ("We don’t need any’",),
+    # },
+    # # Executes every Friday at 4pm
+    # "send-notification-on-friday-afternoon": {
+    #     "task": "my_app.tasks.send_notification",
+    #     "schedule": crontab(hour=16, day_of_week=5),
+    # },
+}
+
 # django-allauth
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
