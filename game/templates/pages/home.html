@@ -3,6 +3,10 @@
 {% block content %}
   <h3>Welcome</h3>
   <div class="col-md-6 offset-md-3">
-    TODO screenshots, short description, call-to-action (login with twitch)
+    TODO screenshots, short description, call-to-action (login with twitch)<br><br><br>
+    <p>If you already have an account:</p>
+    <a href="{% url 'account_login' %}" class="btn btn-xl btn-primary">Sign In</a><br><br>
+    <p>Otherwise</p>
+    <a href="{% url 'account_signup' %}" class="btn btn-xl btn-primary">Sign Up</a>
   </div>
 {% endblock content %}

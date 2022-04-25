@@ -72,7 +72,7 @@ class SettingsView(LoginRequiredMixin, ChatMixin, TemplateView):
     template_name = "main/settings.html"
 
 
-class MapWalkView(MapMixin, View):
+class MapWalkView(MapMixin, ChatMixin, View):
     template_name = "main/_map.html"
 
     def post(self, request, *args, **kwargs):
