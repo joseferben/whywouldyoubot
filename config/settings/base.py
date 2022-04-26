@@ -347,7 +347,7 @@ SOCIALACCOUNT_FORMS = {"signup": "game.users.forms.UserSocialSignupForm"}
 SOCIALACCOUNT_PROVIDERS = {
     "twitch": {
         "APP": {
-            "client_id": "y90vcdihc6wbnwi9n4stcfw6lovwyc",
+            "client_id": env.str("TWITCH_CLIENT_ID"),
             "secret": env.str("TWITCH_SECRET_KEY"),
             "key": env.str("TWITCH_SECRET_KEY"),
         }
