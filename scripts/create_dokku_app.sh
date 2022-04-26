@@ -26,7 +26,7 @@ ssh -t dokku@${DOKKU_HOST} config:set --no-restart game MAILJET_SECRET_KEY=${MAI
 echo "mount media files to docker volume"
 ssh root@${DOKKU_HOST} -f 'mkdir -p /var/lib/dokku/data/storage/game/'
 ssh root@${DOKKU_HOST} -f 'chown -R dokku:dokku /var/lib/dokku/data/storage/game/'
-ssh -t dokku@${DOKKU_HOST} storage:mount game /var/lib/dokku/data/storage/game:/storage
+ssh -t dokku@${DOKKU_HOST} storage:mount game /var/lib/dokku/data/storage/game:/app/storage
 
 echo "serve media files using nginx"
 ssh root@${DOKKU_HOST} -f 'mkdir -p /home/dokku/game/nginx.conf.d'
