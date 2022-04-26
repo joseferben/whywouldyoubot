@@ -8,8 +8,6 @@ import pytmx
 from django.conf import settings
 from pytmx.pytmx import TiledMap, TiledTileLayer
 
-from config.settings.base import APPS_DIR
-
 logger = logging.getLogger(__name__)
 
 OBSTACLE_LAYER_NAME = "obstacle"
@@ -59,7 +57,8 @@ class Map:
     ) -> None:
         (x, y, image) = tile
         image_path = PurePosixPath(image[0])
-        image_path = str(image_path.relative_to(APPS_DIR / "static"))
+        image_path = PurePosixPath("/".join(image_path.parts[-3:]))
+        image_path = str("assets" / image_path)
         if tiles[x][y] is None:
             tiles[x][y] = MapTile(
                 x=x,
