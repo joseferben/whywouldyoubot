@@ -343,6 +343,17 @@ ACCOUNT_FORMS = {"signup": "game.users.forms.UserSignupForm"}
 SOCIALACCOUNT_ADAPTER = "game.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 SOCIALACCOUNT_FORMS = {"signup": "game.users.forms.UserSocialSignupForm"}
+
+SOCIALACCOUNT_PROVIDERS = {
+    "twitch": {
+        "APP": {
+            "client_id": "y90vcdihc6wbnwi9n4stcfw6lovwyc",
+            "secret": env.str("TWITCH_SECRET_KEY"),
+            "key": env.str("TWITCH_SECRET_KEY"),
+        }
+    }
+}
+
 # django-compressor
 # ------------------------------------------------------------------------------
 # https://django-compressor.readthedocs.io/en/latest/quickstart/#installation
