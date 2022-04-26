@@ -1,7 +1,7 @@
 {% load static %}
 
 <!-- Field -->
-<ul id="field" hx-target="#field" hx-swap="outerHTML" hx-get="{% url "main:map" %}" hx-trigger="every 1s" class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
+<ul id="field" hx-target="#field" hx-get="{% url "main:map" %}" hx-trigger="every 1s" class="flex-grow-1 list-group list-group-flush overflow-auto" style="min-height:35%;">
   {% if tile.description %}
     <div class="p-2 mb-1">
       {{ tile.description }}
@@ -19,7 +19,7 @@
       {% for tile in row %}
         <div class="d-flex">
           {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
-            <a href="#" hx-target="#field" hx-swap="outerHTML" hx-post="{% url 'main:walk' x=tile.x y=tile.y %}">
+            <a href="#" hx-target="#field" hx-post="{% url 'main:walk' x=tile.x y=tile.y %}">
           {% endif %}
           <div style="
             {% if tile.x < player.x|add:-1 or tile.y < player.y|add:-1 or tile.x > player.x|add:1 or tile.y > player.y|add:1 %}filter: brightness(0.8);{% endif %}

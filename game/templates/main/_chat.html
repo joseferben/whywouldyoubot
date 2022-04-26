@@ -1,4 +1,4 @@
-<form id="chat-input-fragment" hx-target="#chat-lines-fragment" hx-swap-oob="true" hx-post="{% url 'main:chat_create' %}" hx-swap="outerHTML" style="min-height:38px;max-height:4%;">
+<form id="chat-input-fragment" hx-target="#chat-lines-fragment" hx-swap-oob="true" hx-post="{% url 'main:chat_create' %}" style="min-height:38px;max-height:4%;">
   <div class="input-group">
     <input name="message" type="text" class="form-control form-control-sm" placeholder="Tell the world" aria-label="Chat input field" aria-describedby="chat-input" autofocus>
     <button class="btn btn-outline-primary" type="submit" id="chat-input">Say</button>
