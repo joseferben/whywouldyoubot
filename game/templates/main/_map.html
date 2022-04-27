@@ -19,7 +19,7 @@
       {% for tile in row %}
         <div class="d-flex">
           {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
-            <a href="#" hx-target="#field" hx-post="{% url 'main:walk' x=tile.x y=tile.y %}">
+            <a href="#" onclick="htmx.trigger('#field', 'htmx:abort')" hx-target="#field" hx-post="{% url 'main:walk' x=tile.x y=tile.y %}">
           {% endif %}
           <div style="
             {% if tile.x < player.x|add:-1 or tile.y < player.y|add:-1 or tile.x > player.x|add:1 or tile.y > player.y|add:1 %}filter: brightness(0.8);{% endif %}
