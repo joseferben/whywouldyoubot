@@ -35,6 +35,7 @@
 
       <!-- place project specific Javascript in this file -->
       {% compress js %}
+      <script defer src="{% static 'js/vendor/hyperscript.min.js' %}"></script>
       <script defer src="{% static 'js/vendor/htmx.min.js' %}"></script>
       {% django_htmx_script %}
       <script defer src="{% static 'js/project.js' %}"></script>
