@@ -165,5 +165,19 @@ LOGGING = {
     },
 }
 
+# django-allauth
+# ------------------------------------------------------------------------------
+SOCIALACCOUNT_PROVIDERS = {
+    "twitch": {
+        "VERIFIED_EMAIL": True,
+        "APP": {
+            "client_id": env.str("TWITCH_CLIENT_ID"),
+            "secret": env.str("TWITCH_SECRET_KEY"),
+            "key": env.str("TWITCH_SECRET_KEY"),
+        },
+    }
+}
+
+
 # Your stuff...
 # ------------------------------------------------------------------------------

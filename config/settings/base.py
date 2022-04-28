@@ -17,10 +17,8 @@ ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 APPS_DIR = ROOT_DIR / "game"
 env = environ.Env()
 
-READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
-if READ_DOT_ENV_FILE:
-    # OS environment variables take precedence over variables from .env
-    env.read_env(str(ROOT_DIR / ".env"))
+# OS environment variables take precedence over variables from .env
+env.read_env(str(ROOT_DIR / ".env"))
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -343,17 +341,6 @@ ACCOUNT_FORMS = {"signup": "game.users.forms.UserSignupForm"}
 SOCIALACCOUNT_ADAPTER = "game.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 SOCIALACCOUNT_FORMS = {"signup": "game.users.forms.UserSocialSignupForm"}
-
-SOCIALACCOUNT_PROVIDERS = {
-    "twitch": {
-        "VERIFIED_EMAIL": True,
-        "APP": {
-            "client_id": env.str("TWITCH_CLIENT_ID"),
-            "secret": env.str("TWITCH_SECRET_KEY"),
-            "key": env.str("TWITCH_SECRET_KEY"),
-        },
-    }
-}
 
 # django-compressor
 # ------------------------------------------------------------------------------

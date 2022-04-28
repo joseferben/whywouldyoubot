@@ -57,5 +57,20 @@ INTERNAL_IPS = ["127.0.0.1", "10.0.2.2", "localhost"]
 CELERY_TASK_ALWAYS_EAGER = True
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-eager-propagates
 CELERY_TASK_EAGER_PROPAGATES = True
+
+
+# django-allauth
+# ------------------------------------------------------------------------------
+SOCIALACCOUNT_PROVIDERS = {
+    "twitch": {
+        "VERIFIED_EMAIL": True,
+        "APP": {
+            "client_id": env.str("TWITCH_CLIENT_ID"),
+            "secret": env.str("TWITCH_SECRET_KEY"),
+            "key": env.str("TWITCH_SECRET_KEY"),
+        },
+    }
+}
+
 # Your stuff...
 # ------------------------------------------------------------------------------
