@@ -3,8 +3,6 @@ from __future__ import annotations
 from math import floor
 from typing import Dict, List, Tuple
 
-from django.db.models.query import QuerySet
-
 from game.main.map import MapTile, world_map_cache
 from game.main.models import Player
 
@@ -42,7 +40,7 @@ class MiniMap:
 
     @staticmethod
     def _player_lookup_dict(
-        players: QuerySet[Player],
+        players: List[Player],
     ) -> Dict[int, Dict[int, List[Player]]]:
         player_dict = {}
         for player in players:
@@ -69,12 +67,14 @@ class MiniMap:
         tiles: List[List[WorldTile]] = []
         x_padding = floor(width / 2)
         y_padding = floor(height / 2)
-        players: QuerySet[Player] = Player.objects.filter(
-            x__gte=x - x_padding,
-            x__lte=x + x_padding,
-            y__gte=y - y_padding,
-            y__lte=y + y_padding,
-        ).filter(logged_in=True)
+        players: List[Player] = Player.find(
+            Player.x >= x - x_padding,
+            Player.x <= x + x_padding,
+            Player.y >= y - y_padding,
+            Player.y <= y + y_padding,
+            # flake8: noqa
+            Player.logged_in == 1,
+        ).all()  # type: ignore
         players_dict = MiniMap._player_lookup_dict(players)
         for idx_x, col in enumerate(
             world_map_cache.world_map.tiles[x - x_padding : x + x_padding + 1]
@@ -92,14 +92,18 @@ class MiniMap:
 class World:
     @staticmethod
     def get(x: int, y: int) -> WorldTile:
-        players = list(Player.objects.filter(x=x, y=y))
+        players = Player.find(Player.x == x, Player.y == y).all()
+        print(world_map_cache.world_map)
         return WorldTile(map_tile=world_map_cache.world_map.get(x, y), players=players)
 
     @staticmethod
-    def get_other_player_list(player: Player) -> QuerySet[Player]:
-        return Player.objects.filter(x=player.x, y=player.y, logged_in=True).exclude(
-            pk=player.id
-        )
+    def get_other_player_list(player: Player) -> List[Player]:
+        return Player.find(
+            Player.x == player.x,
+            Player.y == player.y,
+            Player.logged_in == 1,
+            Player.pk != player.pk,
+        ).all()
 
     @staticmethod
     def get_mini_map_of_player(player: Player) -> MiniMap:

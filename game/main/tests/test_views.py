@@ -7,6 +7,7 @@ from game.main.map import Map
 from game.main.models import ChatLine, Player
 
 
+# TODO write pytest mark to flush redis between tests
 @pytest.mark.django_db
 def test_chat_create_view(client: Client, player: Player):
     client.force_login(player.user)
@@ -15,7 +16,7 @@ def test_chat_create_view(client: Client, player: Player):
     response = client.post(reverse("main:chat_create"), data={"message": chat_line_txt})
 
     assert response.status_code == 200
-    chat_line = ChatLine.objects.get()
+    chat_line: ChatLine = ChatLine.find().first()  # type: ignore
     assert chat_line_txt in chat_line.message
     assert chat_line_txt in str(response.content)
 
@@ -34,16 +35,16 @@ def test_chat(client: Client, player: Player, chat_line: ChatLine, map_small: Ma
 def test_walk(client: Client, player: Player, map_small: Map):
     player.x = 0
     player.y = 0
-    player.save()
 
     client.force_login(player.user)
 
     response = client.post(reverse("main:walk", kwargs={"x": 1, "y": 0}), follow=True)
 
     assert response.status_code == 200
-    player.refresh_from_db()
-    assert player.x == 1
-    assert player.y == 0
+
+    p: Player = Player.find(Player.pk == player.pk).first()  # type: ignore
+    assert p.x == 1
+    assert p.y == 0
 
 
 player_1 = player

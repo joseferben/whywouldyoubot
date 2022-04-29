@@ -9,7 +9,6 @@ from typing import Any, Iterable, List, Optional
 import pytmx
 from checksumdir import dirhash
 from django.conf import settings
-from django.db.models import fields
 from pytmx.pytmx import TiledMap, TiledTileLayer
 
 logger = logging.getLogger(__name__)

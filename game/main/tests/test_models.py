@@ -5,7 +5,7 @@ from game.main.models import Player
 
 
 @pytest.mark.django_db
-def test_walk(player: Player, map_small: Map):
+def test_walk_player(player: Player, map_small: Map):
     player.x = 0
     player.y = 0
 

@@ -17,3 +17,7 @@ services:
     image: redis:alpine
     ports:
       - 6379:6379
+  redis-database:
+    image: redislabs/redismod:latest
+    ports:
+      - 6380:6379

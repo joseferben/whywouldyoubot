@@ -1,62 +1,81 @@
 from __future__ import annotations
 
+import datetime
 import logging
-from pathlib import Path
+from typing import List
 
-import pytmx
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser
-from django.db import models
-from django.db.models.query import QuerySet
-from django_extensions.db.models import TimeStampedModel
+from redis_om import Field, HashModel
+from redis_om.model.migrations.migrator import Migrator
 
 from game.main.map import Map
 from game.users.models import User
 
 logger = logging.getLogger(__name__)
 
-tiled_map = pytmx.TiledMap(settings.APPS_DIR / Path("static/assets/map/map.tmx"))
 
+class ChatLine(HashModel):
+    sayer_pk: str = Field(index=True)
+    message: str
+    created_at: datetime.date = Field(index=True)
 
-class ChatLine(TimeStampedModel):
-    sayer = models.ForeignKey["Player"](
-        "main.Player", on_delete=models.CASCADE, blank=True, null=True
-    )
-    message = models.TextField()
+    @property
+    def sayer(self) -> Player:
+        return Player.get(pk=self.sayer_pk)  # type:ignore
+
+    def __str__(self) -> str:
+        return self.key()
 
 
 class CanNotWalkException(Exception):
     pass
 
 
-class Player(TimeStampedModel):
-    id: int
+class Player(HashModel):
+    user_pk: int = Field(index=True)
+    x: int = Field(index=True)
+    y: int = Field(index=True)
+    logged_in: int = Field(index=True)
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    x = models.PositiveIntegerField(default=530)
-    y = models.PositiveIntegerField(default=540)
-    avatar = models.PositiveIntegerField(default=1)
-    logged_in = models.BooleanField(default=True)
+    avatar: int
+    created_at: datetime.date
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    last_interacted_at = models.DateTimeField(auto_now=True)
-
-    @staticmethod
-    def of_user(user: AbstractBaseUser | AnonymousUser) -> Player:
-        return Player.objects.get(user=user)
+    @property
+    def user(self) -> User:
+        return User.objects.get(pk=self.user_pk)
 
     @staticmethod
-    def create(user: User) -> Player:
-        return Player.objects.create(user=user)
+    def create(
+        user: AbstractBaseUser | AnonymousUser,
+    ) -> Player:
+        player = Player(
+            user_pk=user.pk,
+            x=settings.SPAWN_LOCATION_X,
+            y=settings.SPAWN_LOCATION_Y,
+            avatar=1,
+            logged_in=True,
+            created_at=datetime.date.today(),
+        )
+        player.save()
+        return player
+
+    @staticmethod
+    def of_user(
+        user: AbstractBaseUser | AnonymousUser,
+    ) -> Player:
+        return Player.find(Player.user_pk == user.pk).first()
 
     def get_chat_list(
         self,
-    ) -> QuerySet[ChatLine]:
-        return ChatLine.objects.order_by("-created").all()[:25]
+    ) -> List[ChatLine]:
+        chat_lines = ChatLine.find().sort_by("created_at").all()[:25]
+        chat_lines.reverse()
+        return chat_lines
 
     def __str__(self) -> str:
-        return self.user.username
+        return self.key()
 
     def _is_adjacent(self, x: int, y: int) -> bool:
         return abs(x - self.x) <= 1 and abs(y - self.y) <= 1
@@ -81,3 +100,6 @@ class Player(TimeStampedModel):
     @property
     def avatar_path(self) -> str:
         return f"assets/avatars/{self.avatar}.png"
+
+
+Migrator().run()

@@ -1,10 +1,24 @@
+import datetime
+
+import factory
 import pytest
+from django.db.models.signals import post_save
+from faker import Faker
+from redis_om.model.migrations.migrator import Migrator
 
 from game.main.map import Map, MapTile, world_map_cache
 from game.main.models import ChatLine, Player
-from game.main.tests.factories import ChatLineFactory, PlayerFactory
 from game.users.models import User
 from game.users.tests.factories import UserFactory
+
+fake = Faker()
+
+
+@pytest.fixture(autouse=True)
+def run_before():
+    Player.db().flushall()
+    Migrator().run()
+    yield
 
 
 @pytest.fixture(autouse=True)
@@ -14,17 +28,23 @@ def media_storage(settings, tmpdir):
 
 @pytest.fixture
 def user() -> User:
-    return UserFactory.create()
+    with factory.django.mute_signals(post_save):
+        return UserFactory.create()
 
 
 @pytest.fixture
-def player() -> Player:
-    return PlayerFactory.create()  # type: ignore
+def player(user: User) -> Player:
+    with factory.django.mute_signals(post_save):
+        return Player.create(user=user)
 
 
 @pytest.fixture
-def chat_line() -> ChatLine:
-    return ChatLineFactory.create()
+def chat_line(player: Player) -> ChatLine:
+    chat_line = ChatLine(
+        sayer_pk=player.pk, message=fake.sentence(), created_at=datetime.date.today()
+    )
+    chat_line.save()
+    return chat_line
 
 
 @pytest.fixture

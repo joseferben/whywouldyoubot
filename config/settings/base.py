@@ -352,3 +352,5 @@ STATICFILES_FINDERS += ["compressor.finders.CompressorFinder"]
 # ------------------------------------------------------------------------------
 # Uses for caching the map locally
 CACHE_DIR = APPS_DIR / ".cache/"
+SPAWN_LOCATION_X = 555
+SPAWN_LOCATION_Y = 555

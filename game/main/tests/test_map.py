@@ -1,6 +1,7 @@
 import pytest
 
 from game.main.map import Map, world_map_cache
+from game.main.models import Player
 from game.main.world import MiniMap
 
 
@@ -18,7 +19,7 @@ def test_map_of_file():
 
 
 @pytest.mark.django_db
-def test_mini_map_small(map_small: Map):
+def test_mini_map_small(player: Player, map_small: Map):
     mini_map = MiniMap.get_by_location(0, 0, width=1, height=1)
 
     assert mini_map.tiles[0][0].x == map_small.tiles[0][0].x

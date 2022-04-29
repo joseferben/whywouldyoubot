@@ -34,3 +34,5 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+SPAWN_LOCATION_X = 0
+SPAWN_LOCATION_Y = 0

@@ -1,7 +1,7 @@
 <div id="chat-lines-fragment" class="overflow-auto" style="max-height:26%;" hx-swap-oob="true">
   <ul class="list-group">
     {% for chat in chat_lines %}
-      <li class="list-group-item">{{ chat.sayer }} ({{ chat.created }}): {{ chat.message }}</li>
+      <li class="list-group-item">{{ chat.sayer.user.username }} ({{ chat.created_at }}): {{ chat.message }}</li>
     {% empty %}
       <li class="list-group-item">Nothing was ever said.</li>
     {% endfor %}
