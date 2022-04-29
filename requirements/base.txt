@@ -9,6 +9,7 @@ redis==4.2.2  # https://github.com/redis/redis-py
 hiredis==2.0.0  # https://github.com/redis/hiredis-py
 celery==5.2.6  # pyup: < 6.0  # https://github.com/celery/celery
 pytmx==3.31
+checksumdir==1.2.0 # https://github.com/cakepietoast/checksumdir
 
 # Django
 # ------------------------------------------------------------------------------

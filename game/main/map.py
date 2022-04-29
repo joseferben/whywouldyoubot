@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 import logging
+import os
+import pickle
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, List, Optional
 
 import pytmx
+from checksumdir import dirhash
 from django.conf import settings
+from django.db.models import fields
 from pytmx.pytmx import TiledMap, TiledTileLayer
 
 logger = logging.getLogger(__name__)
 
 OBSTACLE_LAYER_NAME = "obstacle"
-
-tiled_map = pytmx.TiledMap(settings.APPS_DIR / Path("static/assets/map/map.tmx"))
 
 
 class TileDoesNotExistError(BaseException):
@@ -53,7 +55,10 @@ class Map:
 
     @staticmethod
     def process_tile(
-        tile: Any, layer: TiledTileLayer, tiles: List[List[Optional[MapTile]]]
+        tiled_map: TiledMap,
+        tile: Any,
+        layer: TiledTileLayer,
+        tiles: List[List[Optional[MapTile]]],
     ) -> None:
         (x, y, image) = tile
         image_path = PurePosixPath(image[0])
@@ -77,7 +82,7 @@ class Map:
             tiles[x][y].obstacle = False  # type:ignore
 
     @staticmethod
-    def of_file(tiled_map: TiledMap) -> Map:
+    def of_file(tiled_map: TiledMap, file_hash: Optional[str] = None) -> Map:
         tiles: List[List[Optional[MapTile]]] = [
             [None] * tiled_map.height for i in range(tiled_map.width)
         ]
@@ -86,21 +91,25 @@ class Map:
             # Object layers don't have tiles
             if type(layer) == TiledTileLayer:
                 for tile in layer.tiles():
-                    Map.process_tile(tile, layer, tiles)
-        return Map(tiles=tiles)  # type: ignore
+                    Map.process_tile(tiled_map, tile, layer, tiles)
+        return Map(file_hash=file_hash, tiles=tiles)  # type: ignore
 
     def __init__(
-        self, tiles: List[List[MapTile]] = [], tiled_map: Optional[TiledMap] = None
+        self,
+        file_hash: Optional[str] = None,
+        tiles: List[List[MapTile]] = [],
+        tiled_map: Optional[TiledMap] = None,
     ) -> None:
         if tiled_map is None and len(tiles) == 0:
             raise Exception(
                 "Provide either a list of tiles or a Tiled file to create a WorldMap"
             )
         if tiled_map is not None:
-            world_map = Map.of_file(tiled_map)
+            world_map = Map.of_file(tiled_map, file_hash=file_hash)
             self.tiles = world_map.tiles
         else:
             self.tiles = tiles
+        self.file_hash = file_hash
 
     def get(self, x: int, y: int) -> MapTile:
         try:
@@ -109,9 +118,38 @@ class Map:
             raise TileDoesNotExistError()
 
 
+MAP_DIR = settings.APPS_DIR / Path("static/assets/map")
+MAP_CACHE_FILE = settings.CACHE_DIR / "map"
+
+
 class MapCache:
-    def __init__(self, world_map: Map) -> None:
-        self.world_map = world_map
+    def __init__(self) -> None:
+        Path(settings.CACHE_DIR).mkdir(parents=True, exist_ok=True)
+        actual_hash = dirhash(MAP_DIR, "md5")
+        if not os.path.exists(MAP_CACHE_FILE):
+            open(MAP_CACHE_FILE, "a").close()
+        with open(MAP_CACHE_FILE, "rb") as map_cache_file_read:
+            cached_world_map: Optional[Map] = None
+            try:
+                cached_world_map = pickle.load(map_cache_file_read)
+            except EOFError:
+                cached_world_map = Map(file_hash="", tiles=[[]])
+            assert cached_world_map is not None
+            if actual_hash == cached_world_map.file_hash:
+                print(f"found cached map with hash {actual_hash}")
+                self.world_map = cached_world_map
+            else:
+                print(
+                    f"cached map hash {cached_world_map.file_hash} is different from"
+                    f" actual hash {actual_hash}"
+                )
+                world_map = Map(
+                    file_hash=actual_hash,
+                    tiled_map=pytmx.TiledMap(MAP_DIR / "map.tmx"),
+                )
+                with open(MAP_CACHE_FILE, "wb") as map_cache_file_write:
+                    pickle.dump(world_map, map_cache_file_write)
+                self.world_map = world_map
 
 
-world_map_cache = MapCache(Map(tiled_map=tiled_map))
+world_map_cache = MapCache()

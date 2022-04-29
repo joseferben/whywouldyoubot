@@ -350,3 +350,5 @@ STATICFILES_FINDERS += ["compressor.finders.CompressorFinder"]
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+# Uses for caching the map locally
+CACHE_DIR = APPS_DIR / ".cache/"
