@@ -85,9 +85,7 @@ class MapWalkView(MapMixin, ChatMixin, View):
                 y=y,
                 world_map=world_map_cache.world_map,
             )
-            print(player.key())
             player.save()
-            print(player.key())
         except CanNotWalkException:
             logging.warn(f"player {player} could not walk to {x}/{y}")
 

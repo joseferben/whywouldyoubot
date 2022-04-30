@@ -93,7 +93,6 @@ class World:
     @staticmethod
     def get(x: int, y: int) -> WorldTile:
         players = Player.find(Player.x == x, Player.y == y).all()
-        print(world_map_cache.world_map)
         return WorldTile(map_tile=world_map_cache.world_map.get(x, y), players=players)
 
     @staticmethod
