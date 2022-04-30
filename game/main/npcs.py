@@ -51,7 +51,7 @@ class BearNpcKind(NpcKind):
 class CrabNpcKind(NpcKind):
     attack = (1, 3)
     strength = (2, 3)
-    defense = (4, 7)
+    defense = (4, 5)
 
 
 class CowNpcKind(NpcKind):
@@ -60,7 +60,7 @@ class CowNpcKind(NpcKind):
     defense = (1, 3)
 
 
-class WizardNpcKind(NpcKind):
+class MageEvilNpcKind(NpcKind):
     attack = (2, 4)
     strength = (4, 7)
     defense = (1, 2)
@@ -79,7 +79,7 @@ for name, class_obj in inspect.getmembers(sys.modules[module]):
                 registry[name] = obj
 
 
-def get_by_name(name: str) -> NpcKind:
+def get_kind_by_name(name: str) -> NpcKind:
     try:
         return registry[name]
     except KeyError:

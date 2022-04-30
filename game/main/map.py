@@ -11,7 +11,7 @@ from checksumdir import dirhash
 from django.conf import settings
 from pytmx.pytmx import TiledMap, TiledTileLayer
 
-from game.main.npcs import NpcKind, get_by_name
+from game.main.npcs import NpcKind, get_kind_by_name
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class NpcSpawner:
         bbox: Tuple[int, int, int, int],
         amount_max: int = DEFAULT_AMOUNT_MAX,
     ) -> None:
-        self.npc_kind: NpcKind = get_by_name(name)
+        self.npc_kind: NpcKind = get_kind_by_name(name)
         self.bbox = bbox
         self.amount_max = amount_max or NpcSpawner.DEFAULT_AMOUNT_MAX
 
@@ -46,10 +46,10 @@ class MapTile:
         self,
         x: int,
         y: int,
+        obstacle: bool = False,
         gid: int = 0,
         description: Optional[str] = None,
         image_paths: List[str] = [],
-        obstacle: bool = True,
     ) -> None:
         self.x = x
         self.y = y
@@ -59,7 +59,7 @@ class MapTile:
         self.description = description
 
     def __repr__(self) -> str:
-        return f'{self.x}/{self.y} {"w" if self.obstacle else "nw"}'
+        return f'{self.x}/{self.y} {"o" if self.obstacle else "no"}'
 
 
 class Map:
@@ -99,7 +99,7 @@ class Map:
 
         # Process obstacle layer
         if layer.name == OBSTACLE_LAYER_NAME:
-            tiles[x][y].obstacle = False  # type:ignore
+            tiles[x][y].obstacle = True  # type:ignore
 
     @staticmethod
     def _of_file(tiled_map: TiledMap) -> Tuple[List[List[MapTile]], List[NpcSpawner]]:

@@ -53,7 +53,7 @@ def map_small() -> Map:
         tiles=[
             [
                 MapTile(x=0, y=0),
-                MapTile(obstacle=False, x=0, y=1),
+                MapTile(obstacle=True, x=0, y=1),
             ],
             [MapTile(x=1, y=0), MapTile(x=1, y=1)],
         ]
@@ -70,12 +70,12 @@ def map_medium() -> Map:
                 MapTile(x=0, y=0),
                 MapTile(x=1, y=0),
                 MapTile(x=2, y=0),
-                MapTile(x=3, y=0, obstacle=False),
+                MapTile(x=3, y=0, obstacle=True),
                 MapTile(x=4, y=0),
             ],
             [
                 MapTile(x=0, y=1),
-                MapTile(x=1, y=1, obstacle=False),
+                MapTile(x=1, y=1, obstacle=True),
                 MapTile(x=2, y=1),
                 MapTile(x=3, y=1),
                 MapTile(x=4, y=1),
@@ -84,12 +84,12 @@ def map_medium() -> Map:
                 MapTile(x=0, y=2),
                 MapTile(x=1, y=2),
                 MapTile(x=2, y=2),
-                MapTile(x=3, y=2, obstacle=False),
+                MapTile(x=3, y=2, obstacle=True),
                 MapTile(x=4, y=2),
             ],
             [
                 MapTile(x=0, y=3),
-                MapTile(x=1, y=3, obstacle=False),
+                MapTile(x=1, y=3, obstacle=True),
                 MapTile(x=2, y=3),
                 MapTile(x=3, y=3),
                 MapTile(x=4, y=3),

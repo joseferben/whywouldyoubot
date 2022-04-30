@@ -4,5 +4,14 @@ from game.main.world import World
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--despawn",
+            help="Despawns all NPCs",
+        )
+
     def handle(self, *args, **options):
-        World.npcs_spawn()
+        if options["despawn"]:
+            World.npcs_despawn()
+        else:
+            World.npcs_spawn()

@@ -28,6 +28,10 @@ class WorldTile(MapTile):
         # TODO consider fetching players lazily using @property
         self.players = players
 
+    @property
+    def npcs(self) -> List[Npc]:
+        return Npc.find(Npc.x == self.x, Npc.y == self.y).all()
+
 
 class MiniMap:
     def __init__(self, tiles: List[List[WorldTile]]) -> None:
@@ -98,8 +102,8 @@ class WorldNpcSpawner:
         result: List[WorldTile] = []
         for col in static_map_cache.static_map.tiles[x : x + width]:
             for tile in col[y : y + height]:
-                # TODO consider passing players here
-                result.append(WorldTile(map_tile=tile, players=[]))
+                if not tile.obstacle:
+                    result.append(WorldTile(map_tile=tile, players=[]))
         return result
 
     @property
@@ -108,7 +112,7 @@ class WorldNpcSpawner:
         (x, y, width, height) = self.npc_spawner.bbox
         return len(
             Npc.find(
-                Npc.kind == self.npc_spawner.npc_kind.name,
+                Npc.kind_name == self.npc_spawner.npc_kind.name,
                 Npc.x >= x,
                 Npc.x <= x + width,
                 Npc.y >= y,
@@ -125,7 +129,7 @@ class WorldNpcSpawner:
         return self.npc_spawner.npc_kind.name
 
     def spawn(self, tile: WorldTile) -> None:
-        npc = Npc(kind=self.npc_spawner.npc_kind.name, x=tile.x, y=tile.y)
+        npc = Npc.create(kind_name=self.npc_spawner.npc_kind.name, x=tile.x, y=tile.y)
         print(f"spawned {npc}")
         npc.save()
 
@@ -161,9 +165,13 @@ class World:
     @staticmethod
     def npcs_spawn():
         for npc_spawner in World.npc_spawners():
-            assert npc_spawner.amount_actual is not None
-            assert npc_spawner.amount_max is not None
             if npc_spawner.amount_actual < npc_spawner.amount_max:
                 for tile in npc_spawner.tiles:
-                    if random() >= 0.95:
+                    if random() >= (
+                        1 - npc_spawner.amount_max / len(npc_spawner.tiles)
+                    ):
                         npc_spawner.spawn(tile)
+
+    @staticmethod
+    def npcs_despawn():
+        Npc.find().delete()

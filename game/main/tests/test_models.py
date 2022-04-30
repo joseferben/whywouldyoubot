@@ -15,6 +15,7 @@ def test_walk_player(player: Player, map_small: Map):
         player.walk(0, 0, map_small)
 
     # obstacle
+    assert map_small.get(0, 1).obstacle
     assert player.can_walk(0, 1, map_small) is False
     with pytest.raises(Exception):
         player.walk(0, 1, map_small)

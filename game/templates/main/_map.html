@@ -10,6 +10,9 @@
   {% for player in other_players %}
     <li class="list-group-item"><a href="#">{{ player.user.username }}</a> ({{ player.level}})</li>
   {% endfor %}
+  {% for npc in tile.npcs %}
+    <li class="list-group-item"><a href="#">{{ npc.kind_name }}</a> ({{ npc.level }})</li>
+  {% endfor %}
 </ul>
 
 <!-- Mini map -->
@@ -18,7 +21,7 @@
     <div style="margin-bottom:-6px;" class="d-flex">
       {% for tile in row %}
         <div class="d-flex">
-          {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
+          {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and not tile.obstacle %}
             <a href="#" onclick="htmx.trigger('#field', 'htmx:abort')" hx-target="#field" hx-post="{% url 'main:walk' x=tile.x y=tile.y %}">
           {% endif %}
           <div style="
@@ -28,6 +31,10 @@
             <!-- Players -->
             {% for player in tile.players %}
               <img style="z-index:100;" class="position-absolute img-fluid crispy" width="128" height="128" src="{% static player.avatar_path %}" alt="The player's avatar"></img>
+            {% endfor %}
+            <!-- NPCs -->
+            {% for npc in tile.npcs %}
+              <img style="z-index:75;" class="position-absolute img-fluid crispy" width="128" height="128" src="{% static npc.avatar_path %}" alt="A {{ npc.kind_name }}"></img>
             {% endfor %}
             <!-- Map tiles -->
             {% for image_path in tile.image_paths reversed %}
@@ -40,7 +47,7 @@
               {% endif %}
             {% endfor %}
           </div>
-          {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and tile.obstacle %}
+          {% if tile.x >= player.x|add:-1 and tile.y >= player.y|add:-1 and tile.x <= player.x|add:1 and tile.y <= player.y|add:1 and not tile.obstacle %}
             </a>
           {% endif %}
         </div>
