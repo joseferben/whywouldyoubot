@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.views.generic.base import ContextMixin, TemplateView, View
 from django.views.generic.edit import FormMixin
 
-from game.main.map import world_map_cache
+from game.main.map import static_map_cache
 from game.main.world import MiniMap, World
 
 from .chat import Chat
@@ -83,7 +83,7 @@ class MapWalkView(MapMixin, ChatMixin, View):
             player.walk(
                 x=x,
                 y=y,
-                world_map=world_map_cache.world_map,
+                world_map=static_map_cache.static_map,
             )
             player.save()
         except CanNotWalkException:

@@ -11,6 +11,8 @@ celery==5.2.6  # pyup: < 6.0  # https://github.com/celery/celery
 pytmx==3.31
 checksumdir==1.2.0 # https://github.com/cakepietoast/checksumdir
 redis-om==0.0.26 # https://github.com/redis/redis-om-python
+inflection==0.5.1 # https://github.com/jpvanhal/inflection
+
 
 # Django
 # ------------------------------------------------------------------------------

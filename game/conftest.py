@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from faker import Faker
 from redis_om.model.migrations.migrator import Migrator
 
-from game.main.map import Map, MapTile, world_map_cache
+from game.main.map import Map, MapTile, static_map_cache
 from game.main.models import ChatLine, Player
 from game.users.models import User
 from game.users.tests.factories import UserFactory
@@ -58,7 +58,7 @@ def map_small() -> Map:
             [MapTile(x=1, y=0), MapTile(x=1, y=1)],
         ]
     )
-    world_map_cache.world_map = world_map
+    static_map_cache.static_map = world_map
     return world_map
 
 
@@ -103,5 +103,5 @@ def map_medium() -> Map:
             ],
         ]
     )
-    world_map_cache.world_map = world_map
+    static_map_cache.static_map = world_map
     return world_map

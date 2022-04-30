@@ -33,6 +33,12 @@ class CanNotWalkException(Exception):
     pass
 
 
+class Npc(HashModel):
+    kind: str = Field(index=True)
+    x: int = Field(index=True)
+    y: int = Field(index=True)
+
+
 class Player(HashModel):
     user_pk: int = Field(index=True)
     x: int = Field(index=True)

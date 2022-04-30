@@ -1,13 +1,13 @@
 import pytest
 
-from game.main.map import Map, world_map_cache
+from game.main.map import Map, static_map_cache
 from game.main.models import Player
 from game.main.world import MiniMap
 
 
 @pytest.mark.django_db
 def test_map_of_file():
-    world_map = world_map_cache.world_map
+    world_map = static_map_cache.static_map
 
     assert world_map.tiles[0][0] is None
 

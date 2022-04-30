@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 from math import floor
-from typing import Dict, List, Tuple
+from random import random
+from typing import Dict, Iterable, List, Tuple
 
-from game.main.map import MapTile, world_map_cache
-from game.main.models import Player
+from game.main.map import Map, MapTile, NpcSpawner, static_map_cache
+from game.main.models import Npc, Player
 
 MINI_MAP_HEIGHT = 5
 MINI_MAP_WIDTH = 9
-
-
-class TileThing:
-    pass
 
 
 class WorldTile(MapTile):
@@ -28,6 +25,7 @@ class WorldTile(MapTile):
             *args,
             **kwargs,
         )
+        # TODO consider fetching players lazily using @property
         self.players = players
 
 
@@ -77,7 +75,7 @@ class MiniMap:
         ).all()  # type: ignore
         players_dict = MiniMap._player_lookup_dict(players)
         for idx_x, col in enumerate(
-            world_map_cache.world_map.tiles[x - x_padding : x + x_padding + 1]
+            static_map_cache.static_map.tiles[x - x_padding : x + x_padding + 1]
         ):
             tiles.append([])
             for tile in col[y - y_padding : y + y_padding + 1]:
@@ -89,11 +87,63 @@ class MiniMap:
         return MiniMap(tiles=tiles)
 
 
+class WorldNpcSpawner:
+    def __init__(self, npc_spawner: NpcSpawner) -> None:
+        self.npc_spawner = npc_spawner
+
+    @property
+    def tiles(self) -> List[WorldTile]:
+        """Return the tiles within the spawner"""
+        (x, y, width, height) = self.npc_spawner.bbox
+        result: List[WorldTile] = []
+        for col in static_map_cache.static_map.tiles[x : x + width]:
+            for tile in col[y : y + height]:
+                # TODO consider passing players here
+                result.append(WorldTile(map_tile=tile, players=[]))
+        return result
+
+    @property
+    def amount_actual(self) -> int:
+        """Return the amount of NPCs of that kind within the spawner"""
+        (x, y, width, height) = self.npc_spawner.bbox
+        return len(
+            Npc.find(
+                Npc.kind == self.npc_spawner.npc_kind.name,
+                Npc.x >= x,
+                Npc.x <= x + width,
+                Npc.y >= y,
+                Npc.y <= y + height,
+            ).all()
+        )
+
+    @property
+    def amount_max(self) -> int:
+        return self.npc_spawner.amount_max
+
+    @property
+    def name(self) -> str:
+        return self.npc_spawner.npc_kind.name
+
+    def spawn(self, tile: WorldTile) -> None:
+        npc = Npc(kind=self.npc_spawner.npc_kind.name, x=tile.x, y=tile.y)
+        print(f"spawned {npc}")
+        npc.save()
+
+
 class World:
+    @staticmethod
+    def npc_spawners() -> Iterable[WorldNpcSpawner]:
+        return map(
+            lambda npc_spawner: WorldNpcSpawner(npc_spawner=npc_spawner),
+            static_map_cache.static_map.npc_spawners,
+        )
+
     @staticmethod
     def get(x: int, y: int) -> WorldTile:
         players = Player.find(Player.x == x, Player.y == y).all()
-        return WorldTile(map_tile=world_map_cache.world_map.get(x, y), players=players)
+        return WorldTile(
+            map_tile=static_map_cache.static_map.get(x, y), players=players
+        )
 
     @staticmethod
     def get_other_player_list(player: Player) -> List[Player]:
@@ -107,3 +157,13 @@ class World:
     @staticmethod
     def get_mini_map_of_player(player: Player) -> MiniMap:
         return MiniMap.get_by_location(player.x, player.y)
+
+    @staticmethod
+    def npcs_spawn():
+        for npc_spawner in World.npc_spawners():
+            assert npc_spawner.amount_actual is not None
+            assert npc_spawner.amount_max is not None
+            if npc_spawner.amount_actual < npc_spawner.amount_max:
+                for tile in npc_spawner.tiles:
+                    if random() >= 0.95:
+                        npc_spawner.spawn(tile)
