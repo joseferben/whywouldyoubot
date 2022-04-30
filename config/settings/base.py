@@ -351,6 +351,7 @@ STATICFILES_FINDERS += ["compressor.finders.CompressorFinder"]
 # Your stuff...
 # ------------------------------------------------------------------------------
 # Uses for caching the map locally
-CACHE_DIR = APPS_DIR / ".cache/"
-SPAWN_LOCATION_X = 555
-SPAWN_LOCATION_Y = 555
+GAME_CACHE_DIR = APPS_DIR / ".cache/"
+GAME_CACHE_BYPASS = env.bool("GAME_CACHE_BYPASS", default=False)
+GAME_SPAWN_LOCATION_X = 555
+GAME_SPAWN_LOCATION_Y = 555

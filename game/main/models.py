@@ -52,8 +52,8 @@ class Player(HashModel):
     ) -> Player:
         player = Player(
             user_pk=user.pk,
-            x=settings.SPAWN_LOCATION_X,
-            y=settings.SPAWN_LOCATION_Y,
+            x=settings.GAME_SPAWN_LOCATION_X,
+            y=settings.GAME_SPAWN_LOCATION_Y,
             avatar=1,
             logged_in=True,
             created_at=datetime.date.today(),

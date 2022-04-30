@@ -4,7 +4,7 @@ import logging
 import os
 import pickle
 from pathlib import Path, PurePosixPath
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional, Tuple
 
 import pytmx
 from checksumdir import dirhash
@@ -14,10 +14,17 @@ from pytmx.pytmx import TiledMap, TiledTileLayer
 logger = logging.getLogger(__name__)
 
 OBSTACLE_LAYER_NAME = "obstacle"
+NPC_SPAWN_LAYER_NAME = "npc_spawn"
 
 
 class TileDoesNotExistError(BaseException):
     pass
+
+
+class NpcSpawner:
+    def __init__(self, name: str, bbox: Tuple[int, int, int, int]) -> None:
+        self.name = name
+        self.bbox = bbox
 
 
 class MapTile:
@@ -85,19 +92,33 @@ class Map:
         tiles: List[List[Optional[MapTile]]] = [
             [None] * tiled_map.height for i in range(tiled_map.width)
         ]
+        spawners: List[NpcSpawner] = []
 
         for layer in tiled_map.layers:
-            # Object layers don't have tiles
             if type(layer) == TiledTileLayer:
+                # Process tiled layer
                 for tile in layer.tiles():
                     Map.process_tile(tiled_map, tile, layer, tiles)
-        return Map(file_hash=file_hash, tiles=tiles)  # type: ignore
+            else:
+                # Process object layers
+                for obj in layer:
+                    # Process npc spawn layer
+                    if layer.name == NPC_SPAWN_LAYER_NAME:
+                        bbox = (
+                            int(obj.x / 16),
+                            int(obj.y / 16),
+                            int(obj.width / 16),
+                            int(obj.height / 16),
+                        )
+                        spawners.append(NpcSpawner(name=obj.name, bbox=bbox))
+        return Map(file_hash=file_hash, tiles=tiles, spawners=spawners)  # type: ignore
 
     def __init__(
         self,
         file_hash: Optional[str] = None,
         tiles: List[List[MapTile]] = [],
         tiled_map: Optional[TiledMap] = None,
+        spawners: List[NpcSpawner] = [],
     ) -> None:
         if tiled_map is None and len(tiles) == 0:
             raise Exception(
@@ -109,6 +130,7 @@ class Map:
         else:
             self.tiles = tiles
         self.file_hash = file_hash
+        self.spawners = spawners
 
     def get(self, x: int, y: int) -> MapTile:
         try:
@@ -118,12 +140,12 @@ class Map:
 
 
 MAP_DIR = settings.APPS_DIR / Path("static/assets/map")
-MAP_CACHE_FILE = settings.CACHE_DIR / "map"
+MAP_CACHE_FILE = settings.GAME_CACHE_DIR / "map"
 
 
 class MapCache:
     def __init__(self) -> None:
-        Path(settings.CACHE_DIR).mkdir(parents=True, exist_ok=True)
+        Path(settings.GAME_CACHE_DIR).mkdir(parents=True, exist_ok=True)
         actual_hash = dirhash(MAP_DIR, "md5")
         if not os.path.exists(MAP_CACHE_FILE):
             open(MAP_CACHE_FILE, "a").close()
@@ -134,7 +156,10 @@ class MapCache:
             except EOFError:
                 cached_world_map = Map(file_hash="", tiles=[[]])
             assert cached_world_map is not None
-            if actual_hash == cached_world_map.file_hash:
+            if (
+                not settings.GAME_CACHE_BYPASS
+                and actual_hash == cached_world_map.file_hash
+            ):
                 print(f"found cached map with hash {actual_hash}")
                 self.world_map = cached_world_map
             else:
