@@ -1,0 +1,4 @@
+(executable
+ (public_name game)
+ (name run)
+ (libraries game))

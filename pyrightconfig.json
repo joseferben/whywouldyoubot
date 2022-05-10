@@ -1,5 +1,0 @@
-{
-  "include": ["game"],
-  "exclude": ["**/node_modules", "**/__pycache__", "**/migrations", "**/.venv"],
-  "venv": ".venv"
-}

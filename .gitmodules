@@ -1,0 +1,3 @@
+[submodule "lib/vendor/dream"]
+	path = lib/vendor/dream
+	url = git@github.com:joseferben/dream.git
