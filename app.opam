@@ -12,6 +12,13 @@ bug-reports: "https://github.com/username/reponame/issues"
 depends: [
   "ocaml"
   "dune" {>= "2.8"}
+  "dream"
+  "tyxml"
+  "tyxml-jsx"
+  "containers"
+  "lwt_ppx"
+  "reason"
+  "caqti-driver-postgresql"
   "odoc" {with-doc}
 ]
 build: [

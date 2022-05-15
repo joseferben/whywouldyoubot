@@ -1,2 +1,2 @@
 (test
- (name main))
+ (name app))

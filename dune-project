@@ -19,8 +19,15 @@
  (name app)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune)
+ (depends
+  ocaml
+  dune
+  dream
+  tyxml
+  tyxml-jsx
+  containers
+  lwt_ppx
+  reason
+  caqti-driver-postgresql)
  (tags
   (topics "to describe" your project)))
-
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
