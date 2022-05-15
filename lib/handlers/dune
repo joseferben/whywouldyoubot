@@ -1,0 +1,3 @@
+(library
+ (name handlers)
+ (libraries sihl templates models forms))

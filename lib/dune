@@ -1,4 +1,3 @@
 (library
- (name game)
- (libraries dream lwt caqti-driver-postgresql)
- (preprocess (pps lwt_ppx)))
+ (name app)
+ (libraries sihl dream settings handlers))

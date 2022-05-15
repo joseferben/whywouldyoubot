@@ -1,0 +1,4 @@
+(library
+ (name templates)
+ (libraries tyxml models)
+ (preprocess (pps tyxml-jsx)))

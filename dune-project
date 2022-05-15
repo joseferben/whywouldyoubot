@@ -1,8 +1,26 @@
 (lang dune 2.8)
-(name game)
+
+(name app)
+
 (generate_opam_files true)
 
+(source
+ (github username/reponame))
+
+(authors "Author Name")
+
+(maintainers "Maintainer Name")
+
+(license LICENSE)
+
+(documentation https://url/to/documentation)
+
 (package
- (name game)
- (depends
-  (dream (>= 1.0.0~alpha4))))
+ (name app)
+ (synopsis "A short synopsis")
+ (description "A longer description")
+ (depends ocaml dune)
+ (tags
+  (topics "to describe" your project)))
+
+; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project

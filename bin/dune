@@ -1,4 +1,4 @@
 (executable
- (public_name game)
- (name run)
- (libraries game))
+ (public_name app)
+ (name main)
+ (libraries app))

@@ -1,0 +1,3 @@
+(library
+ (name forms)
+ (libraries sihl))
