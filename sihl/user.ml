@@ -1,27 +1,45 @@
 type t = Types.user
 
-let migrations =
-  Migration.
-    [ ( (fun migration ->
-          migration
-          |> (table "users"
-             |> increments "id"
-             |> string ~nullable:false "short_name"
-             |> string ~nullable:false "full_name"
-             |> string ~unique:true "email"
-             |> raw_column "foo VARCHAR(255)"
-             |> integer "role"
-             |> timestamps ()
-             |> table_create)
-          |> (table "customers"
-             |> increments "id"
-             |> fk ~on_delete:Cascade ~references:"users.id" "user_id"
-             |> table_alter)
-          |> table_drop "users"
-          |> raw "SELECT * FROM ..."
-          |> run (fun () -> Lwt.return ()))
-      , fun migration -> migration )
-    ]
+let postgresql_migrations_up =
+  [ {sql|CREATE TABLE IF NOT EXISTS user_users (
+  id          SERIAL UNIQUE,
+  email       VARCHAR(255) NOT NULL,
+  short_name  VARCHAR(255) NOT NULL,
+  long_name   VARCHAR(255) NOT NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)|sql}
+  ; {sql|CREATE TRIGGER OR REPLACE update_users_updated_at
+BEFORE UPDATE ON customer
+FOR EACH ROW EXECUTE PROCEDURE
+update_updated_at_column()|sql}
+  ]
+;;
+
+let postgresql_migrations_down =
+  [ "DROP TABLE IF EXISTS user_users"
+  ; "DROP TRIGGER IF EXISTS update_users_updated_at"
+  ]
+;;
+
+let mariadb_migrations_up =
+  [ {sql|CREATE TABLE IF NOT EXISTS user_users (
+  id          BIGINT UNSIGNED NOT NULL AUTOINCREMENT,
+  email       VARCHAR(255) NOT NULL,
+  short_name  VARCHAR(255) NOT NULL,
+  long_name   VARCHAR(255) NOT NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)|sql}
+  ]
+;;
+
+let mariadb_migrations_down = [ "DROP TABLE IF EXISTS user_users;" ]
+
+let migrations = function
+  | Model.Postgresql -> postgresql_migrations_up, postgresql_migrations_down
+  | Model.Mariadb -> mariadb_migrations_up, mariadb_migrations_down
+  | Model.Sqlite -> failwith "sqlite is not supported yet"
 ;;
 
 module Handler = struct

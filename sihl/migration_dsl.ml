@@ -45,17 +45,13 @@ type migration =
 
 let migration_empty = { alter = []; create = []; drop = []; raw = []; fns = [] }
 
-type database =
-  | PostgreSql
-  | MariaDb
-  | Sqlite
-
 let table_column database = function
   | { name; unique; type_ = Increments _; _ } ->
     (match database with
-    | PostgreSql ->
+    | Model.Postgresql ->
       Printf.sprintf "%s SERIAL %s" name (if unique then "UNIQUE" else "")
-    | MariaDb -> Printf.sprintf "%s BIGINT UNSIGNED NOT NULL AUTOINCREMENT" name
+    | Model.Mariadb ->
+      Printf.sprintf "%s BIGINT UNSIGNED NOT NULL AUTOINCREMENT" name
     | Sqlite -> failwith "todo")
   | { name; type_ = Integer { default }; _ } ->
     default
@@ -87,8 +83,8 @@ let table_column database = function
 
 let unique_column database unique name =
   match unique, database with
-  | true, PostgreSql -> [ Printf.sprintf "UNIQUE(%s)" name ]
-  | true, MariaDb -> [ Printf.sprintf "UNIQUE KEY(%s)" name ]
+  | true, Model.Postgresql -> [ Printf.sprintf "UNIQUE(%s)" name ]
+  | true, Model.Mariadb -> [ Printf.sprintf "UNIQUE KEY(%s)" name ]
   | true, Sqlite -> failwith "todo"
   | false, _ -> []
 ;;
@@ -117,14 +113,15 @@ let create_table_columns_sql columns database =
 
 let create_table_to_sql database (table : table) =
   match database with
-  | PostgreSql ->
+  | Model.Postgresql ->
     [ Printf.sprintf
         "CREATE TABLE %s IF NOT EXISTS (%s)"
         table.name
         (create_table_columns_sql table.columns database)
     ]
-  | MariaDb -> []
-  | Sqlite -> failwith "migrations for Sqlite are not supported at the moment"
+  | Model.Mariadb -> []
+  | Model.Sqlite ->
+    failwith "migrations for Sqlite are not supported at the moment"
 ;;
 
 let alter_table_to_sql _ = failwith "todo"
