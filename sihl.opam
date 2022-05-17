@@ -11,8 +11,11 @@ depends: [
   "dune" {>= "2.8"}
   "dream"
   "containers"
+  "omigrate"
+  "minicli"
   "lwt_ppx"
   "reason"
+  "dune-build-info"
   "caqti-driver-postgresql"
   "odoc" {with-doc}
 ]

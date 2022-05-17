@@ -4,11 +4,12 @@ let routes =
   [ Dream.get "/" Handlers.home
   ; Dream.scope "/users" [] Sihl.User.routes
   ; Dream.scope
-      "/game"
+      "/orders"
       [ Sihl.User.authentication_required ]
-      [ (*   Dream.get "/" Handlers.order_list *)
-        (* ; Dream.get "/:id" Handlers.order_detail *)
-        (* ; Dream.get "/create" Handlers.order_create *) ]
+      [ Dream.get "/" Handlers.order_list
+      ; Dream.get "/:id" Handlers.order_detail
+      ; Dream.get "/create" Handlers.order_create
+      ]
   ]
 ;;
 

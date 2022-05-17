@@ -1,6 +1,6 @@
 (lang dune 2.8)
 
-(name app)
+(name sihl)
 
 (generate_opam_files true)
 
@@ -22,19 +22,9 @@
   dune
   dream
   containers
+  omigrate
+  minicli
   lwt_ppx
   reason
+  dune-build-info
   caqti-driver-postgresql))
-
-(package
- (name app)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends
-  ocaml
-  dune
-  tyxml
-  tyxml-jsx
-  sihl)
- (tags
-  (topics "to describe" your project)))
