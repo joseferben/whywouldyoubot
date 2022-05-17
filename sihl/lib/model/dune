@@ -1,0 +1,3 @@
+(library
+ (name model)
+ (public_name sihl.model))

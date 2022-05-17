@@ -5,3 +5,4 @@ module Form = Form
 module User = User
 module Migration = Migration
 module Handler = Handler
+module Command = Command

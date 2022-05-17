@@ -1,0 +1,4 @@
+(library
+ (name command)
+ (public_name sihl.command)
+ (libraries cmdliner migration))

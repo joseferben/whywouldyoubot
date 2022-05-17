@@ -1,4 +1,5 @@
 (executable
  (public_name app)
+ (package app)
  (name main)
  (libraries app))

@@ -1,4 +1,0 @@
-(library
-  (name sihl)
-  (libraries dream ptime caqti caqti-driver-postgresql containers tyxml)
-  (preprocess (pps lwt_ppx)))

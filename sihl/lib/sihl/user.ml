@@ -6,7 +6,7 @@ let postgresql_migrations_up =
   email       VARCHAR(255) NOT NULL,
   short_name  VARCHAR(255) NOT NULL,
   long_name   VARCHAR(255) NOT NULL,
-  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )|sql}
   ; {sql|CREATE TRIGGER OR REPLACE update_users_updated_at
