@@ -101,16 +101,16 @@ Initial [CREATE TABLE] migrations are created automatically for the configured d
 The query API is powerful but not almighty. Use it for 95% and drop down to raw SQL for the other 5%. If you manage to avoid circular dependencies in your models, it is reasonably type-safe. Otherwise it falls back to stringly typed queries.
 
 {[
-open Customer.Db
-open Sihl.Db
+open Customer
+open Sihl.Model
 
 let%lwt customer : Customer.t =
   Customer.t
   |> where [ User.t ] User.field_email @@ eq @@ string "hello@example.org"
   |> or_
        [ where_tier_in [ Business; Premium ]
-       ; where ~join:[ User.t ] User.field_fullname @@ contains @@ string "Rivia")
-       ; where ~join:[ table "orders" ] field "dispatched_at" @@ is_null
+       ; where ~join:[ User.t ] User.field_fullname @@ contains @@ string "Rivia"
+       ; where ~join:[ table "orders" ] @@ field "dispatched_at" @@ is_null
        ]
   |> order_by [ Customer.field_created_at ]
   |> get_or_404 conn
@@ -139,11 +139,11 @@ let routes =
       "/orders"
       [ Sihl.User.is_authenticated ]
       [ Sihl.User.is_staff @@ Dream.get "/" Handlers.order_list
-      ; Sihl.Model.single_object ~pk:"id"
-        @@ Sihl.User.passes_test Customer.owns_order
+      ; Sihl.Web.single_object ~pk:"id"
+        @@ Sihl.Web.passes_test Customer.owns_order
         @@ Dream.get "/:id" Handlers.order_detail
-      ; Sihl.Model.single_object ~pk:"id"
-        @@ Sihl.User.passes_test Customer.owns_order
+      ; Sihl.Web.single_object ~pk:"id"
+        @@ Sihl.Web.passes_test Customer.owns_order
         @@ Dream.delete "/:id" Handlers.order_delete
       ; Dream.scope "/create" Handlers.order_create
       ]
@@ -162,7 +162,7 @@ Helpers eliminate tedious boilerplate and provide best-practices enforced on typ
 {[
 open Template
 
-let customer_list = Sihl.Handler.list ~model:Customer Customer_list.template
+let customer_list = Sihl.Handler.list ~model:(module Customer) Customer_list.template
 
 let order_create =
   Sihl.Handler.form
@@ -184,7 +184,7 @@ let order_create =
 let customer_create =
   Sihl.Handler.create
     ~success_url:(fun request -> "/customers")
-    ~model:Customer
+    ~model:(module Customer)
     Customer_create.template
 ;;
 
@@ -203,7 +203,7 @@ Thanks to ReasonML you can use type-safe JSX on the server.
 [lib/templates/customer_list.re]
 {[
 open Tyxml;
-open Sihl.Template;
+open Sihl.Web;
 
 let template = (request, customers) => {
   <html>
@@ -222,6 +222,17 @@ let template = (request, customers) => {
     </body>
   </html>;
 };
+]}
+
+{2 Start the Sihl app 🚀}
+[lib/app.ml]
+{[
+let run () =
+  Sihl.run (module Config)
+  @@ Dream.serve ~interface:"0.0.0.0"
+  @@ Config.middlewares
+  @@ Dream.router routes
+;;
 ]}
 
 {1:getting_started Getting Started}
@@ -256,8 +267,9 @@ The default directory structure provides a good starting point to scale up the a
 │   ├── handlers
 │   ├── models
 │   └── templates
-├── settings
 ├── migrations
+├── settings
+├── static
 └── test
 v}
 
@@ -286,6 +298,9 @@ The [settings] directory contains the app configuration.
 
 {3 The Migrations Directory}
 The [migrations] directory contains datatbase migration pairs. A migration pair comprises of an up and a down migration file, written in SQL.
+
+{3 The Static Directories}
+Sihl takes static assets in [static] such as JavaScript and CSS, compiles them and puts them into a directory that can be served to the world.
 
 {2 Running the web app}
 
@@ -408,10 +423,45 @@ TODO
 TODO
 
 {2 Testing}
-TODO
+{[
+open Sihl.Test
+
+let%test "get_customer" =
+  let open Sihl.Model in
+  let open Customer in
+  database (fun conn ->
+      let%lwt customers = factory_customer ~n:10 conn in
+      let%lwt customer : Customer.t =
+        Customer.t
+        |> where [ User.t ] User.field_email @@ eq @@ string "hello@example.org"
+        |> or_
+             [ where_tier_in [ Business; Premium ]
+             ; where ~join:[ User.t ] User.field_fullname
+               @@ contains
+               @@ string "Rivia"
+             ; where ~join:[ table "orders" ]
+               @@ field "dispatched_at"
+               @@ is_null
+             ]
+        |> order_by [ field_created_at ]
+        |> get_or_404 conn
+      in
+      [%test_eq: Customer.t] ~equal:Customer.eq customer (List.hd customers)
+;;
+
+let%test "customer_list" =
+  let open Customer in
+  database (fun conn ->
+      let%lwt customers = factory_customer ~n:10 conn in
+      let%lwt user = factory_user conn in
+      let response = get ~user "/customers" in
+      let customer = List.hd customers in
+      [%test_eq: bool] @@ in_response response @@ customer.Customer.name)
+;;
+]}
 
 {2 Static Assets}
-TODO
+Sihl bundles {{:https://esbuild.github.io/} esbuild}, a very fast JavaScript bundler that does not require node.
 
 {2 User Uploads}
 TODO
@@ -516,11 +566,9 @@ The {{:https://dune.readthedocs.io/en/stable/quick-start.html} Quickstart} shoul
 
 {!modules:
 Sihl.Command
-Sihl.Env
-Sihl.Form
-Sihl.Handler
-Sihl.Migration
+Sihl.Config
+Sihl.Web
 Sihl.Model
-Sihl.Query
 Sihl.User
+Sihl.Test
 }
