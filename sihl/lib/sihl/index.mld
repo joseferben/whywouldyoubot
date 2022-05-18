@@ -476,7 +476,23 @@ TODO
 TODO
 
 {2 Sihl Shell}
-TODO
+{[
+utop -init lib/shell.ml
+
+open Core_kernel.Std
+open Or_error
+
+let eval_exn str =
+  let lexbuf = Lexing.from_string str in
+  let phrase = !Toploop.parse_toplevel_phrase lexbuf in
+  Toploop.execute_phrase false Format.err_formatter phrase
+
+let eval str = try_with (fun () -> eval_exn str)
+
+let () = eval (sprintf "#install_printer %s;;" printer)
+
+val pp_hum : Format.formatter -> t -> unit [@@ocaml.toplevel_printer]
+]}
 
 {1:learn_ocaml OCaml for Web Developers}
 
