@@ -8,7 +8,7 @@
 </p>
 %}
 
-Sihl is a batteries-included web framework.
+Sihl is a batteries-included web framework to quickly get OCaml web apps off the ground.
 
 {1 Sihl at a glance}
 
@@ -16,80 +16,210 @@ You can also jump into the {!documentation}, get started with the {!tutorial} or
 
 {2 Design your model}
 
-[lib/models/user.ml]
-{[
-module User = struct
-  type t =
-    { id : string
-    ; email : string [@model.email]
-    ; short_name : string
-    ; customer_id : int [@model.fk "customers", cascade]
-    ; full_name : string
-    ; created_at : Ptime.t [@model.default now]
-    ; updated_at : Ptime.t
-    }
-  [@@deriving show, model { namespace = "user" }]
-end
-]}
+Hooks allow you to customize the lifecycle of a model instance.
 
 [lib/models/customer.ml]
 {[
 module Customer = struct
+  type city =
+    | Zurich
+    | Bern
+    | Basel
+  [@@deriving show, str_enum]
+
   type tier =
     | Premium
     | Top
     | Business
-  [@@deriving show]
+  [@@deriving show, str_enum]
 
   type t =
-    { id : string
-    ; user_id : string [@model.fk User.t]
-    ; shipments : int
+    { id : int [@pk]
+    ; user_id : string [@fk Sihl.User.t]
     ; tier : tier
-    ; created_at : Ptime.t
-    ; updated_at : Ptime.t
+    ; street : string [@max_length 80]
+    ; city : city
+    ; created_at : Ptime.t [@created_at]
+    ; updated_at : Ptime.t [@updated_at]
     }
-  [@@deriving show, model]
+  [@@deriving show, eq, model]
+
+  (* Customize the model by hooking into the lifecycle *)
+  let before_save customer =
+    let%lwt user = user customer in
+    Sihl.Mail.send ~subject:"Welcome" ~text:"..." [ user ]
+  ;;
+
+  let t = Sihl.Model.create ~before_save model
+
+  let owns_order (user : Sihl.User.t) (order : Order.t) =
+    let%lwt customer = Order.customer order in
+    user.id == customer.user_id
+  ;;
+end
+]}
+
+[lib/models/order.ml]
+{[
+module Order = struct
+  (* Enforce business rule per field *)
+  let validate_nr_of_items n =
+    if n > 10 then Error "Can not order more than 10 items" else Ok ()
+  ;;
+
+  type t =
+    { id : int [@pk]
+    ; customer_id : int [@fk Customer.t]
+    ; nr_of_items : int [@validate validate_nr_of_items]
+    ; dispatched_at : Ptime.t option
+    ; paid_at : Ptime.t option
+    ; created_at : Ptime.t [@created_at]
+    ; updated_at : Ptime.t [@updated_at]
+    }
+  [@@deriving show, eq, model]
+
+  (* Enforce business rules across the whole model *)
+  let validate (order : t) =
+    match order.dispatched_at, order.paid_at with
+    | Some _, None -> Error "Can not dispatch order before it was paid"
+    | _ -> Ok ()
+  ;;
+
+  let t = Sihl.Model.create ~validate model
+end
 ]}
 
 {2 Migrate the database}
 
+Initial [CREATE TABLE] migrations are created automatically for the configured database.
+
 {v $ sihl migrate.generate v}
 {v $ sihl migrate.up v}
 
-{2 Design your URLs}
+{2 Query your models}
+
+The query API is powerful but not almighty. Use it for 95% and drop down to raw SQL for the other 5%. If you manage to avoid circular dependencies in your models, it is reasonably type-safe. Otherwise it falls back to stringly typed queries.
+
+{[
+open Customer.Db
+open Sihl.Db
+
+let%lwt customer : Customer.t =
+  Customer.t
+  |> where [ User.t ] User.field_email @@ eq @@ string "hello@example.org"
+  |> or_
+       [ where_tier_in [ Business; Premium ]
+       ; where ~join:[ User.t ] User.field_fullname @@ contains @@ string "Rivia")
+       ; where ~join:[ table "orders" ] field "dispatched_at" @@ is_null
+       ]
+  |> order_by [ Customer.field_created_at ]
+  |> get_or_404 conn
+;;
+
+let%lwt nr_of_customers =
+  Customer.t
+  |> where ~join:[ User.t ] User.field_email @@ eq @@ string "hello@example.org")
+  |> count conn
+;;
+
+let%lwt customer : Customer.t =
+  Customer.t |> update updated_customer |> execute conn
+;;
+
+let%lwt user_of_customer customer = Customer.user customer
+]}
+
+{2 Design your routes}
 
 [lib/app.ml]
 {[
 let routes =
   [ Dream.get "/" Handlers.home
-  ; Dream.scope "/users" [] Sihl.User.routes
   ; Dream.scope
       "/orders"
-      [ Sihl.User.authentication_required ]
-      [ Dream.get "/" Handlers.order_list
-      ; Dream.get "/:id" Handlers.order_detail
-      ; Dream.get "/create" Handlers.order_create
+      [ Sihl.User.is_authenticated ]
+      [ Sihl.User.is_staff @@ Dream.get "/" Handlers.order_list
+      ; Sihl.Model.single_object ~pk:"id"
+        @@ Sihl.User.passes_test Customer.owns_order
+        @@ Dream.get "/:id" Handlers.order_detail
+      ; Sihl.Model.single_object ~pk:"id"
+        @@ Sihl.User.passes_test Customer.owns_order
+        @@ Dream.delete "/:id" Handlers.order_delete
+      ; Dream.scope "/create" Handlers.order_create
       ]
+  ; Dream.scope
+      "/customers"
+      [ Sihl.User.is_authenticated; Sihl.User.is_superuser ]
+      [ Dream.get "/" Handlers.customer_list ]
   ]
 ;;
 ]}
 
 {2 Build your handlers}
-todo
+
+Helpers eliminate tedious boilerplate and provide best-practices enforced on type level.
+
+{[
+open Template
+
+let customer_list = Sihl.Handler.list ~model:Customer Customer_list.template
+
+let order_create =
+  Sihl.Handler.form
+    ~success_url:(fun request -> "/orders")
+    ~on_valid_form:(fun request form ->
+      let%lwt () = Order.create form.data in
+      Dream.add_flash_message request "success" "Order created";
+      request)
+    ~on_invalid_form:(fun request form ->
+      Dream.add_flash_message
+        request
+        "error"
+        "Please correct the input fields below";
+      request)
+    ~form:Form.order_create
+    Order_create.template
+;;
+
+let customer_create =
+  Sihl.Handler.create
+    ~success_url:(fun request -> "/customers")
+    ~model:Customer
+    Customer_create.template
+;;
+
+let home =
+  Sihl.Handler.template
+    ~context:(fun request ->
+      request |> Sihl.context_add "custom_context_data" "hello")
+    Home.template
+;;
+]}
 
 {2 Design your templates}
+
+Thanks to ReasonML you can use type-safe JSX on the server.
+
 [lib/templates/customer_list.re]
 {[
 open Tyxml;
+open Sihl.Template;
 
-let createElement = (~title, ~children=[], ()) => {
+let template = (request, customers) => {
   <html>
     <head>
       <title> {Html.txt(title)} </title>
-      <link rel="stylesheet" href="home.css" />
+      <link rel="stylesheet" href={static("static/css/customer_list.css")} />
     </head>
-    <body> ...children </body>
+    <body>
+      {message(request, "success", ~default:"")}
+      <form method=`POST>
+        {csrf(request)}
+        {form(request, "create_form")}
+        <button type_="submit"> Html.txt "Create" </button>
+      </form>
+      <CustomerList customers />
+    </body>
   </html>;
 };
 ]}
@@ -228,12 +358,14 @@ The three other files [production.ml], [local.ml] and [test.ml] contain settings
 
 [settings/local.ml]
 {[
+  include Base
   let debug = Sihl.Env.bool ~default:true "SIHL_DEBUG"
   let test = Sihl.Env.bool ~default:false "SIHL_TEST"
 ]}
 
 [settings/production.ml]
 {[
+  include Base
   let database_url = Sihl.Env.string "DATABASE_URL"
   let debug = false
   let test = false
@@ -264,334 +396,37 @@ Sihl is built on top of {{:https://github.com/aantron/dream} Dream} which takes 
 The routes are the HTTP entry points to your app. They describe what can be done in a declarative way.
 
 {2 Model}
+TODO
 
 {2 Database Migration}
+TODO
 
-{2 Database Querie}
+{2 Database Queries}
+TODO
 
 {2 Seeding}
+TODO
 
 {2 Testing}
+TODO
 
-OCaml catches many bugs at compile-time and Sihl enforces certain invariants at start-up time. Howver, there are still many bugs out there that need to be caught. Automated tests can be a great tool to complement the safety of OCaml and Sihl.
+{2 Static Assets}
+TODO
 
-Have a look at {{:https://www.cs.cornell.edu/courses/cs3110/2019sp/textbook/data/tdd.html} this introduction to test-driven development} in OCaml.
+{2 User Uploads}
+TODO
 
-Sihl uses {{:https://github.com/mirage/alcotest} Alcotest} as a test runner.
+{2 Custom Commands}
+TODO
 
-{3 Arrange-Act-Assert}
+{2 JSON API}
+TODO
 
-Structure your tests using {{:https://docs.microsoft.com/en-us/visualstudio/test/unit-test-basics?view=vs-2019} Arrange-Act-Assert}.
+{2 Admin UI}
+TODO
 
-Arranging your state requires you to clean up first. You don't have direct access to remove the state of infrastructure services provided by Sihl or Sihl packages such as [sihl-user]. In order to clean their state you can use {!Sihl.Cleaner.clean_all}.
-
-{[
-let create_list_and_do _ () =
-  let open Todo.Model in
-  let%lwt () = Sihl.Cleaner.clean_all () in
-  let%lwt _ = Todo.create "do laundry" in
-  let%lwt _ = Todo.create "hoover" in
-  let%lwt todos = Todo.search 10 in
-  let t1, t2 =
-    match todos with
-    | [ t1; t2 ], n ->
-      Alcotest.(check int "has 2" 2 n);
-      t1, t2
-    | _ -> Alcotest.fail "Unexpected number of todos received"
-  in
-  Alcotest.(check string "has description" "hoover" t1.description);
-  Alcotest.(check string "has description" "do laundry" t2.description);
-  let%lwt () = Todo.do_ t1 in
-  let%lwt t1 = Todo.find t1.id in
-  Alcotest.(check bool "is done" true (Todo.is_done t1));
-  Lwt.return ()
-;;
-]}
-
-If you have complex pre-conditions, you should move the service calls to the [database] directory and create seeds out of them. Parametrize the seeds as needed for re-use in other tests.
-
-{2 Pagination & Search}
-
-Displaying things and collections of things is a common thing in web development. Often we don't want to display all the items that are stored, but present the user a nice interface to search collections.
-
-Sihl services usually follow a convention where they expose a function
-
-{[
-val search:
-  ?sort:[ `Asc | `Desc ] ->
-  ?filter:string ->
-  ?limit:int ->
-  ?offset:int ->
-  unit ->
-  (t list * int) Lwt.t
-]}
-
-that can be used to fetch, sort and filter a partial view on the whole collection of [t].
-
-To implement your own function with this signature, use {!Sihl.Database.prepare_search_request} and {!Sihl.Database.run_search_request}:
-
-{[
-  let filter_fragment =
-    {sql|
-        WHERE user_users.email LIKE $1
-          OR user_users.username LIKE $1
-          OR user_users.status LIKE $1 |sql}
-  ;;
-
-  (* We need to escape this SQL query because
-     it breaks syntax highlghting of the documentation *)
-  let search_query =
-    {sql|
-        SELECT
-          COUNT(\*\) OVER() as total,
-          uuid,
-          email,
-          username,
-          password,
-          status,
-          admin,
-          confirmed,
-          created_at,
-          updated_at
-        FROM user_users |sql}
-  ;;
-
-  let request =
-    Sihl.Database.prepare_search_request
-      ~search_query
-      ~filter_fragment
-      ~sort_by_field:"id"
-      user
-  ;;
-
-  let search sort filter ~limit ~offset =
-      Sihl.Database.run_search_request
-        connection
-        request
-        sort
-        filter
-        ~limit
-        ~offset
-  ;;
-]}
-
-The first column of the [search_query] needs to be the total number of rows after applying the filter. The total number is higher than the limit, if there are a lot of rows.
-
-Note that if you need features like sorting on multiple columns or complex filters, you have to take care of safely building your SQL queries at runtime. The approach shown above is safe from SQL injection, fast (due to prepared statements) and simple to use.
-
-Using offset-based pagination comes with {{:https://uxdesign.cc/why-facebook-says-cursor-pagination-is-the-greatest-d6b98d86b6c0}some drawbacks} that you should be aware of.
-
-{2 Compiling assets}
-
-The project template has a asset pipeline set up that watches files in the [resource] directory and compiles assets into the [public] directory. Run [make assets] to compile the assets once and [make assets_watch] for watch for file changes.
-
-{{:https://parceljs.org/} ParcelJS} is used to have a zero configuration experience when dealing with all sorts of assets types.
-
-By default, Sihl serves static files from the [public] directory.
-
-{2 File Storage}
-
-{3 Retrieving files}
-
-Sihl serves the [public] directory under the path [/assets] by default using {!val:Sihl.Web.Middleware.static_file}.
-
-You can configure the directory to be served using [PUBLIC_DIR]. The URI prefix can be configured using [PUBLIC_URI_PREFIX].
-
-{3 Uploading files}
-
-This feature is not implemented in Sihl yet. Use {{:https://github.com/rgrinberg/opium/tree/master/example/file_upload} this Opium example} meanwhile.
-
-{2:commands Commands}
-
-{3 Introduction}
-
-There are two ways to interact with a Sihl app, via HTTP and via the command line interface (CLI) commands. Sihl has built-in support for both.
-In fact, it is often better to implement CLI commands before creating the routes, handlers and views. Commands are a great way to quickly call parts of the app with parameters.
-
-Commands are handled with the module {!Sihl.Command}.
-
-{3 Built-in commands}
-
-Run [make sihl] if you used Spin to create the app, otherwise execute the Sihl app exectuable.
-
-{v
-2021-04-10T13:18:34-00:00 [INFO] [sihl.core.app]: Setting up...
-2021-04-10T13:18:34-00:00 [INFO] [sihl.core.configuration]: SIHL_ENV: development
-
-Sihl
-
-Run one of the following commands with the argument "help" for more information.
-
-config
-gen.html
-gen.json
-gen.model
-gen.view
-migrate
-random
-routes
-server
-user.admin
-v}
-
-This is the list of built-in commands. Whenever you install a package and register Sihl services you get access to more commands.
-
-{3 Custom commands}
-
-Create a file in the directory [app/command] to create custom commands.
-
-{[
-let run =
-
-  Sihl.Command.make
-    ~name:"todo.add"
-    ~usage:"<todo description>"
-    ~description:"Adds a new todo to the backlog"
-    (fun args ->
-      match args with
-      | [ description ] ->
-        let%lwt _ = Todo.create description in
-        Lwt.return (Some ())
-      | _ -> Lwt.return None)
-;;
-]}
-
-Don't forget to pass the list of commands in [run/run.ml] when starting the app:
-
-{[
-let () =
-  Sihl.App.(
-    empty |> with_services services |> run ~commands:[ Command.Add_todo.run ])
-;;
-]}
-
-Run [make sihl] to see your custom command added to the list of registered commands.
-
-{v
-2021-04-10T13:18:34-00:00 [INFO] [sihl.core.app]: Setting up...
-2021-04-10T13:18:34-00:00 [INFO] [sihl.core.configuration]: SIHL_ENV: development
-
-Sihl
-
-Run one of the following commands with the argument "help" for more information.
-
-config
-gen.html
-gen.json
-gen.model
-gen.view
-migrate
-random
-routes
-server
-todo.add
-user.admin
-
-v}
-
-{2 Generators}
-
-Sihl has built-in generators [gen.model], [gen.view] and [gen.html]. Similar to Rails they help you generating resources, services, repositories and HTML views. Unlike Rails, Sihl doesn't have an abstraction layer for data access (such as an ORM). You should be familiar with SQL.
-
-The generators create files and folders before printing instructions for manual steps to finalize the generation. [gen.html] can create a fully functional CRUD web interface from a schema.
-
-Generators are CLI commands just like [migrate], run the generator commands without any arguments to display help text describing its usage.
-
-{3 Service}
-
-{v
-$ make sihl gen.model mariadb order order_number:int premium:bool price:int location:string delivery_date:datetime
-2021-04-12T16:20:46-00:00 [INFO] [sihl.core.app]: Setting up...
-2021-04-12T16:20:46-00:00 [INFO] [sihl.core.configuration]: SIHL_ENV: development
-Wrote file 'sihl-demo/app/domain/order/order.ml'
-Wrote file 'sihl-demo/app/domain/order/order.mli'
-Wrote file 'sihl-demo/app/domain/order/entity.ml'
-Wrote file 'sihl-demo/app/domain/order/repo.ml'
-Wrote file 'sihl-demo/app/domain/order/dune'
-Wrote file 'sihl-demo/test/order/test.ml'
-Wrote file 'sihl-demo/test/order/dune'
-Wrote file 'sihl-demo/database/order.ml'
-Command 'gen.model' ran successfully in 1.614ms
-v}
-
-[gen.model] generates a model consisting of a service, an entity, a reposiory, migrations, and some simple CRUD tests. Note that you have to specify the model name and the database you are using. You can run the tests right after generation.
-
-The created model type contains an [id] of UUID V4 as [string], [created_at] as [Ptime.t] and [updated_at] as [Ptime.t].
-
-{3 View}
-
-{v
-$ make sihl gen.view order order_number:int premium:bool price:int location:string delivery_date:datetime
-2021-04-12T16:25:48-00:00 [INFO] [sihl.core.app]: Setting up...
-2021-04-12T16:25:48-00:00 [INFO] [sihl.core.configuration]: SIHL_ENV: development
-Wrote file 'sihl-demo/web/view/order/dune'
-Wrote file 'sihl-demo/web/view/order/view_order.ml'
-Command 'gen.view' ran successfully in 1.527ms
-v}
-
-[gen.view] generates an HTML view for a resource. Note that you don't have to specify a database.
-
-{3 HTML Resource}
-
-{[
-$ make sihl gen.html mariadb order order_number:int premium:bool price:int location:string delivery_date:datetime
-2021-04-13T07:19:08-00:00 [INFO] [sihl.core.app]: Setting up...
-2021-04-13T07:19:08-00:00 [INFO] [sihl.core.configuration]: SIHL_ENV: development
-Wrote file 'sihl-demo/app/domain/order/order.ml'
-Wrote file 'sihl-demo/app/domain/order/order.mli'
-Wrote file 'sihl-demo/app/domain/order/entity.ml'
-Wrote file 'sihl-demo/app/domain/order/repo.ml'
-Wrote file 'sihl-demo/app/domain/order/dune'
-Wrote file 'sihl-demo/test/order/test.ml'
-Wrote file 'sihl-demo/test/order/dune'
-Wrote file 'sihl-demo/database/order.ml'
-Wrote file 'sihl-demo/web/view/order/dune'
-Wrote file 'sihl-demo/web/view/order/view_order.ml'
-
-Resource 'orders' created.
-
-Copy this route
-
-    let order =
-      Sihl.Web.choose
-        ~middlewares:
-          [ Sihl.Web.Middleware.csrf ()
-          ; Sihl.Web.Middleware.flash ()
-          ]
-        (Rest.resource
-          "orders"
-          Order.schema
-          (module Order : Rest.SERVICE with type t = Order.t)
-          (module View_order : Rest.VIEW with type t = Order.t))
-    ;;
-
-into your `routes/routes.ml` and mount it with the HTTP service. Don't forget to add 'order' and 'view_order' to routes/dune.
-
-Add the migration
-
-    Database.Order.all
-
-to the list of migrations before running `sihl migrate`.
-You should also run `make format` to apply your styling rules.
-
-Command 'gen.html' ran successfully in 1.964ms
-]}
-
-[gen.html] generates a service, a model, a reposiory, simple CRUD tests and an HTML view. Note that you have to specify the service name and the database you are using. You need to do the steps listed manually in order to test the resource.
-Once your project compiles, run the tests and browse the root path of the resources to use the fully functional CRUD form.
-
-{%html:
-<p align="center">
-  <img style="display: block; margin: 0 auto;" src="https://github.com/oxidizing/sihl/blob/master/images/html_rest_index.png?raw=true" alt="HTML Rest Index"/>
-</p>
-%}
-
-{3 JSON Resource}
-
-This is not yet implemented. Please {{:https://github.com/oxidizing/sihl/issues} open an issue} if you need this feature.
-
-{1:tutorial Tutorial}
-Follow the steps in {!getting_started}.
+{2 Sihl Shell}
+TODO
 
 {1:learn_ocaml OCaml for Web Developers}
 
