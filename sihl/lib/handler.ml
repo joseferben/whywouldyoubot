@@ -5,11 +5,14 @@ type context = string Map.t
 let template _ = Obj.magic ()
 
 let user_from_request (_ : Dream.request) =
-  Types.AuthenticatedUser
+  User.AuthenticatedUser
     { id = 0
     ; email = "hello@example.org"
     ; short_name = "short"
     ; full_name = "full"
+    ; role = User.Superuser
+    ; created_at = Obj.magic ()
+    ; updated_at = Obj.magic ()
     }
 ;;
 
@@ -17,7 +20,7 @@ let list
     ?(model : 'a Model.t option)
     ?(query : 'a Query.t option)
     (render :
-      Types.user
+      User.request_user
       -> 'a list
       -> Dream.request
       -> [> Html_types.html ] Tyxml_html.elt Lwt.t)
@@ -26,7 +29,7 @@ let list
   match model, query with
   | None, None -> failwith "handler_list needs either ~model or ~query"
   | _ ->
-    let user : Types.user = user_from_request request in
+    let user : User.request_user = user_from_request request in
     let%lwt model_list = Model.list_of_model model in
     let%lwt response_html = render user model_list request in
     response_html |> Format.asprintf "%a" (Tyxml.Html.pp ()) |> Dream.html

@@ -1,3 +1,4 @@
 (library
  (name model)
+ (libraries ptime yojson)
  (public_name sihl.model))

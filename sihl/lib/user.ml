@@ -1,5 +1,3 @@
-type t = Types.user
-
 let postgresql_migrations_up =
   [ {sql|CREATE TABLE IF NOT EXISTS user_users (
   id          SERIAL UNIQUE,
@@ -42,20 +40,40 @@ let migrations = function
   | Model.Sqlite -> failwith "sqlite is not supported yet"
 ;;
 
-module Handler = struct
-  let login = Handler.template "templates/login.html"
-  let signup = Handler.template "templates/signup.html"
-  let logout = Handler.template "templates/logout.html"
-  let profile = Handler.template "templates/profile.html"
-end
-
-let routes =
-  [ Dream.get "login/" Handler.login
-  ; Dream.get "signup/" Handler.signup
-  ; Dream.get "logout/" Handler.logout
-  ; Dream.get "profile/:pk/" Handler.profile
-  ]
-;;
-
 let authentication_required = Obj.magic
 let configure _ = ()
+
+type role =
+  | User
+  | Staff
+  | Superuser
+[@@deriving yojson]
+
+type t =
+  { id : int
+  ; role : role
+  ; email : string
+  ; short_name : string
+  ; full_name : string
+  ; created_at : Model.Ptime.t
+  ; updated_at : Model.Ptime.t
+  }
+[@@deriving fields, yojson]
+
+let schema =
+  Model.
+    [ field Fields.id @@ int ~primary_key ()
+    ; field Fields.role @@ enum role_of_yojson role_to_yojson
+    ; field Fields.email @@ email ()
+    ; field Fields.full_name @@ string ()
+    ; field Fields.short_name @@ string ~max_length:80 ()
+    ; field Fields.created_at @@ timestamp ~default:Now ()
+    ; field Fields.updated_at @@ timestamp ~default:Now ~update:true ()
+    ]
+;;
+
+let t = Model.create ~to_yojson ~of_yojson "user" Fields.names schema
+
+type request_user =
+  | AnonymousUser
+  | AuthenticatedUser of t

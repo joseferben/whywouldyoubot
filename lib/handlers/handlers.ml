@@ -1,3 +1,5 @@
-module Map = Map.Make (String)
+open Templates
+open Sihl.Web
 
-let home = Sihl.Handler.template Templates.Home.createElement
+let home = template Home.template
+let game = template Game.template

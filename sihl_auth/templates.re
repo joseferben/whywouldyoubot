@@ -1,6 +1,6 @@
 open Tyxml;
 
-let template = (~title, ~children, ()) => {
+let login = (~title, ~children, ()) => {
   <html>
     <head>
       <title> {Html.txt(title)} </title>

@@ -18,75 +18,107 @@ You can also jump into the {!documentation}, get started with the {!tutorial} or
 
 Hooks allow you to customize the lifecycle of a model instance.
 
-[lib/models/customer.ml]
+[lib/models/users.ml]
 {[
-module Customer = struct
-  type city =
-    | Zurich
-    | Bern
-    | Basel
-  [@@deriving show, str_enum]
-
-  type tier =
-    | Premium
-    | Top
-    | Business
-  [@@deriving show, str_enum]
+  type role =
+    | User
+    | Staff
+    | Superuser
+  [@@deriving yojson]
 
   type t =
-    { id : int [@pk]
-    ; user_id : string [@fk Sihl.User.t]
-    ; tier : tier
-    ; street : string [@max_length 80]
-    ; city : city
-    ; created_at : Ptime.t [@created_at]
-    ; updated_at : Ptime.t [@updated_at]
+    { id : int
+    ; role : role
+    ; email : string
+    ; short_name : string
+    ; full_name : string
+    ; created_at : Ptime.t
+    ; updated_at : Ptime.t
     }
-  [@@deriving show, eq, model]
+  [@@deriving fields, yojson]
 
-  (* Customize the model by hooking into the lifecycle *)
-  let before_save customer =
-    let%lwt user = user customer in
-    Sihl.Mail.send ~subject:"Welcome" ~text:"..." [ user ]
+  (* 1.) Write your declarative model schema *)
+  let schema =
+    Model.
+      [ field Fields.id @@ int ~primary_key ()
+      ; field Fields.role @@ enum role_of_yojson role_to_yojson
+      ; field Fields.email @@ email ()
+      ; field Fields.full_name @@ string ()
+      ; field Fields.short_name @@ string ~max_length:80 ()
+      ; field Fields.created_at @@ timestamp ~default:Now ()
+      ; field Fields.updated_at @@ timestamp ~default:Now ~update:true ()
+      ]
   ;;
 
-  let t = Sihl.Model.create ~before_save model
+  (* 3.) Pass in optional hooks, pp, eq and the runtime type t *)
+  let t = Model.create ~to_yojson ~of_yojson "user" Fields.names schema
+]}
 
-  let owns_order (user : Sihl.User.t) (order : Order.t) =
-    let%lwt customer = Order.customer order in
-    user.id == customer.user_id
-  ;;
-end
+[lib/models/customer.ml]
+{[
+type city =
+  | Zurich
+  | Bern
+  | Basel
+[@@deriving show, str_enum]
+
+type tier =
+  | Premium
+  | Top
+  | Business
+[@@deriving show, str_enum]
+
+type t =
+  { id : int [@pk]
+  ; user_id : string [@fk Sihl.User.t]
+  ; tier : tier
+  ; street : string [@max_length 80]
+  ; city : city
+  ; created_at : Ptime.t [@created_at]
+  ; updated_at : Ptime.t [@updated_at]
+  }
+[@@deriving show, eq, model]
+
+(* Customize the model by hooking into the lifecycle *)
+let before_save customer =
+  let%lwt user = user customer in
+  Sihl.Mail.send ~subject:"Welcome" ~text:"..." [ user ]
+;;
+
+let t = Sihl.Model.create ~before_save model
+
+let owns_order (user : Sihl.User.t) (order : Order.t) =
+  let%lwt customer = Order.customer order in
+  user.id == customer.user_id
+;;
 ]}
 
 [lib/models/order.ml]
 {[
-module Order = struct
-  (* Enforce business rule per field *)
-  let validate_nr_of_items n =
-    if n > 10 then Error "Can not order more than 10 items" else Ok ()
-  ;;
+(* Enforce business rule per field *)
+let validate_nr_of_items n =
+  if n > 10 then Error "Can not order more than 10 items" else Ok ()
+;;
 
-  type t =
-    { id : int [@pk]
-    ; customer_id : int [@fk Customer.t]
-    ; nr_of_items : int [@validate validate_nr_of_items]
-    ; dispatched_at : Ptime.t option
-    ; paid_at : Ptime.t option
-    ; created_at : Ptime.t [@created_at]
-    ; updated_at : Ptime.t [@updated_at]
-    }
-  [@@deriving show, eq, model]
+type t =
+  { id : int [@pk]
+  ; customer_id : int [@fk Customer.t]
+  ; nr_of_items : int [@validate validate_nr_of_items]
+  ; dispatched_at : Ptime.t option
+  ; paid_at : Ptime.t option
+  ; created_at : Ptime.t [@created_at]
+  ; updated_at : Ptime.t [@updated_at]
+  }
+[@@deriving show, eq, model]
 
-  (* Enforce business rules across the whole model *)
-  let validate (order : t) =
-    match order.dispatched_at, order.paid_at with
-    | Some _, None -> Error "Can not dispatch order before it was paid"
-    | _ -> Ok ()
-  ;;
+(* Enforce business rules across the whole model *)
+let validate (order : t) =
+  match order.dispatched_at, order.paid_at with
+  | Some _, None -> Error "Can not dispatch order before it was paid"
+  | _ -> Ok ()
+;;
 
-  let t = Sihl.Model.create ~validate model
-end
+let t = Sihl.Model.create ~validate model
 ]}
 
 {2 Migrate the database}
@@ -414,10 +446,45 @@ The routes are the HTTP entry points to your app. They describe what can be done
 TODO
 
 {2 Database Migration}
-TODO
+TODO using omigrate, simple up.sql and down.sql pairs, timestamped, single migration history per project
 
 {2 Database Queries}
-TODO
+TODO document query language, show examples for pagination
+
+{2 Forms}
+[lib/forms/order.ml]
+{[
+open Sihl.Form
+
+let widgets = [text_area "order_note"]
+
+(* Create form from model and customize form *)
+let t = of_model ~widgets Order.t
+]}
+
+[lib/forms/customer.ml]
+{[
+(* Create form from type with custom validation *)
+type t =
+  { name : string option [@form.textarea]
+  ; email : string [@form.email]
+  ; age : int
+  }
+
+let validate (t : t) =
+  match t.name with
+  | Some _ ->
+    if t.age > 25
+    then Error "Age 25 and above should not provide a name"
+    else Ok ()
+  | None -> Ok ()
+;;
+
+let t = Sihl.Form.create ~validate form
+]}
+
+{3 Customize Form Rendering}
+TODO implement pattern match on [Sihl.Form.t]
 
 {2 Seeding}
 TODO
@@ -477,6 +544,8 @@ TODO
 
 {2 Sihl Shell}
 {[
+dune utop
+
 utop -init lib/shell.ml
 
 open Core_kernel.Std

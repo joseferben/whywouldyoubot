@@ -1,1 +1,1 @@
-let () = print_endline "Hello, World!"
+let () = Sihl.User.mariadb_migrations_down |> List.hd |> print_endline

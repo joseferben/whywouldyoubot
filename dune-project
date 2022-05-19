@@ -28,3 +28,10 @@
   reason
   dune-build-info
   caqti-driver-postgresql))
+
+(package
+ (name sihl_auth)
+ (depends
+  ocaml
+  dune
+  sihl))

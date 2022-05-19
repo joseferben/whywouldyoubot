@@ -1,0 +1,5 @@
+(library
+ (name sihl_auth)
+ (public_name sihl_auth)
+ (libraries sihl tyxml)
+ (preprocess (pps tyxml-jsx)))

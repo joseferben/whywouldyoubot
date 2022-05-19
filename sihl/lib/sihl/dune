@@ -1,8 +1,0 @@
-(library
-  (name sihl)
-  (public_name sihl)
-  (libraries dream ptime caqti caqti-driver-postgresql containers tyxml cmdliner sihl.command)
-  (preprocess (pps lwt_ppx)))
-
-(documentation
- (package sihl))
