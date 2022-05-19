@@ -50,7 +50,7 @@ Hooks allow you to customize the lifecycle of a model instance.
       ]
   ;;
 
-  (* 3.) Pass in optional hooks, pp, eq and the runtime type t *)
+  (* 2.) Pass in optional hooks, pp, eq and the runtime type t *)
   let t = Model.create ~to_yojson ~of_yojson "user" Fields.names schema
 ]}
 

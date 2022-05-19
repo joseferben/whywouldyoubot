@@ -62,7 +62,7 @@ type t =
 
 let schema =
   Model.
-    [ field Fields.id @@ int ~primary_key ()
+    [ field Fields.id @@ int ~primary_key:true ()
     ; field Fields.role @@ enum role_of_yojson role_to_yojson
     ; field Fields.email @@ email ()
     ; field Fields.full_name @@ string ()
@@ -72,7 +72,7 @@ let schema =
     ]
 ;;
 
-let t = Model.create ~to_yojson ~of_yojson "user" Fields.names schema
+let t = Model.create to_yojson of_yojson "user" Fields.names schema
 
 type request_user =
   | AnonymousUser
