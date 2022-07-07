@@ -1,7 +1,7 @@
 import type {
-    ActionFunction,
-    LoaderFunction,
-    MetaFunction
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction
 } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
@@ -9,8 +9,6 @@ import * as React from "react";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
-
-
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -64,7 +62,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   return createUserSession({
     request,
-    userId: user.id,
+    userId: user.entityId,
     remember: remember === "on" ? true : false,
     redirectTo,
   });
@@ -174,7 +172,6 @@ export default function LoginPage() {
             <div className="text-center text-sm text-gray-500">
               Don't have an account?{" "}
               <Link
-
                 className="text-blue-500 underline"
                 to={{
                   pathname: "/join",

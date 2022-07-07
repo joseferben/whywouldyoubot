@@ -1,6 +1,5 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
-
 import type { User } from "~/models/user.server";
 import { getUserById } from "~/models/user.server";
 
@@ -26,7 +25,7 @@ export async function getSession(request: Request) {
 
 export async function getUserId(
   request: Request
-): Promise<User["id"] | undefined> {
+): Promise<User["entityId"] | undefined> {
   const session = await getSession(request);
   const userId = session.get(USER_SESSION_KEY);
   return userId;
