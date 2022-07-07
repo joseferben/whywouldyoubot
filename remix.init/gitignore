@@ -3,8 +3,6 @@ node_modules
 /build
 /public/build
 .env
-.log
-coverage
 
 /cypress/screenshots
 /cypress/videos
