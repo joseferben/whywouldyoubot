@@ -22,7 +22,9 @@
     "typecheck": "tsc -b && tsc -b cypress",
     "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run"
   },
-  "prettier": {},
+  "prettier": {
+    "printWidth": 80
+  },
   "eslintIgnore": [
     "/node_modules",
     "/build",
