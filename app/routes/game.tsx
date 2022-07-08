@@ -1,11 +1,15 @@
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Outlet, useLoaderData } from "@remix-run/react";
 import {
-    ChatMessage,
-    createChatMessage,
-    getChatMessagesByUser
-} from "~/models/chat.server";
+  Form,
+  Outlet,
+  useFetcher,
+  useLoaderData,
+  useTransition
+} from "@remix-run/react";
+import React, { useEffect } from "react";
+import { chat } from "~/chat.server";
+import { ChatMessage, getChatMessagesByUser } from "~/models/message.server";
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 
@@ -31,7 +35,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  await createChatMessage({ message, userId });
+  await chat({ message, userId });
   return redirect("/game");
 };
 
@@ -39,40 +43,56 @@ export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const chatMessages = await getChatMessagesByUser(userId);
 
+  console.log(chatMessages.length);
   return json<LoaderData>({ chatMessages });
 };
 
-export default function NotesPage() {
-  const data = useLoaderData() as LoaderData;
+export default function Game() {
+  const initialData = useLoaderData() as LoaderData;
   const user = useUser();
+  const fetcher = useFetcher();
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const transition = useTransition();
+  const fetcherData = fetcher.data as LoaderData;
+  const data = fetcherData || initialData;
+
+  useEffect(() => {
+    const source = new EventSource("/api/chat", { withCredentials: true });
+    source.addEventListener("chat", (_: any) => {
+      fetcher.load("/game");
+    });
+    source.onerror = (e) => {
+      console.error(e);
+      source.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (inputRef.current && transition.state === "submitting") {
+      inputRef.current.value = "";
+    }
+  }, [transition.state]);
 
   return (
     <div className="flex h-full min-h-screen flex-col">
-      <Form action="/logout" method="post">
+      <fetcher.Form action="/logout" method="post">
         <button
           type="submit"
           className="rounded bg-slate-600 py-2 px-4 text-blue-100 hover:bg-blue-500 active:bg-blue-600"
         >
           Logout
         </button>
-      </Form>
+      </fetcher.Form>
 
       <main className="flex h-full bg-white">
         <div className="flex-1 p-6">
           <Outlet />
           <div className="mx-auto">
-            <ul>
-              {data.chatMessages.map((d: ChatMessage) => (
-                <li>
-                  <span className="font-bold">{d.userId}:</span>
-                  {d.message}
-                </li>
-              ))}
-            </ul>
-            <Form method="post" className="h-64">
+            <Form method="post">
               <input
                 type="text"
                 name="message"
+                ref={inputRef}
                 className="rounded border border-gray-500 px-2 py-1 text-lg"
               ></input>
               <button
@@ -82,6 +102,14 @@ export default function NotesPage() {
                 Say
               </button>
             </Form>
+            <ul>
+              {data.chatMessages.map((d: ChatMessage) => (
+                <li key={d.entityId}>
+                  <span className="font-bold">{d.userId}:</span>
+                  {d.message}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </main>
