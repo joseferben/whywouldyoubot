@@ -1,8 +1,50 @@
-import { Link } from "@remix-run/react";
-import { useOptionalUser } from "~/utils";
+import { Form, Link, useActionData } from "@remix-run/react";
+import { ActionFunction, json, redirect } from "@remix-run/server-runtime";
+import { getUserByName } from "~/models/user.server";
+import { useOptionalUser, validateName } from "~/utils";
+
+interface ActionData {
+  errors?: {
+    name?: string;
+  };
+}
+
+function rpgName() {
+  const npcs = ["dragon", "beast", "wolf", "golem", "witcher", "bear"];
+  const jobs = ["destroyer", "killer", "hunter"];
+  const npc = npcs[Math.floor(Math.random() * npcs.length)];
+  const job = jobs[Math.floor(Math.random() * jobs.length)];
+  const num = Math.round(Math.random() * 9999);
+  return `${npc}${job}${num}`;
+}
+
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  const name = formData.get("name");
+
+  if (!validateName(name)) {
+    return json<ActionData>(
+      { errors: { name: "This name is invalid" } },
+      { status: 400 }
+    );
+  }
+
+  const existingUser = await getUserByName(name);
+  if (existingUser) {
+    return json<ActionData>(
+      { errors: { name: "A user with that name already exists" } },
+      { status: 400 }
+    );
+  }
+
+  const searchParams = new URLSearchParams([["name", name]]);
+  return redirect(`/join?${searchParams}`);
+};
 
 export default function Index() {
   const user = useOptionalUser();
+  const actionData = useActionData() as ActionData;
+
   return (
     <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
       <div className="relative sm:pb-16 sm:pt-8">
@@ -31,25 +73,36 @@ export default function Index() {
                 {user ? (
                   <Link
                     to="/notes"
-                    className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-yellow-700 shadow-sm hover:bg-yellow-50 sm:px-8"
+                    className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-1 text-base font-medium text-yellow-700 shadow-sm hover:bg-yellow-50 sm:px-8"
                   >
                     Play as {user.name}
                   </Link>
                 ) : (
-                  <div className="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
-                    <Link
-                      to="/join"
-                      className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-yellow-700 shadow-sm hover:bg-yellow-50 sm:px-8"
+                  <Form
+                    className="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5 sm:space-y-0"
+                    method="post"
+                  >
+                    <input
+                      className="w-full rounded border border-gray-500 px-4 py-2 text-lg"
+                      type="text"
+                      name="name"
+                      defaultValue={rpgName()}
+                    ></input>
+                    <button
+                      type="submit"
+                      className="flex items-center justify-center rounded-md bg-yellow-500 px-4 py-1 font-medium text-white hover:bg-yellow-600  "
                     >
-                      Sign up
-                    </Link>
-                    <Link
-                      to="/login"
-                      className="flex items-center justify-center rounded-md bg-yellow-500 px-4 py-3 font-medium text-white hover:bg-yellow-600  "
-                    >
-                      Log In
-                    </Link>
-                  </div>
+                      Join
+                    </button>
+                    {actionData?.errors?.name && (
+                      <div
+                        className="font-bold text-xs pt-1 text-red-100"
+                        id="name-error"
+                      >
+                        {actionData.errors.name}
+                      </div>
+                    )}
+                  </Form>
                 )}
               </div>
             </div>
@@ -57,7 +110,11 @@ export default function Index() {
         </div>
         <div className="mx-auto max-w-7xl py-2 px-4 sm:px-6 lg:px-8">
           <div className="mt-6 flex flex-wrap justify-center gap-8">
-            TODO features
+            <ul>
+              <li>Pets</li>
+              <li>Monsters</li>
+              <li>Fighting</li>
+            </ul>
           </div>
         </div>
       </div>
