@@ -9,9 +9,9 @@ import {
 } from "@remix-run/react";
 import React, { useEffect } from "react";
 import { chat } from "~/chat.server";
+import { useRefresher } from "~/hooks";
 import { ChatMessage, getChatMessagesByUser } from "~/models/message.server";
 import { requireUserId } from "~/session.server";
-import { useUser } from "~/utils";
 
 type LoaderData = {
   chatMessages: Awaited<ReturnType<typeof getChatMessagesByUser>>;
@@ -42,31 +42,18 @@ export const action: ActionFunction = async ({ request }) => {
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const chatMessages = await getChatMessagesByUser(userId);
-
-  console.log(chatMessages.length);
   return json<LoaderData>({ chatMessages });
 };
 
 export default function Game() {
-  const initialData = useLoaderData() as LoaderData;
-  const user = useUser();
+  const loaderData = useLoaderData() as LoaderData;
+  // const user = useUser();
   const fetcher = useFetcher();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const transition = useTransition();
-  const fetcherData = fetcher.data as LoaderData;
-  const data = fetcherData || initialData;
+  const data = fetcher.data || loaderData;
 
-  useEffect(() => {
-    const source = new EventSource("/api/chat", { withCredentials: true });
-    source.addEventListener("chat", (_: any) => {
-      fetcher.load("/game");
-    });
-    source.onerror = (e) => {
-      console.error(e);
-      source.close();
-    };
-  }, []);
-
+  useRefresher("/api/chat", "/game", "chat", fetcher);
   useEffect(() => {
     if (inputRef.current && transition.state === "submitting") {
       inputRef.current.value = "";

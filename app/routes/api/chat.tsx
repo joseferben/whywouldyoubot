@@ -12,8 +12,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const body = new ReadableStream({
     async start(c) {
       const subscription = observable.subscribe(
-        () => {
-          console.log("sending down event");
+        (_) => {
           c.enqueue("event: chat\n");
           c.enqueue(`data: \n\n`);
         },
