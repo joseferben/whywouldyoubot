@@ -1,16 +1,16 @@
 import type {
-  LinksFunction,
-  LoaderFunction,
-  MetaFunction,
+    LinksFunction,
+    LoaderFunction,
+    MetaFunction
 } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
+    Links,
+    LiveReload,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration
 } from "@remix-run/react";
 import { getUser } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
@@ -21,7 +21,7 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "Remix Notes",
+  title: "Untitled MMORPG",
   viewport: "width=device-width,initial-scale=1",
 });
 

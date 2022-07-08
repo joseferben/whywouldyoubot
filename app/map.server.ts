@@ -21,6 +21,7 @@ declare global {
 }
 
 function loadMap(): TiledMap {
+  console.log("load map");
   if (fs.existsSync(jsonFilePath)) {
     return JSON.parse(fs.readFileSync(jsonFilePath, "utf8"));
   } else {
