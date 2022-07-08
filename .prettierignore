@@ -5,5 +5,6 @@ node_modules
 .env
 coverage
 .logs
+/cypress/plugins
 
 /app/styles/tailwind.css

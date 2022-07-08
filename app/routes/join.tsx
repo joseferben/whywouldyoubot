@@ -1,14 +1,14 @@
 import type {
-  ActionFunction,
-  LoaderFunction,
-  MetaFunction
+    ActionFunction,
+    LoaderFunction,
+    MetaFunction
 } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import { safeRedirect, validateName } from "~/utils";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -29,7 +29,7 @@ export const action: ActionFunction = async ({ request }) => {
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
-  if (!validateEmail(email)) {
+  if (!validateName(email)) {
     return json<ActionData>(
       { errors: { email: "Email is invalid" } },
       { status: 400 }

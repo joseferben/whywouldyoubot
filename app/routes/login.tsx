@@ -1,14 +1,14 @@
 import type {
-  ActionFunction,
-  LoaderFunction,
-  MetaFunction
+    ActionFunction,
+    LoaderFunction,
+    MetaFunction
 } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import { safeRedirect, validateName } from "~/utils";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -25,12 +25,12 @@ interface ActionData {
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const email = formData.get("email");
+  const name = formData.get("name");
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/notes");
   const remember = formData.get("remember");
 
-  if (!validateEmail(email)) {
+  if (!validateName(name)) {
     return json<ActionData>(
       { errors: { email: "Email is invalid" } },
       { status: 400 }
@@ -51,7 +51,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const user = await verifyLogin(email, password);
+  const user = await verifyLogin(name, password);
 
   if (!user) {
     return json<ActionData>(
