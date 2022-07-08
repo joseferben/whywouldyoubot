@@ -5,6 +5,7 @@ node_modules
 .env
 .log
 coverage
+/public/assets/map/map.*.json
 
 /cypress/screenshots
 /cypress/videos
