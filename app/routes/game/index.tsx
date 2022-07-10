@@ -1,6 +1,7 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { json, LoaderFunction } from "@remix-run/server-runtime";
 import { getMiniMapByUser } from "~/minimap.server";
+import { getUserById } from "~/models/user.server";
 import { requireUserId } from "~/session.server";
 import imageHoney from "../../../public/assets/items/honey.png";
 import imageCow from "../../../public/assets/npcs/cow.png";
@@ -11,7 +12,8 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const miniMap = await getMiniMapByUser(userId);
+  const user = await getUserById(userId);
+  const miniMap = await getMiniMapByUser(user);
   return json<LoaderData>({ miniMap });
 };
 

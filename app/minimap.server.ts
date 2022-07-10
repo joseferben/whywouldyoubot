@@ -1,6 +1,9 @@
 import fs from "fs";
 import { User } from "./models/user.server";
 
+const WIDTH = 9;
+const HEIGHT = 5;
+
 interface MiniMapTile {
   images: string[];
   walkable: boolean;
@@ -19,12 +22,11 @@ function randomTiles(images: string[], n: number) {
     };
   });
 }
-export async function getMiniMapByUser(
-  userId: User["entityId"]
-): Promise<MiniMap> {
+
+export async function getMiniMapByUser(user: User): Promise<MiniMap> {
   const images = await fs.promises.readdir("public/assets/tiles/ground");
-  const tiles = Array.from(Array(9)).map(() => {
-    return randomTiles(images, 5);
+  const tiles = Array.from(Array(WIDTH)).map(() => {
+    return randomTiles(images, HEIGHT);
   });
   return Promise.resolve({ tiles });
 }

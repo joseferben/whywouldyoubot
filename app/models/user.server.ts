@@ -7,6 +7,8 @@ export interface User {
   name: string;
   password: string;
   email?: string;
+  posX: number;
+  posY: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,6 +19,8 @@ const userSchema = new Schema(User, {
   name: { type: "string", indexed: true },
   email: { type: "string", indexed: true },
   password: { type: "string" },
+  posX: { type: "number", indexed: true },
+  posY: { type: "number", indexed: true },
   createdAt: { type: "date" },
   updatedAt: { type: "date" },
 });
@@ -53,6 +57,8 @@ export async function createUser(
     name,
     password: hashedPassword,
     email,
+    posX: 200,
+    posY: 200,
     createdAt: now,
     updatedAt: now,
   });
