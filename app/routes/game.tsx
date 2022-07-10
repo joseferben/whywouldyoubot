@@ -2,6 +2,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
     Form,
+    Link,
     Outlet,
     useFetcher,
     useLoaderData,
@@ -13,6 +14,7 @@ import { useRefresher } from "~/hooks";
 import { ChatMessage, getChatMessagesByUser } from "~/models/message.server";
 import { getUserById } from "~/models/user.server";
 import { requireUserId } from "~/session.server";
+import imageGold from "../../public/assets/items/gold.png";
 
 type LoaderData = {
   chatMessages: Awaited<ReturnType<typeof getChatMessagesByUser>>;
@@ -62,12 +64,18 @@ function ChatMessages() {
   }, [data.chatMessages.length]);
 
   return (
-    <div ref={ref} className="h-full mb-1 overflow-y-scroll">
+    <div
+      ref={ref}
+      style={{ minHeight: "15rem" }}
+      className="mb-1 overflow-auto text-sm"
+    >
       <ul className="flex flex-col-reverse break-words">
         {data.chatMessages.map((d: ChatMessage) => (
-          <li className="border border-t-0 border-gray" key={d.entityId}>
-            <span className="font-bold">{d.username}:</span>
-            {d.message}
+          <li className="border border-t-0 border-gray pl-1" key={d.entityId}>
+            <a href="" className="font-bold btn-link">
+              {d.username}
+            </a>
+            :<span className="ml-1">{d.message}</span>
           </li>
         ))}
       </ul>
@@ -94,7 +102,7 @@ function ChatInput() {
             className="select select-bordered select-sm"
           >
             <option>Say</option>
-            <option>Shout</option>
+            <option>Yell</option>
           </select>
           <input
             type="text"
@@ -103,7 +111,7 @@ function ChatInput() {
             className="input input-bordered input-sm w-full"
           ></input>
           <button type="submit" className="btn btn-primary btn-sm">
-            Say
+            Chat
           </button>
         </div>
       </div>
@@ -124,19 +132,32 @@ function Screen({ children }: { children: React.ReactNode }) {
 
 function Navigation() {
   return (
-    <div className="mb-1 flex space-between">
-      <button className="btn btn-xs">Map</button>
-      <button className="ml-1 btn btn-xs">Inventory</button>
-      <button className="ml-1 btn btn-xs">Character</button>
-      <button className="ml-1 btn btn-xs">Settings</button>
-      <Form action="/logout" method="post">
-        <button type="submit" className="ml-1 btn btn-error btn-xs">
-          Logout
-        </button>
-      </Form>
+    <div className="mb-1 flex">
+      <Link to="/game" className="btn btn-xs">
+        Map
+      </Link>
+      <Link to="/game/inventory" className="ml-1 btn btn-xs">
+        Inventory
+      </Link>
+      <Link to="/game/character" className="ml-1 btn btn-xs">
+        Character
+      </Link>
+      <Link to="/game/settings" className="ml-1 btn btn-xs mr-2">
+        Settings
+      </Link>
+      <div className="flex">
+        <img
+          style={{ imageRendering: "pixelated" }}
+          height="30"
+          width="30"
+          src={imageGold}
+        ></img>
+        <span className="font-bold">450</span>
+      </div>
     </div>
   );
 }
+
 export default function Game() {
   return (
     <Screen>
