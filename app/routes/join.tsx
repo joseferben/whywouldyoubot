@@ -29,7 +29,7 @@ export const action: ActionFunction = async ({ request }) => {
   const name = formData.get("name");
   const password = formData.get("password");
   const passwordConfirmation = formData.get("passwordConfirmation");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/field");
+  const redirectTo = safeRedirect(formData.get("redirectTo"), "/game");
 
   if (password !== passwordConfirmation) {
     return json<ActionData>(

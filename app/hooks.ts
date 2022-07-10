@@ -10,7 +10,9 @@ export function useRefresher(
   useEffect(() => {
     const source = new EventSource(eventApiPath, { withCredentials: true });
     source.addEventListener(event, (_: any) => {
-      if (fetcher.type === "init") {
+      console.log("get event");
+      if (fetcher.type === "init" || fetcher.type === "done") {
+        console.log("refreshing page");
         fetcher.load(refreshPath);
       }
     });

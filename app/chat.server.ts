@@ -1,12 +1,14 @@
+import { Observable } from "observable-fns";
+import invariant from "tiny-invariant";
 import { ChatMessage, createChatMessage } from "./models/message.server";
 import { User } from "./models/user.server";
 
 type ChatListener = (m: ChatMessage) => void;
 
-let chatListeners: ChatListener[] = [];
+let listeners: ChatListener[];
 
 declare global {
-  var __chatListeners__: ChatListener[];
+  var __listeners__: ChatListener[];
 }
 
 // this is needed because in development we don't want to restart
@@ -14,26 +16,31 @@ declare global {
 // create a new connection to the DB with every change either.
 // in production we'll have a single connection to the DB.
 if (process.env.NODE_ENV === "production") {
-  chatListeners = [];
+  listeners = [];
 } else {
-  if (!global.__chatListeners__) {
-    global.__chatListeners__ = [];
+  if (!global.__listeners__) {
+    global.__listeners__ = [];
   }
-  chatListeners = global.__chatListeners__;
+  listeners = global.__listeners__;
 }
 
-export function onChatMessage(f: ChatListener) {
-  chatListeners.push(f);
+function onChatMessage(f: ChatListener) {
+  console.log("onChatMessage()");
+  invariant(typeof f === "function", "chat listener has to be a function");
+
+  console.log("onChatMessage() changing f");
+  listeners.push(f);
 }
 
-export async function chat({
-  userId,
-  message,
-}: {
-  userId: User["entityId"];
-  message: string;
-}) {
-  const m = await createChatMessage({ message, userId });
-  console.log("there are n listeners:", chatListeners.length);
-  chatListeners.forEach((f) => f(m));
+const observable: Observable<ChatMessage> = new Observable((observer) => {
+  onChatMessage((m: ChatMessage) => observer.next(m));
+});
+
+async function message({ user, message }: { user: User; message: string }) {
+  const m = await createChatMessage({ message, user });
+  listeners.forEach((f) => f(m));
 }
+
+invariant(observable !== undefined, "chat can not be undefined");
+
+export { message, observable };

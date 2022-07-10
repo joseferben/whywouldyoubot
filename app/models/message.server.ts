@@ -7,6 +7,7 @@ export interface ChatMessage {
   message: string;
   createdAt: Date;
   userId: string;
+  username: string;
 }
 export class ChatMessage extends Entity {}
 
@@ -14,6 +15,7 @@ const chatSchema = new Schema(ChatMessage, {
   message: { type: "string" },
   createdAt: { type: "date", sortable: true },
   userId: { type: "string" },
+  username: { type: "string" },
 });
 
 const messageRepository = redis.fetchRepository(chatSchema);
@@ -35,14 +37,16 @@ export function getChatMessagesByUser(userId: User["entityId"]) {
 
 export function createChatMessage({
   message,
-  userId,
-}: Pick<ChatMessage, "message" | "userId"> & {
-  userId: User["entityId"];
+  user,
+}: {
+  message: ChatMessage["message"];
+  user: User;
 }) {
   const now = Date.now();
   return messageRepository.createAndSave({
     message,
-    userId,
+    userId: user.entityId,
+    username: user.name,
     createdAt: now,
   });
 }

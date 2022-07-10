@@ -1,16 +1,17 @@
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
-  Form,
-  Outlet,
-  useFetcher,
-  useLoaderData,
-  useTransition
+    Form,
+    Outlet,
+    useFetcher,
+    useLoaderData,
+    useTransition
 } from "@remix-run/react";
 import React, { useEffect } from "react";
-import { chat } from "~/chat.server";
+import { message } from "~/chat.server";
 import { useRefresher } from "~/hooks";
 import { ChatMessage, getChatMessagesByUser } from "~/models/message.server";
+import { getUserById } from "~/models/user.server";
 import { requireUserId } from "~/session.server";
 
 type LoaderData = {
@@ -25,17 +26,18 @@ interface ActionData {
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
+  const user = await getUserById(userId);
   const formData = await request.formData();
-  const message = formData.get("message");
+  const m = formData.get("message");
 
-  if (typeof message !== "string" || message.length > 200) {
+  if (typeof m !== "string" || m.length > 200) {
     return json<ActionData>(
       { errors: { message: "Chat message too long" } },
       { status: 400 }
     );
   }
 
-  await chat({ message, userId });
+  await message({ message: m, user });
   return redirect("/game");
 };
 
@@ -45,15 +47,38 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json<LoaderData>({ chatMessages });
 };
 
-export default function Game() {
+function ChatMessages() {
   const loaderData = useLoaderData() as LoaderData;
-  // const user = useUser();
   const fetcher = useFetcher();
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const transition = useTransition();
-  const data = fetcher.data || loaderData;
+  const data: LoaderData = fetcher.data || loaderData;
+  const ref = React.useRef<HTMLDivElement>(null);
 
   useRefresher("/api/chat", "/game", "chat", fetcher);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.scrollTop = ref.current.scrollHeight;
+    }
+  }, [data.chatMessages.length]);
+
+  return (
+    <div ref={ref} className="h-full mb-1 overflow-y-scroll">
+      <ul className="flex flex-col-reverse break-words">
+        {data.chatMessages.map((d: ChatMessage) => (
+          <li className="border border-t-0 border-gray" key={d.entityId}>
+            <span className="font-bold">{d.username}:</span>
+            {d.message}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ChatInput() {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const transition = useTransition();
+
   useEffect(() => {
     if (inputRef.current && transition.state === "submitting") {
       inputRef.current.value = "";
@@ -61,45 +86,64 @@ export default function Game() {
   }, [transition.state]);
 
   return (
-    <div className="flex h-full min-h-screen flex-col">
-      <fetcher.Form action="/logout" method="post">
-        <button
-          type="submit"
-          className="rounded bg-slate-600 py-2 px-4 text-blue-100 hover:bg-blue-500 active:bg-blue-600"
-        >
+    <Form className="flex" method="post">
+      <div className="form-control w-full">
+        <div className="input-group">
+          <select
+            defaultValue={"Say"}
+            className="select select-bordered select-sm"
+          >
+            <option>Say</option>
+            <option>Shout</option>
+          </select>
+          <input
+            type="text"
+            name="message"
+            ref={inputRef}
+            className="input input-bordered input-sm w-full"
+          ></input>
+          <button type="submit" className="btn btn-primary btn-sm">
+            Say
+          </button>
+        </div>
+      </div>
+    </Form>
+  );
+}
+
+function Screen({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{ width: "450px" }}
+      className="flex p-1 md:py-6 w-full mx-auto bg-white h-screen min-h-screen flex-col"
+    >
+      {children}
+    </div>
+  );
+}
+
+function Navigation() {
+  return (
+    <div className="mb-1 flex space-between">
+      <button className="btn btn-xs">Map</button>
+      <button className="ml-1 btn btn-xs">Inventory</button>
+      <button className="ml-1 btn btn-xs">Character</button>
+      <button className="ml-1 btn btn-xs">Settings</button>
+      <Form action="/logout" method="post">
+        <button type="submit" className="ml-1 btn btn-error btn-xs">
           Logout
         </button>
-      </fetcher.Form>
-
-      <main className="flex h-full bg-white">
-        <div className="flex-1 p-6">
-          <Outlet />
-          <div className="mx-auto">
-            <Form method="post">
-              <input
-                type="text"
-                name="message"
-                ref={inputRef}
-                className="rounded border border-gray-500 px-2 py-1 text-lg"
-              ></input>
-              <button
-                type="submit"
-                className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-              >
-                Say
-              </button>
-            </Form>
-            <ul>
-              {data.chatMessages.map((d: ChatMessage) => (
-                <li key={d.entityId}>
-                  <span className="font-bold">{d.userId}:</span>
-                  {d.message}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </main>
+      </Form>
     </div>
+  );
+}
+export default function Game() {
+  return (
+    <Screen>
+      <Outlet />
+      <Navigation />
+      <ChatMessages />
+      <ChatInput />
+    </Screen>
   );
 }

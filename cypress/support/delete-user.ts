@@ -4,7 +4,7 @@
 // and that user will get deleted
 
 import { installGlobals } from "@remix-run/node";
-import { prisma } from "~/db.server";
+import { deleteUserByEmail } from "~/models/user.server";
 
 installGlobals();
 
@@ -16,7 +16,7 @@ async function deleteUser(email: string) {
     throw new Error("All test emails must end in @example.com");
   }
 
-  await prisma.user.delete({ where: { email } });
+  await deleteUserByEmail(email);
 }
 
 deleteUser(process.argv[2]);

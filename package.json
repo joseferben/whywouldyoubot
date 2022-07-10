@@ -36,6 +36,7 @@
     "@remix-run/serve": "^1.6.3",
     "@remix-run/server-runtime": "^1.6.3",
     "bcryptjs": "^2.4.3",
+    "daisyui": "^2.18.2",
     "observable-fns": "^0.6.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
