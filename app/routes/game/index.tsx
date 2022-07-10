@@ -82,24 +82,32 @@ function Field() {
   );
 }
 
+function TileImageStack({ imagePaths }: { imagePaths: string[] }) {
+  return (
+    <div className="relative w-10 h-10">
+      {imagePaths.map((image, idx) => (
+        <img
+          draggable={false}
+          className="absolute"
+          style={{ imageRendering: "pixelated" }}
+          height="50"
+          width="50"
+          key={idx}
+          src={image}
+        ></img>
+      ))}
+    </div>
+  );
+}
+
 function Map({ miniMap }: LoaderData) {
   return (
     <div className="flex">
-      {miniMap.tiles.map((tileX, idx) => (
-        <div key={idx}>
-          {tileX.map((tileY) =>
-            tileY.images.map((image, idx) => (
-              <img
-                draggable={false}
-                className="select-none"
-                style={{ imageRendering: "pixelated" }}
-                height="50"
-                width="50"
-                key={idx}
-                src={image}
-              ></img>
-            ))
-          )}
+      {miniMap.tiles.map((tileX, x) => (
+        <div key={x}>
+          {tileX.map((tileY) => (
+            <TileImageStack imagePaths={tileY.imagePaths} />
+          ))}
         </div>
       ))}
     </div>

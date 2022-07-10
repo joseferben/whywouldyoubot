@@ -13,7 +13,11 @@ export interface User {
   updatedAt: Date;
 }
 
-export class User extends Entity {}
+export class User extends Entity {
+  canWalk(x: number, y: number): boolean {
+    return true;
+  }
+}
 
 const userSchema = new Schema(User, {
   name: { type: "string", indexed: true },
@@ -57,8 +61,8 @@ export async function createUser(
     name,
     password: hashedPassword,
     email,
-    posX: 200,
-    posY: 200,
+    posX: 555,
+    posY: 555,
     createdAt: now,
     updatedAt: now,
   });

@@ -3,6 +3,7 @@ import crypto from "crypto";
 import fs from "fs";
 import TiledMap, { TiledTile } from "tiled-types";
 import invariant from "tiny-invariant";
+import { array2d } from "./utils";
 
 const TMX_FILE_DIR = "public/assets/map";
 const TMX_FILE_PATH = `${TMX_FILE_DIR}/map.tmx`;
@@ -60,10 +61,7 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
   if (tiledMap.orientation !== "orthogonal") {
     throw new Error("Only orthogonal maps supported");
   }
-  const tiles: Tile[][] = Array.from(
-    Array(tiledMap.width),
-    () => new Array(tiledMap.height)
-  );
+  const tiles: Tile[][] = array2d(tiledMap.width, tiledMap.height);
 
   for (const layer of tiledMap.layers) {
     if (layer.type === "tilelayer") {
@@ -133,9 +131,28 @@ function loadMap(): Map {
   }
 }
 
-export { map };
+function sliceMap(
+  map: Map,
+  posX: number,
+  posY: number,
+  width: number,
+  height: number
+): Map {
+  const tiles: Tile[][] = array2d(width, height);
+  const fromX = Math.floor(posX - width / 2);
+  const toX = Math.floor(posX + width / 2);
+  const fromY = Math.floor(posY - height / 2);
+  const toY = Math.floor(posY + height / 2);
+  for (const [x, col] of map.tiles.slice(fromX, toX).entries()) {
+    for (const [y, tile] of col.slice(fromY, toY).entries()) {
+      // copy over
+      tiles[x][y] = { ...tile };
+    }
+  }
+  return { tiles };
+}
 
-const FORCE_RELOAD = true;
+const FORCE_RELOAD_ALWAYS = false;
 
 // this is needed because in development we don't want to restart
 // the server with every change, but we want to make sure we don't
@@ -144,7 +161,7 @@ const FORCE_RELOAD = true;
 if (process.env.NODE_ENV === "production") {
   map = loadMap();
 } else {
-  if (FORCE_RELOAD) {
+  if (FORCE_RELOAD_ALWAYS) {
     global.__map__ = loadMap();
   }
   if (!global.__map__) {
@@ -154,3 +171,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 invariant(map != undefined, "map can not be undefined");
+
+export type { Map, Tile };
+export { map, sliceMap };

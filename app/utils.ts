@@ -68,3 +68,7 @@ export function useUser(): User {
 export function validateName(name: unknown): name is string {
   return typeof name === "string" && name.length > 3 && name.length < 25;
 }
+
+export function array2d(width: number, height: number) {
+  return Array.from(Array(width), () => new Array(height));
+}
