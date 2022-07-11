@@ -1,8 +1,13 @@
-import { Link, useLoaderData } from "@remix-run/react";
-import { json, LoaderFunction } from "@remix-run/server-runtime";
-import { getMiniMapByUser } from "~/minimap.server";
-import { getUserById } from "~/models/user.server";
-import { requireUserId } from "~/session.server";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import {
+    ActionFunction,
+    json,
+    LoaderFunction
+} from "@remix-run/server-runtime";
+import { getMiniMapByUser, MiniMapTile } from "~/minimap.server";
+import { updateUser } from "~/models/user.server";
+import { requireUser } from "~/session.server";
+import imageAvatar from "../../../public/assets/avatars/1.png";
 import imageHoney from "../../../public/assets/items/honey.png";
 import imageCow from "../../../public/assets/npcs/cow.png";
 
@@ -11,8 +16,26 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await requireUserId(request);
-  const user = await getUserById(userId);
+  const user = await requireUser(request);
+  const miniMap = await getMiniMapByUser(user);
+  return json<LoaderData>({ miniMap });
+};
+
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  const type = formData.get("type");
+  const x = formData.get("x");
+  const y = formData.get("y");
+  const user = await requireUser(request);
+  if (
+    typeof x === "string" &&
+    typeof y === "string" &&
+    x !== null &&
+    y !== null
+  ) {
+    user.walk(parseInt(x), parseInt(y));
+  }
+  await updateUser(user);
   const miniMap = await getMiniMapByUser(user);
   return json<LoaderData>({ miniMap });
 };
@@ -84,13 +107,42 @@ function Field() {
   );
 }
 
-function TileImageStack({ imagePaths }: { imagePaths: string[] }) {
+function Tile({ tile }: { tile: MiniMapTile }) {
+  const fetcher = useFetcher();
+
+  function handleClick() {
+    if (tile.canWalk) {
+      fetcher.submit(
+        { type: "walk", x: String(tile.x), y: String(tile.y) },
+        { method: "post" }
+      );
+    }
+  }
+
   return (
-    <div className="relative w-10 h-10">
-      {imagePaths.map((image, idx) => (
+    <div
+      onClick={handleClick}
+      className={`relative w-10 h-10 ${tile.canWalk && "cursor-pointer"}`}
+    >
+      {tile.isCenter && (
         <img
           draggable={false}
-          className="absolute"
+          className="absolute z-30"
+          style={{ imageRendering: "pixelated" }}
+          height="50"
+          width="50"
+          src={imageAvatar}
+        ></img>
+      )}
+      <div
+        className={`${
+          !tile.canSee && !tile.isCenter && "opacity-20 bg-stone-900"
+        } z-20 absolute w-full h-full`}
+      ></div>
+      {tile.imagePaths.reverse().map((image, idx) => (
+        <img
+          draggable={false}
+          className={idx > 0 ? "" : "absolute"}
           style={{ imageRendering: "pixelated" }}
           height="50"
           width="50"
@@ -105,10 +157,10 @@ function TileImageStack({ imagePaths }: { imagePaths: string[] }) {
 function Map({ miniMap }: LoaderData) {
   return (
     <div className="flex">
-      {miniMap.tiles.map((tileX, x) => (
-        <div key={x}>
-          {tileX.map((tileY) => (
-            <TileImageStack imagePaths={tileY.imagePaths} />
+      {miniMap.tiles.map((cols) => (
+        <div key={cols[0].x}>
+          {cols.map((tile: MiniMapTile) => (
+            <Tile key={`${tile.x}${tile.y}`} tile={tile} />
           ))}
         </div>
       ))}
@@ -117,7 +169,6 @@ function Map({ miniMap }: LoaderData) {
 }
 export default function Main() {
   const { miniMap } = useLoaderData() as LoaderData;
-
   return (
     <div style={{ minHeight: "60%" }} className="flex flex-col">
       <Field />

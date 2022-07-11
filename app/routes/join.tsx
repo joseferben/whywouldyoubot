@@ -93,9 +93,7 @@ export default function Join() {
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8">
         <div className="mb-12">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Almost there, {name} ⚔️
-          </h1>
+          <h1 className="text-4xl font-bold tracking-tight">Hello {name} ⚔️</h1>
         </div>
         <Form method="post" className="space-y-6">
           <div>

@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { Entity, Schema } from "redis-om";
 import { redis } from "~/db.server";
+import { map } from "~/map.server";
 
 export interface User {
   entityId: string;
@@ -14,8 +15,27 @@ export interface User {
 }
 
 export class User extends Entity {
-  canWalk(x: number, y: number): boolean {
-    return true;
+  canSee(x: number, y: number): boolean {
+    return (
+      this.posX >= x - 1 &&
+      this.posX <= x + 1 &&
+      this.posY >= y - 1 &&
+      this.posY <= y + 1 &&
+      !(this.posX === x && this.posY === y)
+    );
+  }
+
+  canWalk(x: number, y: number) {
+    const tile = map.tiles[x][y];
+    return this.canSee(x, y) && !tile.obstacle;
+  }
+
+  walk(x: number, y: number) {
+    if (!this.canWalk(x, y)) {
+      console.warn(`user ${this.entityId} tried to walk to (${x}/${y})`);
+    }
+    this.posX = x;
+    this.posY = y;
   }
 }
 
@@ -33,8 +53,13 @@ const userRepository = redis.fetchRepository(userSchema);
 
 userRepository.createIndex();
 
+export async function updateUser(user: User) {
+  userRepository.save(user);
+}
+
 export async function getUserById(id: User["entityId"]) {
-  return userRepository.fetch(id);
+  const user = await userRepository.fetch(id);
+  return user.name === null ? null : user;
 }
 
 export async function getUserByName(name: User["name"]) {

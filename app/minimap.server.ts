@@ -5,13 +5,19 @@ import { User } from "./models/user.server";
 const WIDTH = 9;
 const HEIGHT = 5;
 
-interface MiniMapTile {
+export interface MiniMapTile {
   imagePaths: string[];
-  walkable: boolean;
+  canSee: boolean;
+  canWalk: boolean;
+  isCenter: boolean;
+  x: number;
+  y: number;
 }
 
-interface MiniMap {
+export interface MiniMap {
   tiles: MiniMapTile[][];
+  posX: number;
+  posY: number;
 }
 
 function normalizeImagePath(p: string): string {
@@ -25,11 +31,17 @@ export async function getMiniMapByUser(user: User): Promise<MiniMap> {
     col.map((tile: Tile) => {
       return {
         imagePaths: tile.imagePaths.map(normalizeImagePath),
-        walkable: user.canWalk(tile.x, tile.y),
+        canSee: user.canSee(tile.x, tile.y),
+        canWalk: user.canWalk(tile.x, tile.y),
+        isCenter: user.posX === tile.x && user.posY === tile.y,
+        x: tile.x,
+        y: tile.y,
       };
     })
   );
   return Promise.resolve({
     tiles,
+    posX: user.posX,
+    posY: user.posY,
   });
 }
