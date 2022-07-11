@@ -19,42 +19,44 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 function NpcList() {
   return (
-    <ul>
-      <li className="flex">
+    <ul className="text-sm">
+      <li className="flex border-b border-px">
         <img
           style={{ imageRendering: "pixelated" }}
-          height="40"
-          width="40"
+          height="38"
+          width="38"
           src={imageCow}
         />
-        <a className="ml-2 btn-link" href="">
-          Cow (2)
+        <a className="pt-1 btn-link btn-sm" href="">
+          Cow
         </a>
-        <span className="ml-2">|</span>
-        <Link className="ml-2 btn btn-primary btn-xs" to="/game">
-          Attack
-        </Link>
+        <div className="pt-1 ml-auto pr-2">
+          <Link className="ml-2 btn btn-primary btn-xs" to="/game">
+            Attack
+          </Link>
+        </div>
       </li>
     </ul>
   );
 }
 function ItemList() {
   return (
-    <ul>
-      <li className="flex">
+    <ul className="text-sm">
+      <li className="flex border-b border-px">
         <img
           style={{ imageRendering: "pixelated" }}
-          height="40"
-          width="40"
+          height="38"
+          width="38"
           src={imageHoney}
         />
-        <a className="ml-2 btn-link" href="">
+        <a className="pt-1 btn-link btn-sm" href="">
           Honey
         </a>
-        <span className="ml-2">|</span>
-        <Link className="ml-2 btn btn-primary btn-xs" to="/game">
-          Pick up
-        </Link>
+        <div className="pt-1 ml-auto pr-2">
+          <Link className="ml-2 btn btn-primary btn-xs" to="/game">
+            Pick up
+          </Link>
+        </div>
       </li>
     </ul>
   );

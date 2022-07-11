@@ -71,7 +71,7 @@ function ChatMessages() {
     >
       <ul className="flex flex-col-reverse break-words">
         {data.chatMessages.map((d: ChatMessage) => (
-          <li className="border border-t-0 border-gray pl-1" key={d.entityId}>
+          <li className="border-y border-t-0 border-gray pl-1" key={d.entityId}>
             <a href="" className="font-bold btn-link">
               {d.username}
             </a>
