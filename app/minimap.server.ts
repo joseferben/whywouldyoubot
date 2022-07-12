@@ -1,6 +1,7 @@
 import path from "path/posix";
+import imageAvatar from "../public/assets/avatars/1.png";
 import { map, sliceMap, Tile } from "./map.server";
-import { User } from "./models/user.server";
+import { getUsersByRectAsMap, User, UserMap } from "./models/user.server";
 
 const WIDTH = 9;
 const HEIGHT = 5;
@@ -25,14 +26,27 @@ function normalizeImagePath(p: string): string {
   arr.shift();
   return ["assets", ...arr].join(path.sep);
 }
+
+function getImagePaths(userMap: UserMap, tile: Tile) {
+  const imagePaths = tile.imagePaths.map(normalizeImagePath);
+  const users = userMap.get(tile.x, tile.y);
+  // TODO add custom avatars here
+  users.forEach((u) => imagePaths.push(imageAvatar));
+  return Array.from(new Set(imagePaths));
+}
+
 export async function getMiniMapByUser(user: User): Promise<MiniMap> {
   const mapSlice = sliceMap(map, user.posX, user.posY, WIDTH, HEIGHT);
+  const userMap = await getUsersByRectAsMap(
+    user.posX,
+    user.posY,
+    WIDTH,
+    HEIGHT
+  );
   const tiles: MiniMapTile[][] = mapSlice.tiles.map((col: Tile[]) =>
     col.map((tile: Tile) => {
       return {
-        imagePaths: Array.from(
-          new Set(tile.imagePaths.map(normalizeImagePath))
-        ),
+        imagePaths: getImagePaths(userMap, tile),
         canSee: user.canSee(tile.x, tile.y),
         canWalk: user.canWalk(tile.x, tile.y),
         isCenter: user.posX === tile.x && user.posY === tile.y,

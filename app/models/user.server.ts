@@ -66,6 +66,65 @@ export async function getUserByName(name: User["name"]) {
   return userRepository.search().where("name").is.equalTo(name).return.first();
 }
 
+export async function getUsersByRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) {
+  const xMin = x - Math.round(width / 2);
+  const xMax = x + Math.round(width / 2);
+  const yMin = y - Math.round(height / 2);
+  const yMax = y + Math.round(height / 2);
+  return userRepository
+    .search()
+    .where("posX")
+    .greaterThanOrEqualTo(xMin)
+    .where("posX")
+    .lessThanOrEqualTo(xMax)
+    .where("posY")
+    .greaterThanOrEqualTo(yMin)
+    .where("posY")
+    .lessThanOrEqualTo(yMax)
+    .return.all();
+}
+
+type UserMapInternal = { [key: string]: { [key: string]: User[] } };
+
+export class UserMap {
+  map: UserMapInternal;
+  constructor(users: User[]) {
+    const result: UserMapInternal = {};
+    users.forEach((u) => {
+      if (result[u.posX]) {
+        if (result[u.posX][u.posY]) {
+          result[u.posX][u.posY].push(u);
+        } else {
+          result[u.posX][u.posY] = [u];
+        }
+      } else {
+        result[u.posX] = {};
+        result[u.posX][u.posY] = [u];
+      }
+    });
+    this.map = result;
+  }
+
+  get(x: number, y: number): User[] {
+    return (this.map[x] ? this.map[x][y] : []) || [];
+  }
+}
+
+export async function getUsersByRectAsMap(
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) {
+  const users = await getUsersByRect(x, y, width, height);
+  return new UserMap(users);
+}
+
 export async function getUserByEmail(email: string) {
   return userRepository
     .search()

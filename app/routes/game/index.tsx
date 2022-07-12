@@ -130,7 +130,10 @@ function Tile({ tile }: { tile: MiniMapTile }) {
         <img
           draggable={false}
           className="absolute z-30"
-          style={{ imageRendering: "pixelated" }}
+          style={{
+            userSelect: "none",
+            imageRendering: "pixelated",
+          }}
           height="50"
           width="50"
           src={imageAvatar}
@@ -145,7 +148,11 @@ function Tile({ tile }: { tile: MiniMapTile }) {
         <img
           draggable={false}
           className="absolute"
-          style={{ imageRendering: "pixelated", zIndex: `${idx + 1}` }}
+          style={{
+            userSelect: "none",
+            imageRendering: "pixelated",
+            zIndex: `${idx + 1}`,
+          }}
           height="50"
           width="50"
           key={image}
@@ -154,7 +161,11 @@ function Tile({ tile }: { tile: MiniMapTile }) {
       ))}
       <img
         draggable={false}
-        style={{ imageRendering: "pixelated", zIndex: "1" }}
+        style={{
+          userSelect: "none",
+          imageRendering: "pixelated",
+          zIndex: "1",
+        }}
         height="50"
         width="50"
         src={ground}
