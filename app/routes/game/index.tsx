@@ -146,7 +146,7 @@ function Tile({ tile }: { tile: MiniMapTile }) {
           style={{ imageRendering: "pixelated" }}
           height="50"
           width="50"
-          key={idx}
+          key={image}
           src={image}
         ></img>
       ))}
