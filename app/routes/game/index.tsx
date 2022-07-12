@@ -119,6 +119,8 @@ function Tile({ tile }: { tile: MiniMapTile }) {
     }
   }
 
+  const [ground, ...layers] = tile.imagePaths;
+
   return (
     <div
       onClick={handleClick}
@@ -139,10 +141,10 @@ function Tile({ tile }: { tile: MiniMapTile }) {
           !tile.canSee && !tile.isCenter && "opacity-20 bg-stone-900"
         } z-20 absolute w-full h-full`}
       ></div>
-      {tile.imagePaths.reverse().map((image, idx) => (
+      {layers.map((image, idx) => (
         <img
           draggable={false}
-          className={idx > 0 ? "" : "absolute"}
+          className="absolute"
           style={{ imageRendering: "pixelated", zIndex: `${idx + 1}` }}
           height="50"
           width="50"
@@ -150,6 +152,13 @@ function Tile({ tile }: { tile: MiniMapTile }) {
           src={image}
         ></img>
       ))}
+      <img
+        draggable={false}
+        style={{ imageRendering: "pixelated", zIndex: "1" }}
+        height="50"
+        width="50"
+        src={ground}
+      ></img>
     </div>
   );
 }
