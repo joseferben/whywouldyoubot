@@ -71,15 +71,6 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
           const x = idx % tiledMap.width;
           const y = Math.floor(idx / tiledMap.width);
           const tiledTile = gidToTiledTile(gid, tiledMap);
-          if (
-            layer.name === OBSTACLE_LAYER_NAME &&
-            gid !== 0 &&
-            x === 548 &&
-            y === 558
-          ) {
-            // console.log(x, y, gid);
-            // console.log(tiledTile);
-          }
           if (tiledTile !== undefined) {
             const descriptionProp = (tiledTile.properties || []).find(
               (p) => p.name === "description"
@@ -100,7 +91,10 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
               };
             } else {
               // Update existing tile
-              if (tiledTile.image) {
+              const hasImageAlready =
+                tiles[x][y].imagePaths.find((i) => i === tiledTile.image) !==
+                undefined;
+              if (tiledTile.image && !hasImageAlready) {
                 tiles[x][y].imagePaths.push(tiledTile.image);
               }
               // Set if obstacle

@@ -143,7 +143,7 @@ function Tile({ tile }: { tile: MiniMapTile }) {
         <img
           draggable={false}
           className={idx > 0 ? "" : "absolute"}
-          style={{ imageRendering: "pixelated" }}
+          style={{ imageRendering: "pixelated", zIndex: `${idx + 1}` }}
           height="50"
           width="50"
           key={image}
@@ -160,7 +160,7 @@ function Map({ miniMap }: LoaderData) {
       {miniMap.tiles.map((cols) => (
         <div key={cols[0].x}>
           {cols.map((tile: MiniMapTile) => (
-            <Tile key={`${tile.x}${tile.y}`} tile={tile} />
+            <Tile key={`${tile.x}/${tile.y}`} tile={tile} />
           ))}
         </div>
       ))}

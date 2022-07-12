@@ -30,7 +30,9 @@ export async function getMiniMapByUser(user: User): Promise<MiniMap> {
   const tiles: MiniMapTile[][] = mapSlice.tiles.map((col: Tile[]) =>
     col.map((tile: Tile) => {
       return {
-        imagePaths: tile.imagePaths.map(normalizeImagePath),
+        imagePaths: Array.from(
+          new Set(tile.imagePaths.map(normalizeImagePath))
+        ),
         canSee: user.canSee(tile.x, tile.y),
         canWalk: user.canWalk(tile.x, tile.y),
         isCenter: user.posX === tile.x && user.posY === tile.y,
