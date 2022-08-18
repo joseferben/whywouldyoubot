@@ -2,7 +2,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
     Form,
-    Link,
+    NavLink,
     Outlet,
     useFetcher,
     useLoaderData,
@@ -13,8 +13,8 @@ import { message } from "~/chat.server";
 import { useRefresher } from "~/hooks";
 import { getMiniMapByUser, MiniMapTile } from "~/minimap.server";
 import { ChatMessage, getChatMessagesByUser } from "~/models/message.server";
-import { getUserById } from "~/models/user.server";
-import { requireUser, requireUserId } from "~/session.server";
+import { updateUser } from "~/models/user.server";
+import { requireUser } from "~/session.server";
 import imageAvatar from "../../public/assets/avatars/1.png";
 import imageGold from "../../public/assets/items/gold.png";
 
@@ -30,23 +30,41 @@ interface ActionData {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-  const userId = await requireUserId(request);
-  const user = await getUserById(userId);
   const formData = await request.formData();
+  const type = formData.get("type");
+  const x = formData.get("x");
+  const y = formData.get("y");
   const m = formData.get("message");
-
-  if (typeof m !== "string" || m.length > 200) {
-    return json<ActionData>(
-      { errors: { message: "Chat message too long" } },
-      { status: 400 }
-    );
-  }
-
+  const user = await requireUser(request);
   if (user == null) {
     return redirect("/");
   }
 
-  await message({ message: m, user });
+  if (type === "chat") {
+    if (typeof m !== "string" || m.length > 200) {
+      return json<ActionData>(
+        { errors: { message: "Chat message too long" } },
+        { status: 400 }
+      );
+    }
+    await message({ message: m, user });
+  } else if (type === "walk") {
+    if (
+      typeof x === "string" &&
+      typeof y === "string" &&
+      x !== null &&
+      y !== null
+    ) {
+      user.walk(parseInt(x), parseInt(y));
+    }
+    await updateUser(user);
+  } else {
+    return json<ActionData>(
+      { errors: { message: "Invalid command received" } },
+      { status: 400 }
+    );
+  }
+
   return redirect("/game");
 };
 
@@ -80,10 +98,10 @@ function ChatMessages() {
       <ul className="flex flex-col-reverse break-words">
         {data.chatMessages.map((d: ChatMessage) => (
           <li className="pl-1" key={d.entityId}>
-            <a href="" className="font-bold btn-link">
-              {d.username}
+            <a href="" className="text-white">
+              {d.username}:
             </a>
-            :<span className="ml-1">{d.message}</span>
+            :<span className="ml-1 text-white">{d.message}</span>
           </li>
         ))}
       </ul>
@@ -102,7 +120,7 @@ function ChatInput() {
   }, [transition.state]);
 
   return (
-    <Form className="flex p-1" method="post">
+    <Form className="flex py-1" method="post">
       <div className="form-control w-full">
         <div className="input-group">
           <select
@@ -118,6 +136,7 @@ function ChatInput() {
             ref={inputRef}
             className="input input-bordered input-sm w-full"
           ></input>
+          <input type="hidden" name="type" value="chat"></input>
           <button type="submit" className="btn btn-primary btn-sm">
             Chat
           </button>
@@ -140,20 +159,42 @@ function Screen({ children }: { children: React.ReactNode }) {
 
 function Navigation() {
   return (
-    <div className="px-1 mb-1 flex">
-      <Link to="/game" className="btn btn-xs">
-        Map
-      </Link>
-      <Link to="/game/inventory" className="ml-1 btn btn-xs">
-        Inventory
-      </Link>
-      <Link to="/game/character" className="ml-1 btn btn-xs">
-        Character
-      </Link>
-      <Link to="/game/settings" className="ml-1 btn btn-xs mr-2">
-        Settings
-      </Link>
+    <div className="py-1 mb-1 flex justify-between">
       <div className="flex">
+        <NavLink
+          to="/game"
+          className={({ isActive }) =>
+            `btn btn-xs ${isActive ? "btn-active" : ""}`
+          }
+        >
+          Map
+        </NavLink>
+        <NavLink
+          to="/game/inventory"
+          className={({ isActive }) =>
+            `ml-1 btn btn-xs ${isActive ? "btn-active" : ""}`
+          }
+        >
+          Inventory
+        </NavLink>
+        <NavLink
+          to="/game/character"
+          className={({ isActive }) =>
+            `ml-1 btn btn-xs ${isActive ? "btn-active" : ""}`
+          }
+        >
+          Character
+        </NavLink>
+        <NavLink
+          to="/game/settings"
+          className={({ isActive }) =>
+            `ml-1 btn btn-xs ${isActive ? "btn-active" : ""}`
+          }
+        >
+          Settings
+        </NavLink>
+      </div>
+      <div className="ml-1 flex">
         <img style={{ imageRendering: "pixelated" }} src={imageGold}></img>
         <span className="font-bold">450</span>
       </div>
@@ -245,11 +286,9 @@ function Map() {
 
 function MiniMapWithChatMessages() {
   return (
-    <div className="relative">
-      <div>
-        <Map />
-      </div>
-      <div className="absolute top-0 w-full">
+    <div className="relative overflow-hidden">
+      <Map />
+      <div className="absolute top-0 w-full z-40 pointer-events-none">
         <ChatMessages />
       </div>
     </div>
@@ -259,7 +298,7 @@ function MiniMapWithChatMessages() {
 export default function Game() {
   return (
     <Screen>
-      <div className="h-auto p-1 mb-1 overflow-auto">
+      <div className="h-auto py-1 mb-1 overflow-auto">
         <Outlet />
       </div>
       <div className="h-1/2">
