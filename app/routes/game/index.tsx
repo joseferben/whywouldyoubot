@@ -50,7 +50,7 @@ function NpcList() {
           width="38"
           src={imageCow}
         />
-        <a className="pt-1 btn-link btn-sm" href="">
+        <a className="pt-1 link link-secondary" href="">
           Cow
         </a>
         <div className="pt-1 ml-auto pr-2">
@@ -72,7 +72,7 @@ function ItemList() {
           width="38"
           src={imageHoney}
         />
-        <a className="pt-1 btn-link btn-sm" href="">
+        <a className="pt-1 link link-secondary" href="">
           Honey
         </a>
         <div className="pt-1 ml-auto pr-2">
@@ -96,6 +96,12 @@ function Field() {
       <NpcList />
       <NpcList />
       <NpcList />
+      <ItemList />
+      <ItemList />
+      <ItemList />
+      <ItemList />
+      <ItemList />
+      <ItemList />
       <ItemList />
       <ItemList />
       <ItemList />
@@ -187,14 +193,8 @@ function Map({ miniMap }: LoaderData) {
     </div>
   );
 }
+
 export default function Main() {
   const { miniMap } = useLoaderData() as LoaderData;
-  return (
-    <div style={{ minHeight: "60%" }} className="flex flex-col">
-      <Field />
-      <div className="mb-1">
-        <Map miniMap={miniMap} />
-      </div>
-    </div>
-  );
+  return <Field />;
 }
