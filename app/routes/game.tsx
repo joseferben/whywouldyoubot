@@ -95,7 +95,7 @@ function ChatMessages() {
       style={{ minHeight: "15rem" }}
       className="mb-1 overflow-auto text-sm"
     >
-      <ul className="flex flex-col-reverse break-words">
+      <ul className="flex flex-col break-words">
         {data.chatMessages.map((d: ChatMessage) => (
           <li className="pl-1" key={d.entityId}>
             <a href="" className="text-white">
@@ -148,10 +148,7 @@ function ChatInput() {
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      style={{ width: "450px" }}
-      className="flex w-full mx-auto h-screen min-h-screen flex-col"
-    >
+    <div className="flex w-full mx-auto h-screen min-h-screen flex-col">
       {children}
     </div>
   );
@@ -295,17 +292,27 @@ function MiniMapWithChatMessages() {
   );
 }
 
+function Main() {
+  return (
+    <div className="h-auto p-1 overflow-auto">
+      <Outlet />
+    </div>
+  );
+}
+
+function LowerHalf({ children }: { children: React.ReactNode }) {
+  return <div className="h-1/2">{children}</div>;
+}
+
 export default function Game() {
   return (
     <Screen>
-      <div className="h-auto py-1 mb-1 overflow-auto">
-        <Outlet />
-      </div>
-      <div className="h-1/2">
+      <Main />
+      <LowerHalf>
         <Navigation />
         <MiniMapWithChatMessages />
         <ChatInput />
-      </div>
+      </LowerHalf>
     </Screen>
   );
 }
