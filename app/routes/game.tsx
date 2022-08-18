@@ -39,6 +39,10 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
+  if (user == null) {
+    return redirect("/");
+  }
+
   await message({ message: m, user });
   return redirect("/game");
 };
