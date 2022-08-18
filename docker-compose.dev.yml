@@ -2,6 +2,7 @@ version: "3.1"
 
 services:
   redis:
-    image: redislabs/redismod:latest
+    image: redis/redis-stack:latest
     ports:
       - 6379:6379
+      - 8001:8001
