@@ -120,7 +120,7 @@ function ChatInput() {
   }, [transition.state]);
 
   return (
-    <Form className="flex py-1" method="post">
+    <Form className="flex p-1" method="post">
       <div className="form-control w-full">
         <div className="input-group">
           <select
@@ -148,7 +148,10 @@ function ChatInput() {
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex w-full mx-auto h-screen min-h-screen flex-col">
+    <div
+      style={{ maxWidth: "700px" }}
+      className="flex w-full mx-auto h-screen min-h-screen flex-col"
+    >
       {children}
     </div>
   );
@@ -156,7 +159,7 @@ function Screen({ children }: { children: React.ReactNode }) {
 
 function Navigation() {
   return (
-    <div className="py-1 mb-1 flex justify-between">
+    <div className="p-1 mb-1 flex justify-between">
       <div className="flex">
         <NavLink
           to="/game"
@@ -236,21 +239,23 @@ function Tile({ tile }: { tile: MiniMapTile }) {
           !tile.canSee && !tile.isCenter && "opacity-20 bg-stone-900"
         } z-20 absolute w-full h-full`}
       ></div>
-      {layers.map((image, idx) => (
-        <img
-          width="100"
-          height="100"
-          draggable={false}
-          className="absolute"
-          style={{
-            userSelect: "none",
-            imageRendering: "pixelated",
-            zIndex: `${idx + 1}`,
-          }}
-          key={image}
-          src={image}
-        ></img>
-      ))}
+      {layers.map((image, idx) => {
+        return (
+          <img
+            width="100"
+            height="100"
+            draggable={false}
+            className="absolute"
+            style={{
+              userSelect: "none",
+              imageRendering: "pixelated",
+              zIndex: `${idx + 1}`,
+            }}
+            key={image}
+            src={`/${image}`}
+          ></img>
+        );
+      })}
       <img
         width="100"
         height="100"
@@ -260,7 +265,7 @@ function Tile({ tile }: { tile: MiniMapTile }) {
           imageRendering: "pixelated",
           zIndex: "1",
         }}
-        src={ground}
+        src={`/${ground}`}
       ></img>
     </div>
   );
@@ -294,7 +299,7 @@ function MiniMapWithChatMessages() {
 
 function Main() {
   return (
-    <div className="h-auto p-1 overflow-auto">
+    <div className="h-full p-1 overflow-auto">
       <Outlet />
     </div>
   );
