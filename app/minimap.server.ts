@@ -4,7 +4,7 @@ import { map, sliceMap, Tile } from "./map.server";
 import { getUsersByRectAsMap, User, UserMap } from "./models/user.server";
 
 const WIDTH = 9;
-const HEIGHT = 7;
+const HEIGHT = 9;
 
 export interface MiniMapTile {
   imagePaths: string[];

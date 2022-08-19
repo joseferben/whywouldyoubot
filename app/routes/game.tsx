@@ -93,7 +93,7 @@ function ChatMessages() {
     <div
       ref={ref}
       style={{ minHeight: "15rem" }}
-      className="mb-1 overflow-auto text-sm"
+      className="mb-1 overflow-auto text-xs"
     >
       <ul className="flex flex-col break-words">
         {data.chatMessages.map((d: ChatMessage) => (
@@ -305,19 +305,15 @@ function Main() {
   );
 }
 
-function LowerHalf({ children }: { children: React.ReactNode }) {
-  return <div className="h-1/2">{children}</div>;
-}
-
 export default function Game() {
   return (
     <Screen>
       <Main />
-      <LowerHalf>
+      <div>
         <Navigation />
         <MiniMapWithChatMessages />
         <ChatInput />
-      </LowerHalf>
+      </div>
     </Screen>
   );
 }
