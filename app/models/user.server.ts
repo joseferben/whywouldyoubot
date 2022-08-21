@@ -3,6 +3,9 @@ import { Entity, Schema } from "redis-om";
 import { redis } from "~/db.server";
 import { map } from "~/map.server";
 
+const SPAWN_X = 560;
+const SPAWN_Y = 580;
+
 export interface User {
   entityId: string;
   name: string;
@@ -145,8 +148,8 @@ export async function createUser(
     name,
     password: hashedPassword,
     email,
-    posX: 555,
-    posY: 555,
+    posX: SPAWN_X,
+    posY: SPAWN_Y,
     createdAt: now,
     updatedAt: now,
   });

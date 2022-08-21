@@ -37,7 +37,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function App() {
   return (
-    <html lang="en" className="h-full">
+    <html data-theme="retro" lang="en" className="h-full">
       <head>
         <Meta />
         <Links />

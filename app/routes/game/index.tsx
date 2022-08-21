@@ -29,7 +29,7 @@ export const action: ActionFunction = async ({ request }) => {
   return null;
 };
 
-function InteractiveListItem({ thing }: { thing: InteractiveThing }) {
+function InteractiveListItem({ interactive }: { interactive: Interactive }) {
   return (
     <li className="flex justify-between border-b border-px">
       <div className="flex">
@@ -38,18 +38,32 @@ function InteractiveListItem({ thing }: { thing: InteractiveThing }) {
           className="w-10 h-10"
           height="38"
           width="38"
-          src={thing.img}
+          src={interactive.img}
         />
         <a className="pt-2 whitespace-nowrap" href="">
-          {thing.name}
+          {interactive.name}
         </a>
+        {interactive.actions.length > 0 && (
+          <div className="pt-1 ml-auto pr-2">
+            {interactive.actions.map((action) => (
+              <Link
+                key={action.name}
+                className="ml-2 mt-1 btn btn-primary btn-xs"
+                to="/game"
+              >
+                {action.name}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
-      {thing.players.length > 0 && (
+      {interactive.players.length > 0 && (
         <>
           <progress className="mx-3 mt-4 progress progress-primary w-1/3"></progress>
           <div className="flex pr-2">
-            {thing.players.map((player) => (
+            {interactive.players.map((player) => (
               <img
+                key={player.name}
                 className="w-10 h-10"
                 width="38"
                 height="38"
@@ -64,19 +78,6 @@ function InteractiveListItem({ thing }: { thing: InteractiveThing }) {
           </div>
         </>
       )}
-      {thing.actions.length > 0 && (
-        <div className="pt-1 ml-auto pr-2">
-          {thing.actions.map((action) => (
-            <Link
-              key={action.name}
-              className="ml-2 mt-1 btn btn-primary btn-xs"
-              to="/game"
-            >
-              {action.name}
-            </Link>
-          ))}
-        </div>
-      )}
     </li>
   );
 }
@@ -84,7 +85,7 @@ function InteractiveListItem({ thing }: { thing: InteractiveThing }) {
 type Player = { name: string; img: string };
 type Action = { name: string; disabled: boolean };
 
-type InteractiveThing = {
+type Interactive = {
   img: string;
   name: string;
   actions: Action[];
@@ -92,14 +93,14 @@ type InteractiveThing = {
 };
 
 function InteractiveList() {
-  const thing1 = {
+  const interactive1 = {
     img: imageCow,
     name: "Cow (3)",
     inAction: true,
     actions: [{ name: "Attack", disabled: false }],
     players: [],
   };
-  const thing2 = {
+  const interactive2 = {
     img: imageCow,
     name: "Cow (2)",
     inAction: false,
@@ -109,7 +110,7 @@ function InteractiveList() {
       { name: "dragonkiller1", img: imageAvatar2 },
     ],
   };
-  const thing3 = {
+  const interactive3 = {
     img: imageTree,
     name: "Tree",
     inAction: false,
@@ -118,10 +119,10 @@ function InteractiveList() {
   };
   return (
     <ul className="text-sm">
-      <InteractiveListItem thing={thing1} />
-      <InteractiveListItem thing={thing2} />
+      <InteractiveListItem interactive={interactive1} />
+      <InteractiveListItem interactive={interactive2} />
       <div className="mb-5">
-        <InteractiveListItem thing={thing3} />
+        <InteractiveListItem interactive={interactive3} />
       </div>
     </ul>
   );
@@ -142,7 +143,7 @@ function ItemListItem({ item }: { item: Item }) {
         {item.name}
       </a>
       {item.canPickUp && (
-        <div className="pt-1 ml-auto pr-2">
+        <div className="pt-1 pr-2">
           <Link className="ml-2 mt-1 btn btn-primary btn-xs" to="/game">
             Pick up
           </Link>

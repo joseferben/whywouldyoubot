@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import crypto from "crypto";
 import fs from "fs";
-import TiledMap, { TiledTile } from "tiled-types";
+import TiledMap, { TiledLayer, TiledTile } from "tiled-types";
 import invariant from "tiny-invariant";
 import { array2d } from "./utils";
 
@@ -57,6 +57,16 @@ function gidToTiledTile(gid: number, tiled: TiledMap): TiledTile | undefined {
   }
 }
 
+function isTiledTileObstacle(layer: TiledLayer, tiledTile: TiledTile): boolean {
+  if (layer.name === OBSTACLE_LAYER_NAME) {
+    return true;
+  }
+  const tiledProperty = (tiledTile.properties || []).find(
+    (p) => p.name === "obstacle"
+  );
+  return tiledProperty ? tiledProperty.value === true : false;
+}
+
 function mapOfTiledMap(tiledMap: TiledMap): Map {
   if (tiledMap.orientation !== "orthogonal") {
     throw new Error("Only orthogonal maps supported");
@@ -86,7 +96,7 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
                 imagePaths: tiledTile.image ? [tiledTile.image] : [],
                 x,
                 y,
-                obstacle: layer.name === OBSTACLE_LAYER_NAME,
+                obstacle: isTiledTileObstacle(layer, tiledTile),
                 gid,
               };
             } else {
@@ -99,7 +109,7 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
               }
               // Set if obstacle
               tiles[x][y].obstacle =
-                tiles[x][y].obstacle || layer.name === OBSTACLE_LAYER_NAME;
+                tiles[x][y].obstacle || isTiledTileObstacle(layer, tiledTile);
             }
           }
         }
