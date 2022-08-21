@@ -11,3 +11,7 @@ test("validateEmail returns false for non-emails", () => {
 test("validateEmail returns true for emails", () => {
   expect(validateName("kody@example.com")).toBe(true);
 });
+
+// test("pickRandom in rectangle", () => {
+//   expect(pickRandom(rec, 1)[0].x).toBeLessThan(
+// }

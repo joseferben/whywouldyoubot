@@ -18,9 +18,7 @@ const chatSchema = new Schema(ChatMessage, {
   username: { type: "string" },
 });
 
-const messageRepository = redis.fetchRepository(chatSchema);
-
-messageRepository.createIndex();
+export const messageRepository = redis.fetchRepository(chatSchema);
 
 export function getChatMessage(id: ChatMessage["entityId"]) {
   return messageRepository.fetch(id);

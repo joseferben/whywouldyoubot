@@ -1,9 +1,12 @@
 import { execSync } from "child_process";
 import crypto from "crypto";
 import fs from "fs";
-import TiledMap, { TiledLayer, TiledTile } from "tiled-types";
+import TiledMap, { TiledLayer, TiledObject, TiledTile } from "tiled-types";
 import invariant from "tiny-invariant";
-import { array2d } from "./utils";
+import * as npcKinds from "./content/npc";
+import { createIndex } from "./index.server";
+import { getNpcsByRect, spawnNpc } from "./models/npc.server";
+import { array2d, pickRandom, Rectangle } from "./utils";
 
 const TMX_FILE_DIR = "public/assets/map";
 const TMX_FILE_PATH = `${TMX_FILE_DIR}/map.tmx`;
@@ -16,6 +19,9 @@ const hash = hashSum.digest("base64url");
 const JSON_FILE_PATH = `${TMX_FILE_DIR}/map.${hash}.json`;
 
 const OBSTACLE_LAYER_NAME = "obstacle";
+const NPC_SPAWN_LAYER_NAME = "npc_spawn";
+const MAX_NPCS_PER_SPAWNER = 3;
+const TILE_DIMENSION = 16;
 
 type Tile = {
   description: string;
@@ -67,6 +73,34 @@ function isTiledTileObstacle(layer: TiledLayer, tiledTile: TiledTile): boolean {
   return tiledProperty ? tiledProperty.value === true : false;
 }
 
+function tiledObjectToRectangle(o: TiledObject): Rectangle {
+  return {
+    x: Math.round(o.x / TILE_DIMENSION),
+    y: Math.round(o.y / TILE_DIMENSION),
+    width: Math.round(o.width / TILE_DIMENSION),
+    height: Math.round(o.height / TILE_DIMENSION),
+  };
+}
+
+async function spawnNpcs(objects: TiledObject[]) {
+  await createIndex();
+  for (const spawner of objects) {
+    console.log("spawn", spawner.name);
+    const rec = tiledObjectToRectangle(spawner);
+    // @ts-ignore
+    const kind: npcKinds.Npc = npcKinds[spawner.name];
+    if (kind) {
+      const npcs = await getNpcsByRect(rec);
+      if (npcs.length < MAX_NPCS_PER_SPAWNER) {
+        const nToSpawn = MAX_NPCS_PER_SPAWNER - npcs.length;
+        for (const pos of pickRandom(rec, nToSpawn)) {
+          await spawnNpc(kind, pos.x, pos.y);
+        }
+      }
+    }
+  }
+}
+
 function mapOfTiledMap(tiledMap: TiledMap): Map {
   if (tiledMap.orientation !== "orthogonal") {
     throw new Error("Only orthogonal maps supported");
@@ -116,6 +150,9 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
       }
     } else if (layer.type === "objectgroup") {
       console.log("process object layer", layer.name);
+      if (layer.name === NPC_SPAWN_LAYER_NAME) {
+        spawnNpcs(layer.objects);
+      }
     }
   }
   return { tiles };
@@ -123,9 +160,11 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
 
 function loadMap(): Map {
   console.log("load map");
-  if (fs.existsSync(JSON_FILE_PATH)) {
+  if (fs.existsSync(JSON_FILE_PATH) && !process.env.BYPASS_CACHE) {
+    console.log("map found in cache, load cache");
     return mapOfTiledMap(JSON.parse(fs.readFileSync(JSON_FILE_PATH, "utf8")));
   } else {
+    console.log("map not found in cache");
     const jsonFiles = fs
       .readdirSync(TMX_FILE_DIR)
       .filter((file) => file.endsWith(".json"));

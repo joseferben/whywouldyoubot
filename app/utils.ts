@@ -72,3 +72,26 @@ export function validateName(name: unknown): name is string {
 export function array2d(width: number, height: number) {
   return Array.from(Array(width), () => new Array(height));
 }
+
+export const range = (start: number, stop: number, step: number): number[] =>
+  Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
+
+export type Rectangle = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+export function pickRandom(
+  rec: Rectangle,
+  n: number
+): { x: number; y: number }[] {
+  const result = [];
+  for (let i = 0; i <= n; i++) {
+    const x = Math.round(Math.random() * rec.width + rec.x);
+    const y = Math.round(Math.random() * rec.height + rec.y);
+    result.push({ x, y });
+  }
+  return result;
+}

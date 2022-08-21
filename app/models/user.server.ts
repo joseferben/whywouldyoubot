@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { Entity, Schema } from "redis-om";
 import { redis } from "~/db.server";
 import { map } from "~/map.server";
+import { Rectangle } from "~/utils";
 
 const SPAWN_X = 560;
 const SPAWN_Y = 580;
@@ -52,9 +53,7 @@ const userSchema = new Schema(User, {
   updatedAt: { type: "date" },
 });
 
-const userRepository = redis.fetchRepository(userSchema);
-
-userRepository.createIndex();
+export const userRepository = redis.fetchRepository(userSchema);
 
 export async function updateUser(user: User) {
   userRepository.save(user);
@@ -69,16 +68,12 @@ export async function getUserByName(name: User["name"]) {
   return userRepository.search().where("name").is.equalTo(name).return.first();
 }
 
-export async function getUsersByRect(
-  x: number,
-  y: number,
-  width: number,
-  height: number
-) {
-  const xMin = x - Math.round(width / 2);
-  const xMax = x + Math.round(width / 2);
-  const yMin = y - Math.round(height / 2);
-  const yMax = y + Math.round(height / 2);
+export async function getUsersByRect(rec: Rectangle) {
+  const { x, y, width, height } = rec;
+  const xMin = x;
+  const xMax = x + width;
+  const yMin = y;
+  const yMax = y + height;
   return userRepository
     .search()
     .where("posX")
@@ -90,42 +85,6 @@ export async function getUsersByRect(
     .where("posY")
     .lessThanOrEqualTo(yMax)
     .return.all();
-}
-
-type UserMapInternal = { [key: string]: { [key: string]: User[] } };
-
-export class UserMap {
-  map: UserMapInternal;
-  constructor(users: User[]) {
-    const result: UserMapInternal = {};
-    users.forEach((u) => {
-      if (result[u.posX]) {
-        if (result[u.posX][u.posY]) {
-          result[u.posX][u.posY].push(u);
-        } else {
-          result[u.posX][u.posY] = [u];
-        }
-      } else {
-        result[u.posX] = {};
-        result[u.posX][u.posY] = [u];
-      }
-    });
-    this.map = result;
-  }
-
-  get(x: number, y: number): User[] {
-    return (this.map[x] ? this.map[x][y] : []) || [];
-  }
-}
-
-export async function getUsersByRectAsMap(
-  x: number,
-  y: number,
-  width: number,
-  height: number
-) {
-  const users = await getUsersByRect(x, y, width, height);
-  return new UserMap(users);
 }
 
 export async function getUserByEmail(email: string) {
