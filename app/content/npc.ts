@@ -1,5 +1,3 @@
-import imageBee from "../../public/assets/npcs/bee.png";
-import imageWolf from "../../public/assets/npcs/wolf.png";
 import { bones, gold, honey, Item } from "./item";
 
 type Combat = {
@@ -20,7 +18,7 @@ export type Npc = {
 
 export const bee: Npc = {
   name: "bee",
-  image: imageBee,
+  image: "assets/npcs/bee.png",
   combat: {
     health: [5, 5],
     attack: [2, 3],
@@ -35,7 +33,7 @@ export const bee: Npc = {
 
 export const wolf: Npc = {
   name: "wolf",
-  image: imageWolf,
+  image: "assets/npcs/wolf.png",
   combat: {
     health: [10, 15],
     attack: [4, 5],

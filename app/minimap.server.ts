@@ -1,11 +1,7 @@
 import path from "path/posix";
 import imageAvatar from "../public/assets/avatars/1.png";
 import { map, sliceMap, Tile } from "./map.server";
-import {
-    getUsersByRect,
-    getUsersByRectAsMap,
-    User
-} from "./models/user.server";
+import { getUsersByRect, User } from "./models/user.server";
 import { Rectangle } from "./utils";
 
 const WIDTH = 9;
@@ -67,7 +63,7 @@ function getImagePaths(userMap: UserMap, tile: Tile) {
   const imagePaths = tile.imagePaths.map(normalizeImagePath);
   const users = userMap.get(tile.x, tile.y);
   // TODO add custom avatars here
-  users.forEach((u) => imagePaths.push(imageAvatar));
+  users.forEach((_) => imagePaths.push(imageAvatar));
   return Array.from(new Set(imagePaths));
 }
 
