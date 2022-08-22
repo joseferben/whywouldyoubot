@@ -1,4 +1,7 @@
+import { getNpcsByRect, Npc } from "./models/npc.server";
+import { getResourcesByRect, Resource } from "./models/resource.server";
 import { User } from "./models/user.server";
+import { Rectangle } from "./utils";
 
 type Player = { name: string; img: string };
 type Action = { name: string; disabled: boolean };
@@ -20,7 +23,26 @@ export type Item = {
 
 export type Field = { description: string; region: string; location: string };
 
+function getFieldRect(user: User): Rectangle {
+  return { x: user.posX - 1, y: user.posY - 1, width: 3, height: 3 };
+}
+
+function npcsToInteractives(npcs: Npc[], user: User): Interactive[] {
+  // TODO implement
+  return [];
+}
+
+function resourcesToInteractives(npcs: Resource[], user: User): Interactive[] {
+  // TODO implement
+  return [];
+}
+
 export async function getInteractives(user: User): Promise<Interactive[]> {
+  const rect = getFieldRect(user);
+  const npcs = await getNpcsByRect(rect);
+  const interactiveNpcs = npcsToInteractives(npcs, user);
+  const resources = await getResourcesByRect(rect);
+  const interactiveResources = resourcesToInteractives(resources, user);
   const interactive1 = {
     id: 1,
     img: "assets/npcs/cow.png",

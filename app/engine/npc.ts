@@ -1,4 +1,4 @@
-import { Item } from "./item";
+import { ItemKind } from "./item";
 
 type Combat = {
   health: [number, number];
@@ -13,7 +13,7 @@ export type NpcKind = {
   name: string;
   image: string;
   combat: Combat;
-  dropTable: [Item, AmountRange, number][];
+  dropTable: [ItemKind, AmountRange, number][];
 };
 
 export type NpcKindMap = { [k: string]: NpcKind };
