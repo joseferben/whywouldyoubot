@@ -1,6 +1,6 @@
 import { Entity, Schema } from "redis-om";
+import { Npc as NpcKind } from "~/engine/npc";
 import * as npcKinds from "../content/npc";
-import { Npc as NpcKind } from "../content/npc";
 
 import { redis } from "~/engine/db.server";
 import { Rectangle } from "~/utils";

@@ -20,4 +20,8 @@ if (process.env.NODE_ENV === "production") {
   redis.open("redis://localhost:6379");
 }
 
+export async function open() {
+  await redis.open("redis://localhost:6379");
+}
+
 export { redis };

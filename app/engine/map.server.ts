@@ -16,9 +16,6 @@ const hash = hashSum.digest("base64url");
 const JSON_FILE_PATH = `${TMX_FILE_DIR}/map.${hash}.json`;
 
 const OBSTACLE_LAYER_NAME = "obstacle";
-const NPC_SPAWN_LAYER_NAME = "npc_spawn";
-const MAX_NPCS_PER_SPAWNER = 3;
-const TILE_DIMENSION = 16;
 
 type Tile = {
   description: string;

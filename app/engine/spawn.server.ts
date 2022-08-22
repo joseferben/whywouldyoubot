@@ -1,5 +1,5 @@
 import TiledMap, { TiledObject } from "tiled-types";
-import * as npcKinds from "../content/npc";
+import { Npc } from "~/engine/npc";
 import { getNpcKind, getNpcsByRect, spawnNpc } from "../models/npc.server";
 import { pickRandom, Rectangle } from "../utils";
 import { map } from "./map.server";
@@ -21,7 +21,7 @@ async function spawnNpcsOfSpawners(objects: TiledObject[]) {
   for (const spawner of objects) {
     console.log("spawn", spawner.name);
     const rec = tiledObjectToRectangle(spawner);
-    const kind: npcKinds.Npc = getNpcKind(spawner.name);
+    const kind: Npc = getNpcKind(spawner.name);
     if (kind) {
       const npcs = await getNpcsByRect(rec, kind);
       if (npcs.length < MAX_NPCS_PER_SPAWNER) {

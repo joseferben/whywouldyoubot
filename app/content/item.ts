@@ -1,8 +1,3 @@
-export type Item = {
-  name: string;
-  image: string;
-};
-
 export const gold = {
   name: "gold",
   image: "assets/items/gold.png",
