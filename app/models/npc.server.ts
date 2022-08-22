@@ -1,4 +1,5 @@
 import { Entity, Schema } from "redis-om";
+import * as npcKinds from "../content/npc";
 import { Npc as NpcKind } from "../content/npc";
 
 import { redis } from "~/db.server";
@@ -17,7 +18,20 @@ export interface Npc {
   createdAt: Date;
   updatedAt: Date;
 }
-export class Npc extends Entity {}
+
+export function getNpcKind(n: string): NpcKind {
+  try {
+    // @ts-ignore
+    return npcKinds[n];
+  } catch {
+    throw new Error(`npc kind ${n} does not exist`);
+  }
+}
+export class Npc extends Entity {
+  kind(): NpcKind {
+    return getNpcKind(this.name);
+  }
+}
 
 const npcSchema = new Schema(Npc, {
   name: { type: "string", indexed: true },
@@ -52,13 +66,13 @@ export function getNpcsByPos(posX: number, posY: number) {
     .returnAll();
 }
 
-export function getNpcsByRect(rec: Rectangle) {
+export function getNpcsByRect(rec: Rectangle, kind?: NpcKind) {
   const { x, y, width, height } = rec;
   const xMin = x;
   const xMax = x + width;
   const yMin = y;
   const yMax = y + height;
-  return npcRepository
+  const query = npcRepository
     .search()
     .where("posX")
     .greaterThanOrEqualTo(xMin)
@@ -67,8 +81,10 @@ export function getNpcsByRect(rec: Rectangle) {
     .and("posY")
     .greaterThanOrEqualTo(yMin)
     .and("posY")
-    .lessThanOrEqualTo(yMax)
-    .returnAll();
+    .lessThanOrEqualTo(yMax);
+  return kind
+    ? query.where("name").equal(kind.name).returnAll()
+    : query.returnAll();
 }
 
 export function spawnNpc(kind: NpcKind, posX: number, posY: number) {

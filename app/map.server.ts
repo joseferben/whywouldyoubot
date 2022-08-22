@@ -5,7 +5,7 @@ import TiledMap, { TiledLayer, TiledObject, TiledTile } from "tiled-types";
 import invariant from "tiny-invariant";
 import * as npcKinds from "./content/npc";
 import { createIndex } from "./index.server";
-import { getNpcsByRect, spawnNpc } from "./models/npc.server";
+import { getNpcKind, getNpcsByRect, spawnNpc } from "./models/npc.server";
 import { array2d, pickRandom, Rectangle } from "./utils";
 
 const TMX_FILE_DIR = "public/assets/map";
@@ -87,10 +87,9 @@ async function spawnNpcs(objects: TiledObject[]) {
   for (const spawner of objects) {
     console.log("spawn", spawner.name);
     const rec = tiledObjectToRectangle(spawner);
-    // @ts-ignore
-    const kind: npcKinds.Npc = npcKinds[spawner.name];
+    const kind: npcKinds.Npc = getNpcKind(spawner.name);
     if (kind) {
-      const npcs = await getNpcsByRect(rec);
+      const npcs = await getNpcsByRect(rec, kind);
       if (npcs.length < MAX_NPCS_PER_SPAWNER) {
         const nToSpawn = MAX_NPCS_PER_SPAWNER - npcs.length;
         for (const pos of pickRandom(rec, nToSpawn)) {

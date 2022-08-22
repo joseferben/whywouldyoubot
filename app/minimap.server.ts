@@ -1,6 +1,7 @@
 import path from "path/posix";
 import imageAvatar from "../public/assets/avatars/1.png";
 import { map, sliceMap, Tile } from "./map.server";
+import { getNpcsByRect, Npc } from "./models/npc.server";
 import { getUsersByRect, User } from "./models/user.server";
 import { Rectangle } from "./utils";
 
@@ -22,12 +23,13 @@ export interface MiniMap {
   posY: number;
 }
 
-type UserMapInternal = { [key: string]: { [key: string]: User[] } };
+type Positionable = { posX: number; posY: number };
 
-class UserMap {
-  map: UserMapInternal;
-  constructor(users: User[]) {
-    const result: UserMapInternal = {};
+class Map2d<T extends Positionable> {
+  // This is a temporary datastructure to efficiently store thing on a 2D map
+  map: { [key: string]: { [key: string]: T[] } };
+  constructor(users: T[]) {
+    const result: { [key: string]: { [key: string]: T[] } } = {};
     users.forEach((u) => {
       if (result[u.posX]) {
         if (result[u.posX][u.posY]) {
@@ -43,14 +45,19 @@ class UserMap {
     this.map = result;
   }
 
-  get(x: number, y: number): User[] {
+  get(x: number, y: number): T[] {
     return (this.map[x] ? this.map[x][y] : []) || [];
   }
 }
 
 async function getUsersByRectAsMap(rec: Rectangle) {
   const users = await getUsersByRect(rec);
-  return new UserMap(users);
+  return new Map2d<User>(users);
+}
+
+async function getNpcsByRectAsMap(rec: Rectangle) {
+  const users = await getNpcsByRect(rec);
+  return new Map2d<Npc>(users);
 }
 
 function normalizeImagePath(p: string): string {
@@ -59,11 +66,13 @@ function normalizeImagePath(p: string): string {
   return ["assets", ...arr].join(path.sep);
 }
 
-function getImagePaths(userMap: UserMap, tile: Tile) {
+function getImagePaths(userMap: Map2d<User>, npcMap: Map2d<Npc>, tile: Tile) {
   const imagePaths = tile.imagePaths.map(normalizeImagePath);
   const users = userMap.get(tile.x, tile.y);
+  const npcs = npcMap.get(tile.x, tile.y);
   // TODO add custom avatars here
   users.forEach((_) => imagePaths.push(imageAvatar));
+  npcs.forEach((npc) => imagePaths.push(npc.kind().image));
   return Array.from(new Set(imagePaths));
 }
 
@@ -75,11 +84,12 @@ export async function getMiniMapByUser(user: User): Promise<MiniMap> {
     width: WIDTH,
     height: HEIGHT,
   };
-  const userMap = await getUsersByRectAsMap(rec);
+  const users = await getUsersByRectAsMap(rec);
+  const npcs = await getNpcsByRectAsMap(rec);
   const tiles: MiniMapTile[][] = mapSlice.tiles.map((col: Tile[]) =>
     col.map((tile: Tile) => {
       return {
-        imagePaths: getImagePaths(userMap, tile),
+        imagePaths: getImagePaths(users, npcs, tile),
         canSee: user.canSee(tile.x, tile.y),
         canWalk: user.canWalk(tile.x, tile.y),
         isCenter: user.posX === tile.x && user.posY === tile.y,
