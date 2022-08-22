@@ -1,27 +1,34 @@
-import { Link } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import {
     ActionFunction,
     json,
     LoaderFunction
 } from "@remix-run/server-runtime";
-import { getMiniMapByUser } from "~/engine/minimap.server";
+import {
+    getField,
+    getInteractives,
+    getItems,
+    Interactive
+} from "~/field.server";
 import { requireUser } from "~/session.server";
-import imageAvatar1 from "../../../public/assets/avatars/1.png";
-import imageAvatar2 from "../../../public/assets/avatars/2.png";
-import imageAvatar3 from "../../../public/assets/avatars/3.png";
-import imageCrabShell from "../../../public/assets/items/crab_shell.png";
-import imageHoney from "../../../public/assets/items/honey.png";
-import imageCow from "../../../public/assets/npcs/cow.png";
-import imageTree from "../../../public/assets/tiles/location/tree_1.png";
 
+type Item = { id: number; img: string; name: string; canPickUp: boolean };
+
+type Field = { description: string; region: string; location: string };
 type LoaderData = {
-  miniMap: Awaited<ReturnType<typeof getMiniMapByUser>>;
+  interactives: Interactive[];
+  items: Item[];
+  field: Field;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
-  const miniMap = await getMiniMapByUser(user);
-  return json<LoaderData>({ miniMap });
+  const [items, interactives, field] = await Promise.all([
+    getItems(user),
+    getInteractives(user),
+    getField(user),
+  ]);
+  return json<LoaderData>({ interactives, items, field });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -29,7 +36,7 @@ export const action: ActionFunction = async ({ request }) => {
   return null;
 };
 
-function InteractiveListItem({ interactive }: { interactive: Interactive }) {
+function Interactive({ interactive }: { interactive: Interactive }) {
   return (
     <li className="flex justify-between border-b border-px">
       <div className="flex">
@@ -40,7 +47,7 @@ function InteractiveListItem({ interactive }: { interactive: Interactive }) {
           width="38"
           src={interactive.img}
         />
-        <a className="pt-2 whitespace-nowrap" href="">
+        <a className="pt-2 whitespace-nowrap" href="#">
           {interactive.name}
         </a>
         {interactive.actions.length > 0 && (
@@ -82,55 +89,17 @@ function InteractiveListItem({ interactive }: { interactive: Interactive }) {
   );
 }
 
-type Player = { name: string; img: string };
-type Action = { name: string; disabled: boolean };
-
-type Interactive = {
-  img: string;
-  name: string;
-  actions: Action[];
-  players: Player[];
-};
-
-function InteractiveList() {
-  const interactive1 = {
-    img: imageCow,
-    name: "Cow (3)",
-    inAction: true,
-    actions: [{ name: "Attack", disabled: false }],
-    players: [],
-  };
-  const interactive2 = {
-    img: imageCow,
-    name: "Cow (2)",
-    inAction: false,
-    actions: [],
-    players: [
-      { name: "dragonslayer234", img: imageAvatar1 },
-      { name: "dragonkiller1", img: imageAvatar2 },
-    ],
-  };
-  const interactive3 = {
-    img: imageTree,
-    name: "Tree",
-    inAction: false,
-    actions: [{ name: "Cut", disabled: false }],
-    players: [{ name: "killer33", img: imageAvatar3 }],
-  };
+function InteractiveList({ interactives }: { interactives: Interactive[] }) {
   return (
-    <ul className="text-sm">
-      <InteractiveListItem interactive={interactive1} />
-      <InteractiveListItem interactive={interactive2} />
-      <div className="mb-5">
-        <InteractiveListItem interactive={interactive3} />
-      </div>
+    <ul className={`text-sm ${interactives.length > 0 ? "mb-5" : ""}`}>
+      {interactives.map((interactive) => (
+        <Interactive key={interactive.id} interactive={interactive} />
+      ))}
     </ul>
   );
 }
 
-type Item = { img: string; name: string; canPickUp: boolean };
-
-function ItemListItem({ item }: { item: Item }) {
+function Item({ item }: { item: Item }) {
   return (
     <li className="flex border-b border-px">
       <img
@@ -153,27 +122,29 @@ function ItemListItem({ item }: { item: Item }) {
   );
 }
 
-function ItemList() {
-  const item1 = { name: "Honey", img: imageHoney, canPickUp: true };
-  const item2 = { name: "Crab Shell", img: imageCrabShell, canPickUp: true };
+function ItemList({ items }: { items: Item[] }) {
   return (
     <ul className="text-sm">
-      <ItemListItem item={item1} />
-      <ItemListItem item={item2} />
+      {items.map((item) => (
+        <Item key={item.id} item={item} />
+      ))}
     </ul>
   );
 }
 
 export default function Index() {
+  const { interactives, items, field } = useLoaderData() as LoaderData;
   return (
     <div className="overflow-auto">
-      <h1 className="text-lg font-bold">Clearview - Meadows</h1>
+      <h1 className="text-lg font-bold">
+        {field.region} - {field.location}
+      </h1>
       <div className="mb-5">
-        <span className="text-sm">You feel the sun shining on your neck.</span>
+        <span className="text-sm">{field.description}</span>
       </div>
-      <InteractiveList />
+      <InteractiveList interactives={interactives} />
       <h2 className="font-bold">Items</h2>
-      <ItemList />
+      <ItemList items={items} />
     </div>
   );
 }
