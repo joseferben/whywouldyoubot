@@ -33,18 +33,24 @@ export class Npc extends Entity {
   }
 }
 
-const npcSchema = new Schema(Npc, {
-  name: { type: "string", indexed: true },
-  health: { type: "number" },
-  maxHealth: { type: "number" },
-  attack: { type: "number" },
-  intelligence: { type: "number" },
-  defense: { type: "number" },
-  posX: { type: "number", indexed: true },
-  posY: { type: "number", indexed: true },
-  createdAt: { type: "date" },
-  updatedAt: { type: "date" },
-});
+const npcSchema = new Schema(
+  Npc,
+  {
+    name: { type: "string", indexed: true },
+    health: { type: "number" },
+    maxHealth: { type: "number" },
+    attack: { type: "number" },
+    intelligence: { type: "number" },
+    defense: { type: "number" },
+    posX: { type: "number", indexed: true },
+    posY: { type: "number", indexed: true },
+    createdAt: { type: "date" },
+    updatedAt: { type: "date" },
+  },
+  {
+    dataStructure: "HASH",
+  }
+);
 
 export const npcRepository = redis.fetchRepository(npcSchema);
 

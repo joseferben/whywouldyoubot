@@ -1,6 +1,9 @@
 import type { EntryContext } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { renderToString } from "react-dom/server";
+import { createIndexes } from "./index.server";
+import { onStart } from "./lifecycle.server";
+import { spawn } from "./spawn.server";
 
 export default function handleRequest(
   request: Request,
@@ -19,3 +22,5 @@ export default function handleRequest(
     headers: responseHeaders,
   });
 }
+
+onStart([createIndexes, spawn]);

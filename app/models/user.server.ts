@@ -43,15 +43,21 @@ export class User extends Entity {
   }
 }
 
-const userSchema = new Schema(User, {
-  name: { type: "string", indexed: true },
-  email: { type: "string", indexed: true },
-  password: { type: "string" },
-  posX: { type: "number", indexed: true },
-  posY: { type: "number", indexed: true },
-  createdAt: { type: "date" },
-  updatedAt: { type: "date" },
-});
+const userSchema = new Schema(
+  User,
+  {
+    name: { type: "string", indexed: true },
+    email: { type: "string", indexed: true },
+    password: { type: "string" },
+    posX: { type: "number", indexed: true },
+    posY: { type: "number", indexed: true },
+    createdAt: { type: "date" },
+    updatedAt: { type: "date" },
+  },
+  {
+    dataStructure: "HASH",
+  }
+);
 
 export const userRepository = redis.fetchRepository(userSchema);
 

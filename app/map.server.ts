@@ -1,12 +1,9 @@
 import { execSync } from "child_process";
 import crypto from "crypto";
 import fs from "fs";
-import TiledMap, { TiledLayer, TiledObject, TiledTile } from "tiled-types";
+import TiledMap, { TiledLayer, TiledTile } from "tiled-types";
 import invariant from "tiny-invariant";
-import * as npcKinds from "./content/npc";
-import { createIndex } from "./index.server";
-import { getNpcKind, getNpcsByRect, spawnNpc } from "./models/npc.server";
-import { array2d, pickRandom, Rectangle } from "./utils";
+import { array2d } from "./utils";
 
 const TMX_FILE_DIR = "public/assets/map";
 const TMX_FILE_PATH = `${TMX_FILE_DIR}/map.tmx`;
@@ -34,6 +31,7 @@ type Tile = {
 
 type Map = {
   tiles: Tile[][];
+  tiledMap: TiledMap;
 };
 
 declare global {
@@ -71,33 +69,6 @@ function isTiledTileObstacle(layer: TiledLayer, tiledTile: TiledTile): boolean {
     (p) => p.name === "obstacle"
   );
   return tiledProperty ? tiledProperty.value === true : false;
-}
-
-function tiledObjectToRectangle(o: TiledObject): Rectangle {
-  return {
-    x: Math.round(o.x / TILE_DIMENSION),
-    y: Math.round(o.y / TILE_DIMENSION),
-    width: Math.round(o.width / TILE_DIMENSION),
-    height: Math.round(o.height / TILE_DIMENSION),
-  };
-}
-
-async function spawnNpcs(objects: TiledObject[]) {
-  await createIndex();
-  for (const spawner of objects) {
-    console.log("spawn", spawner.name);
-    const rec = tiledObjectToRectangle(spawner);
-    const kind: npcKinds.Npc = getNpcKind(spawner.name);
-    if (kind) {
-      const npcs = await getNpcsByRect(rec, kind);
-      if (npcs.length < MAX_NPCS_PER_SPAWNER) {
-        const nToSpawn = MAX_NPCS_PER_SPAWNER - npcs.length;
-        for (const pos of pickRandom(rec, nToSpawn)) {
-          await spawnNpc(kind, pos.x, pos.y);
-        }
-      }
-    }
-  }
 }
 
 function mapOfTiledMap(tiledMap: TiledMap): Map {
@@ -149,12 +120,9 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
       }
     } else if (layer.type === "objectgroup") {
       console.log("process object layer", layer.name);
-      if (layer.name === NPC_SPAWN_LAYER_NAME) {
-        spawnNpcs(layer.objects);
-      }
     }
   }
-  return { tiles };
+  return { tiles, tiledMap };
 }
 
 function loadMap(): Map {
@@ -199,10 +167,8 @@ function sliceMap(
       tiles[x][y] = { ...tile };
     }
   }
-  return { tiles };
+  return { ...map, tiles };
 }
-
-const FORCE_RELOAD_ALWAYS = false;
 
 // this is needed because in development we don't want to restart
 // the server with every change, but we want to make sure we don't
@@ -211,9 +177,6 @@ const FORCE_RELOAD_ALWAYS = false;
 if (process.env.NODE_ENV === "production") {
   map = loadMap();
 } else {
-  if (FORCE_RELOAD_ALWAYS) {
-    global.__map__ = loadMap();
-  }
   if (!global.__map__) {
     global.__map__ = loadMap();
   }

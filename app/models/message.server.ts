@@ -11,12 +11,18 @@ export interface ChatMessage {
 }
 export class ChatMessage extends Entity {}
 
-const chatSchema = new Schema(ChatMessage, {
-  message: { type: "string" },
-  createdAt: { type: "date", sortable: true },
-  userId: { type: "string" },
-  username: { type: "string" },
-});
+const chatSchema = new Schema(
+  ChatMessage,
+  {
+    message: { type: "string" },
+    createdAt: { type: "date", sortable: true },
+    userId: { type: "string" },
+    username: { type: "string" },
+  },
+  {
+    dataStructure: "HASH",
+  }
+);
 
 export const messageRepository = redis.fetchRepository(chatSchema);
 
