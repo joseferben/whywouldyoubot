@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { Entity, Schema } from "redis-om";
-import { redis } from "~/db.server";
-import { map } from "~/map.server";
+import { redis } from "~/engine/db.server";
+import { map } from "~/engine/map.server";
 import { Rectangle } from "~/utils";
 
 const SPAWN_X = 560;

@@ -4,7 +4,7 @@ import {
     json,
     LoaderFunction
 } from "@remix-run/server-runtime";
-import { getMiniMapByUser } from "~/minimap.server";
+import { getMiniMapByUser } from "~/engine/minimap.server";
 import { requireUser } from "~/session.server";
 import imageAvatar1 from "../../../public/assets/avatars/1.png";
 import imageAvatar2 from "../../../public/assets/avatars/2.png";

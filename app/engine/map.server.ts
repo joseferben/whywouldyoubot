@@ -3,7 +3,7 @@ import crypto from "crypto";
 import fs from "fs";
 import TiledMap, { TiledLayer, TiledTile } from "tiled-types";
 import invariant from "tiny-invariant";
-import { array2d } from "./utils";
+import { array2d } from "../utils";
 
 const TMX_FILE_DIR = "public/assets/map";
 const TMX_FILE_PATH = `${TMX_FILE_DIR}/map.tmx`;

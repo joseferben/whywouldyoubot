@@ -1,8 +1,8 @@
 import TiledMap, { TiledObject } from "tiled-types";
-import * as npcKinds from "./content/npc";
+import * as npcKinds from "../content/npc";
+import { getNpcKind, getNpcsByRect, spawnNpc } from "../models/npc.server";
+import { pickRandom, Rectangle } from "../utils";
 import { map } from "./map.server";
-import { getNpcKind, getNpcsByRect, spawnNpc } from "./models/npc.server";
-import { pickRandom, Rectangle } from "./utils";
 
 const NPC_SPAWN_LAYER_NAME = "npc_spawn";
 const MAX_NPCS_PER_SPAWNER = 3;

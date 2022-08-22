@@ -1,5 +1,5 @@
 import { useFetcher } from "@remix-run/react";
-import { getMiniMapByUser, MiniMapTile } from "~/minimap.server";
+import { getMiniMapByUser, MiniMapTile } from "~/engine/minimap.server";
 import imageAvatar from "../../../public/assets/avatars/1.png";
 
 function Tile({ tile }: { tile: MiniMapTile }) {

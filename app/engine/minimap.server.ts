@@ -1,9 +1,9 @@
 import path from "path/posix";
-import imageAvatar from "../public/assets/avatars/1.png";
+import imageAvatar from "../../public/assets/avatars/1.png";
+import { getNpcsByRect, Npc } from "../models/npc.server";
+import { getUsersByRect, User } from "../models/user.server";
+import { Rectangle } from "../utils";
 import { map, sliceMap, Tile } from "./map.server";
-import { getNpcsByRect, Npc } from "./models/npc.server";
-import { getUsersByRect, User } from "./models/user.server";
-import { Rectangle } from "./utils";
 
 const WIDTH = 9;
 const HEIGHT = 9;

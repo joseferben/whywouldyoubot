@@ -1,5 +1,5 @@
 import { Entity, Schema } from "redis-om";
-import { redis } from "~/db.server";
+import { redis } from "~/engine/db.server";
 import { User } from "./user.server";
 
 export interface ChatMessage {

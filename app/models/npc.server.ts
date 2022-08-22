@@ -2,7 +2,7 @@ import { Entity, Schema } from "redis-om";
 import * as npcKinds from "../content/npc";
 import { Npc as NpcKind } from "../content/npc";
 
-import { redis } from "~/db.server";
+import { redis } from "~/engine/db.server";
 import { Rectangle } from "~/utils";
 
 export interface Npc {

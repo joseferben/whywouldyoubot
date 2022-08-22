@@ -8,12 +8,12 @@ import {
     useTransition
 } from "@remix-run/react";
 import React, { useEffect } from "react";
-import { message } from "~/chat.server";
 import MiniMap from "~/components/minimap/MiniMap";
 import Navigation from "~/components/navigation/Navigation";
+import { message } from "~/engine/chat.server";
 
+import { getMiniMapByUser } from "~/engine/minimap.server";
 import { useRefresher } from "~/hooks";
-import { getMiniMapByUser } from "~/minimap.server";
 import { ChatMessage, getChatMessagesByUser } from "~/models/message.server";
 import { updateUser } from "~/models/user.server";
 import { requireUser } from "~/session.server";

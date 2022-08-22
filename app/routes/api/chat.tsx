@@ -1,5 +1,5 @@
 import { LoaderFunction } from "@remix-run/server-runtime";
-import { observable } from "~/chat.server";
+import { observable } from "~/engine/chat.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const body = new ReadableStream({

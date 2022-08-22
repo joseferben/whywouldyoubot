@@ -1,6 +1,6 @@
 // learn more: https://fly.io/docs/reference/configuration/#services-http_checks
 import type { LoaderFunction } from "@remix-run/node";
-import { redis } from "~/db.server";
+import { redis } from "~/engine/db.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const host =
