@@ -1,7 +1,7 @@
-import { Npc } from "~/engine/npc";
+import { NpcKind } from "~/engine/npc";
 import { bones, gold, honey } from "./item";
 
-export const bee: Npc = {
+export const bee: NpcKind = {
   name: "bee",
   image: "assets/npcs/bee.png",
   combat: {
@@ -16,7 +16,7 @@ export const bee: Npc = {
   ],
 };
 
-export const wolf: Npc = {
+export const wolf: NpcKind = {
   name: "wolf",
   image: "assets/npcs/wolf.png",
   combat: {

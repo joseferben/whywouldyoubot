@@ -1,6 +1,6 @@
 import TiledMap, { TiledObject } from "tiled-types";
-import { Npc } from "~/engine/npc";
-import { getNpcKind, getNpcsByRect, spawnNpc } from "../models/npc.server";
+import { NpcKind, NpcKindMap } from "~/engine/npc";
+import { getNpcsByRect, spawnNpc } from "../models/npc.server";
 import { pickRandom, Rectangle } from "../utils";
 import { map } from "./map.server";
 
@@ -17,11 +17,14 @@ function tiledObjectToRectangle(o: TiledObject): Rectangle {
   };
 }
 
-async function spawnNpcsOfSpawners(objects: TiledObject[]) {
+async function spawnNpcsOfSpawners(
+  objects: TiledObject[],
+  npcKindMap: NpcKindMap
+) {
   for (const spawner of objects) {
     console.log("spawn", spawner.name);
     const rec = tiledObjectToRectangle(spawner);
-    const kind: Npc = getNpcKind(spawner.name);
+    const kind: NpcKind = npcKindMap[spawner.name];
     if (kind) {
       const npcs = await getNpcsByRect(rec, kind);
       if (npcs.length < MAX_NPCS_PER_SPAWNER) {
@@ -34,7 +37,7 @@ async function spawnNpcsOfSpawners(objects: TiledObject[]) {
   }
 }
 
-async function spawnNpcs(tiledMap: TiledMap) {
+async function spawnNpcs(tiledMap: TiledMap, npcKindMap: NpcKindMap) {
   if (tiledMap.orientation !== "orthogonal") {
     throw new Error("Only orthogonal maps supported");
   }
@@ -42,12 +45,12 @@ async function spawnNpcs(tiledMap: TiledMap) {
   for (const layer of tiledMap.layers) {
     if (layer.type === "objectgroup") {
       if (layer.name === NPC_SPAWN_LAYER_NAME) {
-        await spawnNpcsOfSpawners(layer.objects);
+        await spawnNpcsOfSpawners(layer.objects, npcKindMap);
       }
     }
   }
 }
 
-export async function spawn() {
-  await spawnNpcs(map.tiledMap);
+export async function spawn(npcKindMap: NpcKindMap) {
+  await spawnNpcs(map.tiledMap, npcKindMap);
 }

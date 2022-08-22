@@ -9,9 +9,11 @@ type Combat = {
 
 type AmountRange = [number, number];
 
-export type Npc = {
+export type NpcKind = {
   name: string;
   image: string;
   combat: Combat;
   dropTable: [Item, AmountRange, number][];
 };
+
+export type NpcKindMap = { [k: string]: NpcKind };
