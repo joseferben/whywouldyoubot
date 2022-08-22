@@ -19,7 +19,7 @@ function Tile({ tile }: { tile: MiniMapTile }) {
   return (
     <div
       onClick={handleClick}
-      className={`relative ${tile.canWalk && "cursor-pointer"}`}
+      className={`relative ${tile.canWalk ? "cursor-pointer" : ""}`}
     >
       {tile.isCenter && (
         <img

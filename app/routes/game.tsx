@@ -47,17 +47,20 @@ export const action: ActionFunction = async ({ request }) => {
         { status: 400 }
       );
     }
+    // TODO return updated chat
     await message({ message: m, user });
   } else if (type === "walk") {
     if (
       typeof x === "string" &&
       typeof y === "string" &&
       x !== null &&
-      y !== null
+      y !== null &&
+      user.canWalk(parseInt(x), parseInt(y))
     ) {
+      // TODO return updated tilemap
       user.walk(parseInt(x), parseInt(y));
+      await updateUser(user);
     }
-    await updateUser(user);
   } else {
     return json<ActionData>(
       { errors: { message: "Invalid command received" } },
@@ -70,8 +73,10 @@ export const action: ActionFunction = async ({ request }) => {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
-  const chatMessages = await getChatMessagesByUser(user.entityId);
-  const miniMap = await getMiniMapByUser(user);
+  const [chatMessages, miniMap] = await Promise.all([
+    getChatMessagesByUser(user.entityId),
+    getMiniMapByUser(user),
+  ]);
   return json<LoaderData>({ chatMessages, miniMap });
 };
 
