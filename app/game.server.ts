@@ -1,9 +1,9 @@
-import { open } from "./engine/db.server";
-import { onStart } from "./engine/lifecycle.server";
-import { spawn } from "./engine/spawn.server";
-import { messageRepository } from "./models/message.server";
-import { getNpcKindMap, npcRepository } from "./models/npc.server";
-import { userRepository } from "./models/user.server";
+import { open } from "~/engine/db.server";
+import { onStart } from "~/engine/lifecycle.server";
+import { spawn } from "~/engine/spawn.server";
+import { messageRepository } from "~/models/message.server";
+import { getNpcKindMap, npcRepository } from "~/models/npc.server";
+import { userRepository } from "~/models/user.server";
 
 export async function createIndexes() {
   console.log("create indexes");
