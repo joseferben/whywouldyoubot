@@ -1,8 +1,7 @@
 import { Entity, Schema } from "redis-om";
-import * as resoureceKinds from "~/content/resource";
-
+import { getResourceKind } from "~/content/content";
 import { redis } from "~/engine/db.server";
-import { ResourceKind, ResourceKindMap } from "~/engine/resource";
+import { ResourceKind } from "~/engine/resource";
 import { Rectangle } from "~/utils";
 
 export interface Resource {
@@ -14,20 +13,13 @@ export interface Resource {
   y: number;
 }
 
-// TODO move to /content/content.ts
-export function getResourceKindMap(): ResourceKindMap {
-  return resoureceKinds;
-}
-
-// TODO move to /content/content.ts
-export function getResourceKind(name: string): ResourceKind | null {
-  return getResourceKindMap()[name];
-}
-
-// TODO move to /content/content.ts
 export class Resource extends Entity {
   kind(): ResourceKind {
-    return getResourceKindMap()[this.name];
+    const kind = getResourceKind(this.name);
+    if (!kind) {
+      throw new Error(`resource kind ${kind} does not exist`);
+    }
+    return kind;
   }
 }
 

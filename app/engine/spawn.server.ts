@@ -1,5 +1,5 @@
 import TiledMap, { TiledObject } from "tiled-types";
-import { NpcKind, NpcKindMap } from "~/engine/npc";
+import { NpcKind, NpcKinds } from "~/engine/npc";
 import { getNpcsByRect, spawnNpc } from "../models/npc.server";
 import { pickRandom, Rectangle } from "../utils";
 import { map } from "./map.server";
@@ -19,7 +19,7 @@ function tiledObjectToRectangle(o: TiledObject): Rectangle {
 
 async function spawnNpcsOfSpawners(
   objects: TiledObject[],
-  npcKindMap: NpcKindMap
+  npcKindMap: NpcKinds
 ) {
   for (const spawner of objects) {
     console.log("spawn", spawner.name);
@@ -37,7 +37,7 @@ async function spawnNpcsOfSpawners(
   }
 }
 
-async function spawnNpcs(tiledMap: TiledMap, npcKindMap: NpcKindMap) {
+async function spawnNpcs(tiledMap: TiledMap, npcKindMap: NpcKinds) {
   if (tiledMap.orientation !== "orthogonal") {
     throw new Error("Only orthogonal maps supported");
   }
@@ -51,6 +51,6 @@ async function spawnNpcs(tiledMap: TiledMap, npcKindMap: NpcKindMap) {
   }
 }
 
-export async function spawn(npcKindMap: NpcKindMap) {
-  await spawnNpcs(map.tiledMap, npcKindMap);
+export async function spawn(npcKinds: NpcKinds) {
+  await spawnNpcs(map.tiledMap, npcKinds);
 }

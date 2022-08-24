@@ -1,7 +1,7 @@
 import { Entity, Schema } from "redis-om";
-import * as npcKinds from "~/content/npc";
-import { NpcKind, NpcKindMap } from "~/engine/npc";
+import { NpcKind } from "~/engine/npc";
 
+import { getNpcKind } from "~/content/content";
 import { redis } from "~/engine/db.server";
 import { Rectangle } from "~/utils";
 
@@ -19,13 +19,13 @@ export interface Npc {
   updatedAt: Date;
 }
 
-export function getNpcKindMap(): NpcKindMap {
-  return npcKinds;
-}
-
 export class Npc extends Entity {
   kind(): NpcKind {
-    return getNpcKindMap()[this.name];
+    const kind = getNpcKind(this.name);
+    if (!kind) {
+      throw new Error(`npc kind ${kind} does not exist`);
+    }
+    return kind;
   }
 }
 

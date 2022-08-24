@@ -2,8 +2,10 @@ import { open } from "~/engine/db.server";
 import { onStart } from "~/engine/lifecycle.server";
 import { spawn } from "~/engine/spawn.server";
 import { messageRepository } from "~/models/message.server";
-import { getNpcKindMap, npcRepository } from "~/models/npc.server";
+import { npcRepository } from "~/models/npc.server";
 import { userRepository } from "~/models/user.server";
+import { getNpcKinds } from "./content/content";
+import { itemRepository } from "./models/item.server";
 import { resourceRepository } from "./models/resource.server";
 
 export async function createIndexes() {
@@ -12,11 +14,12 @@ export async function createIndexes() {
   await userRepository.createIndex();
   await messageRepository.createIndex();
   await resourceRepository.createIndex();
+  await itemRepository.createIndex();
 }
 
 function spawnNpcs() {
   console.log("spawn npcs");
-  return spawn(getNpcKindMap());
+  return spawn(getNpcKinds());
 }
 
 export async function start() {

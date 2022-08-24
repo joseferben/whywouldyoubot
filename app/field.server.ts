@@ -1,3 +1,4 @@
+import { getItemsByRect } from "./models/item.server";
 import { getNpcsByRect, Npc } from "./models/npc.server";
 import { getResourcesByRect, Resource } from "./models/resource.server";
 import { User } from "./models/user.server";
@@ -13,15 +14,6 @@ export type Interactive = {
   actions: Action[];
   players: Player[];
 };
-
-export type Item = {
-  id: number;
-  img: string;
-  name: string;
-  canPickUp: boolean;
-};
-
-export type Field = { description: string; region: string; location: string };
 
 function getFieldRect(user: User): Rectangle {
   return { x: user.posX - 1, y: user.posY - 1, width: 3, height: 3 };
@@ -61,21 +53,25 @@ export async function getInteractives(user: User): Promise<Interactive[]> {
   return [...interactiveNpcs, ...interactiveResources];
 }
 
+export type Item = {
+  id: string;
+  img: string;
+  name: string;
+  canPickUp: boolean;
+};
+
 export async function getItems(user: User): Promise<Item[]> {
-  const item1 = {
-    id: 1,
-    name: "Honey",
-    img: "assets/items/honey.png",
+  const rect = getFieldRect(user);
+  const items = await getItemsByRect(rect);
+  return items.map((item) => ({
+    id: item.entityId,
+    name: item.kind().label,
+    img: item.kind().image,
     canPickUp: true,
-  };
-  const item2 = {
-    id: 2,
-    name: "Crab Shell",
-    img: "assets/items/crab_shell.png",
-    canPickUp: true,
-  };
-  return [item1, item2];
+  }));
 }
+
+export type Field = { description: string; region: string; location: string };
 
 export async function getField(user: User): Promise<Field> {
   return {

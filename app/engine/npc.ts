@@ -17,4 +17,4 @@ export type NpcKind = {
   dropTable: [ItemKind, AmountRange, number][];
 };
 
-export type NpcKindMap = { [k: string]: NpcKind };
+export type NpcKinds = { [k: string]: NpcKind };
