@@ -5,6 +5,7 @@ import { messageRepository } from "~/models/message.server";
 import { npcRepository } from "~/models/npc.server";
 import { userRepository } from "~/models/user.server";
 import { getNpcKinds } from "./content/content";
+import { actionRepository } from "./models/action.server";
 import { itemRepository } from "./models/item.server";
 import { resourceRepository } from "./models/resource.server";
 
@@ -15,6 +16,7 @@ export async function createIndexes() {
   await messageRepository.createIndex();
   await resourceRepository.createIndex();
   await itemRepository.createIndex();
+  await actionRepository.createIndex();
 }
 
 function spawnNpcs() {

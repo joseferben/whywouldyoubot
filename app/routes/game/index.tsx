@@ -1,20 +1,20 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import {
-    ActionFunction,
-    json,
-    LoaderFunction
+  ActionFunction,
+  json,
+  LoaderFunction
 } from "@remix-run/server-runtime";
 import {
-    getField,
-    getInteractives,
-    getItems,
-    Interactive
+  Field,
+  getField,
+  getInteractives,
+  getItems,
+  handleAction,
+  Interactive,
+  Item
 } from "~/field.server";
 import { requireUser } from "~/session.server";
 
-type Item = { id: number; img: string; name: string; canPickUp: boolean };
-
-type Field = { description: string; region: string; location: string };
 type LoaderData = {
   interactives: Interactive[];
   items: Item[];
@@ -32,8 +32,18 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  const user = await requireUser(request);
   const formData = await request.formData();
-  return null;
+  const action = formData.get("action");
+  const thingId = formData.get("thingId");
+  if (
+    action &&
+    thingId &&
+    typeof action === "string" &&
+    typeof thingId === "string"
+  ) {
+    await handleAction(user, action, thingId);
+  }
 };
 
 function Interactive({ interactive }: { interactive: Interactive }) {
@@ -53,13 +63,16 @@ function Interactive({ interactive }: { interactive: Interactive }) {
         {interactive.actions.length > 0 && (
           <div className="pt-1 ml-auto pr-2">
             {interactive.actions.map((action) => (
-              <Link
-                key={action.name}
-                className="ml-2 mt-1 btn btn-primary btn-xs"
-                to="/game"
-              >
-                {action.name}
-              </Link>
+              <Form key={action.name} className="flex p-1" method="post">
+                <input type="hidden" name="id" value={action.thingId} />
+                <input type="hidden" name="action" value={action.name} />
+                <button
+                  type="submit"
+                  className="ml-2 mt-1 btn btn-primary btn-xs"
+                >
+                  {action.label}
+                </button>
+              </Form>
             ))}
           </div>
         )}

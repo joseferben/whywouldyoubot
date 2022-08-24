@@ -39,6 +39,10 @@ const resourceSchema = new Schema(
 
 export const resourceRepository = redis.fetchRepository(resourceSchema);
 
+export async function getResource(id: string) {
+  return resourceRepository.fetch(id);
+}
+
 export async function spawnResource(
   x: number,
   y: number,
