@@ -1,5 +1,5 @@
 import { getItemsByRect } from "./models/item.server";
-import { actions, getNpc, getNpcsByRect, Npc } from "./models/npc.server";
+import { getNpc, getNpcsByRect, Npc } from "./models/npc.server";
 import {
   getResource,
   getResourcesByRect,
@@ -121,13 +121,13 @@ export async function handleAction(
   action: string,
   thingId: string
 ) {
-  if (actions.includes(action)) {
+  if (npcActions.includes(action)) {
     const npc = await getNpc(thingId);
     if (npc === null) {
       throw new Error(`npc not found for action ${action}`);
     }
     await actNpc(npc, action);
-  } else if (actions.includes(action)) {
+  } else if (resourceActions.includes(action)) {
     const resource = await getResource(thingId);
     if (resource === null) {
       throw new Error(`resource not found for action ${action}`);
