@@ -7,7 +7,7 @@ type Player = { name: string; img: string };
 type Action = { name: string; disabled: boolean };
 
 export type Interactive = {
-  id: number;
+  id: string;
   img: string;
   name: string;
   actions: Action[];
@@ -28,13 +28,28 @@ function getFieldRect(user: User): Rectangle {
 }
 
 function npcsToInteractives(npcs: Npc[], user: User): Interactive[] {
-  // TODO implement
-  return [];
+  return npcs.map((npc) => ({
+    id: npc.entityId,
+    img: npc.kind().image,
+    name: npc.kind().label,
+    inAction: true,
+    actions: [{ name: "Attack", disabled: false }],
+    players: [],
+  }));
 }
 
-function resourcesToInteractives(npcs: Resource[], user: User): Interactive[] {
-  // TODO implement
-  return [];
+function resourcesToInteractives(
+  resources: Resource[],
+  user: User
+): Interactive[] {
+  return resources.map((resource) => ({
+    id: resource.entityId,
+    img: resource.kind().image,
+    name: resource.kind().label,
+    inAction: true,
+    actions: [{ name: "Chop", disabled: false }],
+    players: [],
+  }));
 }
 
 export async function getInteractives(user: User): Promise<Interactive[]> {
@@ -43,35 +58,7 @@ export async function getInteractives(user: User): Promise<Interactive[]> {
   const interactiveNpcs = npcsToInteractives(npcs, user);
   const resources = await getResourcesByRect(rect);
   const interactiveResources = resourcesToInteractives(resources, user);
-  const interactive1 = {
-    id: 1,
-    img: "assets/npcs/cow.png",
-    name: "Cow (3)",
-    inAction: true,
-    actions: [{ name: "Attack", disabled: false }],
-    players: [],
-  };
-  const interactive2 = {
-    id: 2,
-    img: "assets/npcs/cow.png",
-    name: "Cow (2)",
-    inAction: false,
-    actions: [],
-    players: [
-      { name: "dragonslayer234", img: "assets/avatars/1.png" },
-      { name: "dragonkiller1", img: "assets/avatars/2.png" },
-    ],
-  };
-  const interactive3 = {
-    id: 3,
-    img: "assets/tiles/location/tree_1.png",
-    name: "Tree",
-    inAction: false,
-    actions: [{ name: "Cut", disabled: false }],
-    players: [{ name: "killer33", img: "assets/avatars/3.png" }],
-  };
-
-  return [interactive1, interactive2, interactive3];
+  return [...interactiveNpcs, ...interactiveResources];
 }
 
 export async function getItems(user: User): Promise<Item[]> {

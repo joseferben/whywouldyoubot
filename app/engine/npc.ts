@@ -11,6 +11,7 @@ type AmountRange = [number, number];
 
 export type NpcKind = {
   name: string;
+  label: string;
   image: string;
   combat: Combat;
   dropTable: [ItemKind, AmountRange, number][];

@@ -8,18 +8,23 @@ import { Rectangle } from "~/utils";
 export interface Resource {
   entityId: string;
   name: string;
-  amount: number;
   maxAmount: number;
+  amount: number;
   x: number;
   y: number;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
+// TODO move to /content/content.ts
 export function getResourceKindMap(): ResourceKindMap {
   return resoureceKinds;
 }
 
+// TODO move to /content/content.ts
+export function getResourceKind(name: string): ResourceKind | null {
+  return getResourceKindMap()[name];
+}
+
+// TODO move to /content/content.ts
 export class Resource extends Entity {
   kind(): ResourceKind {
     return getResourceKindMap()[this.name];
@@ -30,12 +35,10 @@ const resourceSchema = new Schema(
   Resource,
   {
     name: { type: "string", indexed: true },
-    amount: { type: "number" },
     maxAmount: { type: "number" },
+    amount: { type: "number" },
     x: { type: "number", indexed: true },
     y: { type: "number", indexed: true },
-    createdAt: { type: "date" },
-    updatedAt: { type: "date" },
   },
   {
     dataStructure: "HASH",
@@ -44,21 +47,31 @@ const resourceSchema = new Schema(
 
 export const resourceRepository = redis.fetchRepository(resourceSchema);
 
-export function getResource(id: Resource["entityId"]) {
-  return resourceRepository.fetch(id);
+export async function spawnResource(
+  x: number,
+  y: number,
+  resourceKind: ResourceKind
+) {
+  return resourceRepository.createAndSave({
+    name: resourceKind.name,
+    maxAmount: resourceKind.amount,
+    amount: resourceKind.amount,
+    x,
+    y,
+  });
 }
 
-export function getResourceByPos(posX: number, posY: number) {
+export async function getResourceByPos(x: number, y: number) {
   return resourceRepository
     .search()
     .where("x")
-    .equals(Math.round(posX))
+    .equals(Math.round(x))
     .and("y")
-    .equals(Math.round(posY))
+    .equals(Math.round(y))
     .returnFirst();
 }
 
-export function getResourcesByRect(rec: Rectangle, kind?: ResourceKind) {
+export async function getResourcesByRect(rec: Rectangle, kind?: ResourceKind) {
   const { x, y, width, height } = rec;
   const xMin = x;
   const xMax = x + width;

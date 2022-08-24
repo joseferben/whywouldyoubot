@@ -3,7 +3,13 @@ import crypto from "crypto";
 import fs from "fs";
 import TiledMap, { TiledLayer, TiledTile } from "tiled-types";
 import invariant from "tiny-invariant";
+import {
+  getResourceKind,
+  Resource,
+  spawnResource
+} from "~/models/resource.server";
 import { array2d } from "../utils";
+import { ResourceKind } from "./resource";
 
 const TMX_FILE_DIR = "public/assets/map";
 const TMX_FILE_PATH = `${TMX_FILE_DIR}/map.tmx`;
@@ -24,6 +30,7 @@ type Tile = {
   y: number;
   obstacle: boolean;
   gid: number;
+  resource: Resource | null;
 };
 
 type Map = {
@@ -68,6 +75,62 @@ function isTiledTileObstacle(layer: TiledLayer, tiledTile: TiledTile): boolean {
   return tiledProperty ? tiledProperty.value === true : false;
 }
 
+function getDescription(tiledTile: TiledTile): string {
+  const descriptionProp = (tiledTile.properties || []).find(
+    (p) => p.name === "description"
+  );
+  return descriptionProp !== undefined
+    ? String(descriptionProp.value)
+    : "This is a description";
+}
+
+function getResourceKindOfTile(tiledTile: TiledTile): ResourceKind | null {
+  const tiledProperty = (tiledTile.properties || []).find(
+    (p) => p.name === "resource"
+  );
+  const resourceKindName =
+    tiledProperty !== undefined ? String(tiledProperty.value) : null;
+  return resourceKindName ? getResourceKind(resourceKindName) : null;
+}
+
+async function processTile(
+  tiles: Tile[][],
+  layer: TiledLayer,
+  tiledTile: TiledTile,
+  x: number,
+  y: number,
+  gid: number
+) {
+  const description = getDescription(tiledTile);
+  if (!tiles[x][y]) {
+    // Create tiled
+    tiles[x][y] = {
+      description,
+      imagePaths: tiledTile.image ? [tiledTile.image] : [],
+      x,
+      y,
+      obstacle: isTiledTileObstacle(layer, tiledTile),
+      gid,
+      resource: null,
+    };
+  } else {
+    // Update existing tile
+    const hasImageAlready =
+      tiles[x][y].imagePaths.find((i) => i === tiledTile.image) !== undefined;
+    if (tiledTile.image && !hasImageAlready) {
+      tiles[x][y].imagePaths.push(tiledTile.image);
+    }
+    // Set if obstacle
+    tiles[x][y].obstacle =
+      tiles[x][y].obstacle || isTiledTileObstacle(layer, tiledTile);
+  }
+  // Set resource
+  const resourceKind = getResourceKindOfTile(tiledTile);
+  if (resourceKind) {
+    tiles[x][y].resource = await spawnResource(x, y, resourceKind);
+  }
+}
+
 function mapOfTiledMap(tiledMap: TiledMap): Map {
   if (tiledMap.orientation !== "orthogonal") {
     throw new Error("Only orthogonal maps supported");
@@ -83,35 +146,7 @@ function mapOfTiledMap(tiledMap: TiledMap): Map {
           const y = Math.floor(idx / tiledMap.width);
           const tiledTile = gidToTiledTile(gid, tiledMap);
           if (tiledTile !== undefined) {
-            const descriptionProp = (tiledTile.properties || []).find(
-              (p) => p.name === "description"
-            );
-            const description =
-              descriptionProp !== undefined
-                ? String(descriptionProp.value)
-                : "This is a description";
-            if (!tiles[x][y]) {
-              // Create tiled
-              tiles[x][y] = {
-                description,
-                imagePaths: tiledTile.image ? [tiledTile.image] : [],
-                x,
-                y,
-                obstacle: isTiledTileObstacle(layer, tiledTile),
-                gid,
-              };
-            } else {
-              // Update existing tile
-              const hasImageAlready =
-                tiles[x][y].imagePaths.find((i) => i === tiledTile.image) !==
-                undefined;
-              if (tiledTile.image && !hasImageAlready) {
-                tiles[x][y].imagePaths.push(tiledTile.image);
-              }
-              // Set if obstacle
-              tiles[x][y].obstacle =
-                tiles[x][y].obstacle || isTiledTileObstacle(layer, tiledTile);
-            }
+            processTile(tiles, layer, tiledTile, x, y, gid);
           }
         }
       }

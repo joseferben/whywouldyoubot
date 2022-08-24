@@ -3,6 +3,7 @@ import { bones, gold, honey } from "./item";
 
 export const bee: NpcKind = {
   name: "bee",
+  label: "Bee",
   image: "assets/npcs/bee.png",
   combat: {
     health: [5, 5],
@@ -18,6 +19,7 @@ export const bee: NpcKind = {
 
 export const wolf: NpcKind = {
   name: "wolf",
+  label: "Wolf",
   image: "assets/npcs/wolf.png",
   combat: {
     health: [10, 15],
