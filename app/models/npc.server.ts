@@ -27,6 +27,9 @@ export class Npc extends Entity {
     }
     return kind;
   }
+  level(): number {
+    return this.attack + this.intelligence + this.defense;
+  }
 }
 
 const npcSchema = new Schema(

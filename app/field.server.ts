@@ -23,7 +23,7 @@ function npcsToInteractives(npcs: Npc[], user: User): Interactive[] {
   return npcs.map((npc) => ({
     id: npc.entityId,
     img: npc.kind().image,
-    name: npc.kind().label,
+    name: `${npc.kind().label} (${npc.level()})`,
     inAction: true,
     actions: [{ name: "Attack", disabled: false }],
     players: [],

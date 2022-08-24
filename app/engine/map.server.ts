@@ -3,11 +3,8 @@ import crypto from "crypto";
 import fs from "fs";
 import TiledMap, { TiledLayer, TiledTile } from "tiled-types";
 import invariant from "tiny-invariant";
-import {
-  getResourceKind,
-  Resource,
-  spawnResource
-} from "~/models/resource.server";
+import { getResourceKind } from "~/content/content";
+import { Resource, spawnResource } from "~/models/resource.server";
 import { array2d } from "../utils";
 import { ResourceKind } from "./resource";
 
