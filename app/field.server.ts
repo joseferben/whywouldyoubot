@@ -1,10 +1,6 @@
 import { getItemsByRect } from "./models/item.server";
-import { getNpc, getNpcsByRect, Npc } from "./models/npc.server";
-import {
-  getResource,
-  getResourcesByRect,
-  Resource
-} from "./models/resource.server";
+import { getNpcsByRect, Npc } from "./models/npc.server";
+import { getResourcesByRect, Resource } from "./models/resource.server";
 import { User } from "./models/user.server";
 import { Rectangle } from "./utils";
 
@@ -102,38 +98,4 @@ export async function getField(user: User): Promise<Field> {
     region: "Clearview",
     location: "Meadows",
   };
-}
-
-const npcActions = ["attack"];
-
-async function actNpc(npc: Npc, action: string) {
-  // TODO implement
-}
-
-const resourceActions = ["chop", "mine", "fish"];
-
-async function actResource(npc: Resource, action: string) {
-  // TODO implement
-}
-
-export async function handleAction(
-  user: User,
-  action: string,
-  thingId: string
-) {
-  if (npcActions.includes(action)) {
-    const npc = await getNpc(thingId);
-    if (npc === null) {
-      throw new Error(`npc not found for action ${action}`);
-    }
-    await actNpc(npc, action);
-  } else if (resourceActions.includes(action)) {
-    const resource = await getResource(thingId);
-    if (resource === null) {
-      throw new Error(`resource not found for action ${action}`);
-    }
-    await actResource(resource, action);
-  } else {
-    throw new Error(`unknown action ${action} received`);
-  }
 }

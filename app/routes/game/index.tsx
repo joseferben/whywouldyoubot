@@ -9,10 +9,10 @@ import {
   getField,
   getInteractives,
   getItems,
-  handleAction,
   Interactive,
   Item
 } from "~/field.server";
+import { createAction } from "~/models/action.server";
 import { requireUser } from "~/session.server";
 
 type LoaderData = {
@@ -42,7 +42,7 @@ export const action: ActionFunction = async ({ request }) => {
     typeof action === "string" &&
     typeof thingId === "string"
   ) {
-    await handleAction(user, action, thingId);
+    await createAction(user, thingId, action);
   }
 };
 
