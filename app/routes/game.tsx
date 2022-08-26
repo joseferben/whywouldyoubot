@@ -13,9 +13,12 @@ import Navigation from "~/components/navigation/Navigation";
 import { message } from "~/engine/chat.server";
 
 import { getMiniMapByUser } from "~/engine/minimap.server";
+import {
+    ChatMessage,
+    getChatMessagesByUser
+} from "~/engine/models/message.server";
+import { updateUser } from "~/engine/models/user.server";
 import { useRefresher } from "~/hooks";
-import { ChatMessage, getChatMessagesByUser } from "~/models/message.server";
-import { updateUser } from "~/models/user.server";
 import { requireUser } from "~/session.server";
 
 type LoaderData = {

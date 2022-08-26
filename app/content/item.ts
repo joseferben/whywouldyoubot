@@ -1,4 +1,4 @@
-import { ItemKind } from "~/engine/item";
+import { ItemKind } from "~/engine/core/item";
 
 export const gold: ItemKind = {
   name: "gold",

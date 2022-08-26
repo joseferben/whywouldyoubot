@@ -1,7 +1,7 @@
-import { getItemsByRect } from "./models/item.server";
-import { getNpcsByRect, Npc } from "./models/npc.server";
-import { getResourcesByRect, Resource } from "./models/resource.server";
-import { User } from "./models/user.server";
+import { getItemsByRect } from "~/engine/models/item.server";
+import { getNpcsByRect, Npc } from "~/engine/models/npc.server";
+import { getResourcesByRect, Resource } from "~/engine/models/resource.server";
+import { User } from "~/engine/models/user.server";
 import { Rectangle } from "./utils";
 
 type Player = { name: string; img: string };

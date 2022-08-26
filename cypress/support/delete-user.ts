@@ -4,7 +4,7 @@
 // and that user will get deleted
 
 import { installGlobals } from "@remix-run/node";
-import { deleteUserByEmail } from "~/models/user.server";
+import { deleteUserByEmail } from "~/engine/models/user.server";
 
 installGlobals();
 

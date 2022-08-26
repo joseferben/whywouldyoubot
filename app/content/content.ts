@@ -1,9 +1,9 @@
 import * as npcKinds from "~/content/npc";
 import * as itemKinds from "~/content/resource";
 import * as resoureceKinds from "~/content/resource";
-import { ItemKind } from "~/engine/item";
-import { NpcKind, NpcKinds } from "~/engine/npc";
-import { ResourceKind } from "~/engine/resource";
+import { ItemKind } from "~/engine/core/item";
+import { NpcKind, NpcKinds } from "~/engine/core/npc";
+import { ResourceKind } from "~/engine/core/resource";
 
 export function getResourceKind(name: string): ResourceKind | null {
   // @ts-ignore

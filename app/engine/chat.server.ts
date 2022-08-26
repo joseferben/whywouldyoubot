@@ -1,7 +1,7 @@
 import { Observable } from "observable-fns";
 import invariant from "tiny-invariant";
-import { ChatMessage, createChatMessage } from "../models/message.server";
-import { User } from "../models/user.server";
+import { ChatMessage, createChatMessage } from "~/engine/models/message.server";
+import { User } from "~/engine/models/user.server";
 
 type ChatListener = (m: ChatMessage) => void;
 

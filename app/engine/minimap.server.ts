@@ -1,7 +1,7 @@
 import path from "path/posix";
+import { getNpcsByRect, Npc } from "~/engine/models/npc.server";
+import { getUsersByRect, User } from "~/engine/models/user.server";
 import imageAvatar from "../../public/assets/avatars/1.png";
-import { getNpcsByRect, Npc } from "../models/npc.server";
-import { getUsersByRect, User } from "../models/user.server";
 import { Rectangle } from "../utils";
 import { map, sliceMap, Tile } from "./map.server";
 

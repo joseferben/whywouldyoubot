@@ -1,6 +1,6 @@
 import { Form, Link, useActionData } from "@remix-run/react";
 import { ActionFunction, json, redirect } from "@remix-run/server-runtime";
-import { getUserByName } from "~/models/user.server";
+import { getUserByName } from "~/engine/models/user.server";
 import { useOptionalUser, validateName } from "~/utils";
 
 interface ActionData {

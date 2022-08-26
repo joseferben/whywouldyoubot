@@ -1,6 +1,6 @@
 import TiledMap, { TiledObject } from "tiled-types";
-import { NpcKind, NpcKinds } from "~/engine/npc";
-import { getNpcsByRect, spawnNpc } from "../models/npc.server";
+import { NpcKind, NpcKinds } from "~/engine/core/npc";
+import { getNpcsByRect, spawnNpc } from "~/engine/models/npc.server";
 import { pickRandom, Rectangle } from "../utils";
 import { map } from "./map.server";
 

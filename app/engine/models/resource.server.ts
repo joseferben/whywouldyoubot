@@ -1,7 +1,7 @@
 import { Entity, Schema } from "redis-om";
 import { getResourceKind } from "~/content/content";
+import { ResourceKind } from "~/engine/core/resource";
 import { redis } from "~/engine/db.server";
-import { ResourceKind } from "~/engine/resource";
 import { Rectangle } from "~/utils";
 
 export interface Resource {

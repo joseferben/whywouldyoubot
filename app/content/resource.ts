@@ -1,4 +1,4 @@
-import { ResourceKind } from "~/engine/resource";
+import { ResourceKind } from "~/engine/core/resource";
 
 export const tree_1: ResourceKind = {
   name: "tree_1",
