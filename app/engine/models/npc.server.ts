@@ -3,7 +3,9 @@ import { NpcKind } from "~/engine/core/npc";
 
 import { getNpcKind } from "~/content/content";
 import { redis } from "~/engine/db.server";
-import { Rectangle } from "~/utils";
+import { pickRandomRange, Rectangle } from "~/utils";
+import { publishEvent } from "../event.server";
+import { User, userRepository } from "./user.server";
 
 export interface Npc {
   entityId: string;
@@ -15,11 +17,13 @@ export interface Npc {
   defense: number;
   posX: number;
   posY: number;
+  lastHitAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export class Npc extends Entity {
+  HIT_DELAY_MS = 1000;
   kind(): NpcKind {
     const kind = getNpcKind(this.name);
     if (!kind) {
@@ -27,8 +31,25 @@ export class Npc extends Entity {
     }
     return kind;
   }
+
   level(): number {
     return this.attack + this.intelligence + this.defense;
+  }
+
+  canHit(): boolean {
+    if (this.lastHitAt !== null) {
+      return this.lastHitAt.getDate() <= Date.now() - this.HIT_DELAY_MS;
+    } else {
+      return false;
+    }
+  }
+
+  getHitDamage(user: User): number {
+    return Math.max(this.attack - user.defense, 0);
+  }
+
+  updateLastHitAt() {
+    this.lastHitAt = new Date();
   }
 }
 
@@ -43,6 +64,7 @@ const npcSchema = new Schema(
     defense: { type: "number" },
     posX: { type: "number", indexed: true },
     posY: { type: "number", indexed: true },
+    lastHitAt: { type: "number" },
     createdAt: { type: "date" },
     updatedAt: { type: "date" },
   },
@@ -53,8 +75,22 @@ const npcSchema = new Schema(
 
 export const npcRepository = redis.fetchRepository(npcSchema);
 
-function pickRandom(r: [number, number]): number {
-  return Math.floor(Math.random() * Math.abs(r[1] - r[0]) + r[0]);
+export async function hitUser(npc: Npc, user: User) {
+  const damage = npc.getHitDamage(user);
+  npc.updateLastHitAt();
+  user.dealDamage(damage);
+  if (user.health <= 0) {
+    user.die();
+    publishEvent({
+      type: "died",
+      payload: { user: npc },
+    });
+  }
+  await Promise.all([npcRepository.save(npc), userRepository.save(user)]);
+  publishEvent({
+    type: "damageDealt",
+    payload: { actor: npc, target: user, damage },
+  });
 }
 
 export function getNpc(id: Npc["entityId"]) {
@@ -95,10 +131,10 @@ export function getNpcsByRect(rec: Rectangle, kind?: NpcKind) {
 export function spawnNpc(kind: NpcKind, posX: number, posY: number) {
   const npc = {
     name: kind.name,
-    health: pickRandom(kind.combat.health),
-    attack: pickRandom(kind.combat.attack),
-    intelligence: pickRandom(kind.combat.intelligence),
-    defense: pickRandom(kind.combat.defense),
+    health: pickRandomRange(kind.combat.health),
+    attack: pickRandomRange(kind.combat.attack),
+    intelligence: pickRandomRange(kind.combat.intelligence),
+    defense: pickRandomRange(kind.combat.defense),
   };
   const now = Date.now();
   console.log("spawn npc", npc);

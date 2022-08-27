@@ -17,11 +17,11 @@ if (process.env.NODE_ENV === "production") {
     global.__db__ = new Client();
   }
   redis = global.__db__;
-  redis.open("redis://localhost:6379");
+  redis.open(process.env.REDIS_URL);
 }
 
 export async function open() {
-  await redis.open("redis://localhost:6379");
+  await redis.open(process.env.REDIS_URL);
 }
 
 export { redis };

@@ -3,6 +3,7 @@ import { Entity, Schema } from "redis-om";
 import { redis } from "~/engine/db.server";
 import { map } from "~/engine/map.server";
 import { Rectangle } from "~/utils";
+import { Npc } from "./npc.server";
 
 const SPAWN_X = 560;
 const SPAWN_Y = 580;
@@ -12,13 +13,20 @@ export interface User {
   name: string;
   password: string;
   email?: string;
+  health: number;
+  maxHealth: number;
+  attack: number;
+  intelligence: number;
+  defense: number;
   posX: number;
   posY: number;
+  lastActAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export class User extends Entity {
+  HIT_DELAY_MS = 1000;
   canSee(x: number, y: number): boolean {
     return (
       this.posX >= x - 1 &&
@@ -41,6 +49,29 @@ export class User extends Entity {
     this.posX = x;
     this.posY = y;
   }
+  canAct(): boolean {
+    if (this.lastActAt !== null) {
+      return this.lastActAt.getDate() <= Date.now() - this.HIT_DELAY_MS;
+    } else {
+      return false;
+    }
+  }
+  hit(npc: Npc) {
+    // 1. determine if hit
+    // 2. determine damage
+    // 3. deduct health
+    // 4. update xp per level
+    // 5. update lastHitAt
+    // 6. publish damage event or killed event
+  }
+  dealDamage(damage: number) {
+    this.health -= damage;
+  }
+  die() {
+    // 1. drop some items
+    // 2. change coords to respawn
+    // 3. set health to max health
+  }
 }
 
 const userSchema = new Schema(
@@ -49,8 +80,14 @@ const userSchema = new Schema(
     name: { type: "string", indexed: true },
     email: { type: "string", indexed: true },
     password: { type: "string" },
+    health: { type: "number" },
+    maxHealth: { type: "number" },
+    attack: { type: "number" },
+    intelligence: { type: "number" },
+    defense: { type: "number" },
     posX: { type: "number", indexed: true },
     posY: { type: "number", indexed: true },
+    lastHitAt: { type: "date" },
     createdAt: { type: "date" },
     updatedAt: { type: "date" },
   },
@@ -63,6 +100,10 @@ export const userRepository = redis.fetchRepository(userSchema);
 
 export async function updateUser(user: User) {
   userRepository.save(user);
+}
+
+export async function getUserOrThrow(id: User["entityId"]) {
+  return userRepository.fetch(id);
 }
 
 export async function getUserById(id: User["entityId"]) {

@@ -83,7 +83,11 @@ export type Rectangle = {
   height: number;
 };
 
-export function pickRandom(
+export function pickRandom<T>(a: Array<T>): T {
+  return a[Math.floor(Math.random() * a.length)];
+}
+
+export function pickRandomRect(
   rec: Rectangle,
   n: number
 ): { x: number; y: number }[] {
@@ -94,4 +98,8 @@ export function pickRandom(
     result.push({ x, y });
   }
   return result;
+}
+
+export function pickRandomRange(r: [number, number]): number {
+  return Math.floor(Math.random() * Math.abs(r[1] - r[0]) + r[0]);
 }
