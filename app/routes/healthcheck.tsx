@@ -1,6 +1,6 @@
 // learn more: https://fly.io/docs/reference/configuration/#services-http_checks
 import type { LoaderFunction } from "@remix-run/node";
-import { redis } from "~/engine/db.server";
+import { db } from "~/engine/db.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const host =
@@ -11,7 +11,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     // if we can connect to the database and make a simple query
     // and make a HEAD request to ourselves, then we're good.
     await Promise.all([
-      redis.isOpen(),
+      db.isOpen(),
       fetch(url.toString(), { method: "HEAD" }).then((r) => {
         if (!r.ok) return Promise.reject(r);
       }),

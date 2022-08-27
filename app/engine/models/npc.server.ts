@@ -2,7 +2,7 @@ import { Entity, Schema } from "redis-om";
 import { NpcKind } from "~/engine/core/npc";
 
 import { getNpcKind } from "~/content/content";
-import { redis } from "~/engine/db.server";
+import { db } from "~/engine/db.server";
 import { pickRandomRange, Rectangle } from "~/utils";
 import { publishEvent } from "../event.server";
 import { User, userRepository } from "./user.server";
@@ -73,7 +73,7 @@ const npcSchema = new Schema(
   }
 );
 
-export const npcRepository = redis.fetchRepository(npcSchema);
+export const npcRepository = db.fetchRepository(npcSchema);
 
 export async function hitUser(npc: Npc, user: User) {
   const damage = npc.getHitDamage(user);

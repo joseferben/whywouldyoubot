@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { Entity, Schema } from "redis-om";
-import { redis } from "~/engine/db.server";
+import { db } from "~/engine/db.server";
 import { map } from "~/engine/map.server";
 import { Rectangle } from "~/utils";
 import { Npc } from "./npc.server";
@@ -96,7 +96,7 @@ const userSchema = new Schema(
   }
 );
 
-export const userRepository = redis.fetchRepository(userSchema);
+export const userRepository = db.fetchRepository(userSchema);
 
 export async function updateUser(user: User) {
   userRepository.save(user);

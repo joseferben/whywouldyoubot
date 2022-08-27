@@ -1,5 +1,5 @@
 import { Entity, Schema } from "redis-om";
-import { redis } from "~/engine/db.server";
+import { db } from "~/engine/db.server";
 import { User } from "~/engine/models/user.server";
 
 export interface ChatMessage {
@@ -24,7 +24,7 @@ const chatSchema = new Schema(
   }
 );
 
-export const messageRepository = redis.fetchRepository(chatSchema);
+export const messageRepository = db.fetchRepository(chatSchema);
 
 export function getChatMessage(id: ChatMessage["entityId"]) {
   return messageRepository.fetch(id);

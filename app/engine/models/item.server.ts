@@ -1,7 +1,7 @@
 import { Entity, Schema } from "redis-om";
 import { getItemKind } from "~/content/content";
 import { ItemKind } from "~/engine/core/item";
-import { redis } from "~/engine/db.server";
+import { db } from "~/engine/db.server";
 import { Rectangle } from "~/utils";
 
 export interface Item {
@@ -35,7 +35,7 @@ const itemSchema = new Schema(
   }
 );
 
-export const itemRepository = redis.fetchRepository(itemSchema);
+export const itemRepository = db.fetchRepository(itemSchema);
 
 export async function spawnItem(x: number, y: number, itemKind: ItemKind) {
   return itemRepository.createAndSave({

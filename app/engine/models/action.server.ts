@@ -1,5 +1,5 @@
 import { Entity, Schema } from "redis-om";
-import { redis } from "~/engine/db.server";
+import { db } from "~/engine/db.server";
 import { User } from "./user.server";
 
 export interface Action {
@@ -32,7 +32,7 @@ export function registerActionHandler(action: string, handler: ActionHandler) {
   actionHandlers[action] = handler;
 }
 
-export const actionRepository = redis.fetchRepository(actionSchema);
+export const actionRepository = db.fetchRepository(actionSchema);
 
 export async function handleAction(action: Action) {
   const handler = actionHandlers[action.name];
