@@ -1,11 +1,11 @@
 import { LoaderFunction } from "@remix-run/server-runtime";
-import { observable } from "~/engine/chat.server";
+import { observableChat } from "~/engine/chat.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const body = new ReadableStream({
     async start(c) {
       console.log("subscribe()");
-      const subscription = observable.subscribe(
+      const subscription = observableChat.subscribe(
         (_) => {
           c.enqueue("event: chat\n");
           c.enqueue(`data: \n\n`);

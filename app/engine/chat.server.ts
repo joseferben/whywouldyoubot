@@ -4,8 +4,10 @@ import { ChatMessage, createChatMessage } from "~/engine/models/message.server";
 import { User } from "~/engine/models/user.server";
 import { publisher, subscriber } from "./pubsub.server";
 
-const observable: Observable<ChatMessage> = new Observable((observer) => {
-  subscriber.subscribe("chat", (json) => {
+const PUBSUB_CHANNEL_NAME = "chat";
+
+const observableChat: Observable<ChatMessage> = new Observable((observer) => {
+  subscriber.subscribe(PUBSUB_CHANNEL_NAME, (json) => {
     const m: ChatMessage = JSON.parse(json);
     observer.next(m);
   });
@@ -13,9 +15,9 @@ const observable: Observable<ChatMessage> = new Observable((observer) => {
 
 async function message({ user, message }: { user: User; message: string }) {
   const m = await createChatMessage({ message, user });
-  await publisher.publish("chat", JSON.stringify(m));
+  await publisher.publish(PUBSUB_CHANNEL_NAME, JSON.stringify(m));
 }
 
-invariant(observable !== undefined, "chat can not be undefined");
+invariant(observableChat !== undefined, "chat can not be undefined");
 
-export { message, observable };
+export { message, observableChat };

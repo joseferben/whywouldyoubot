@@ -9,6 +9,7 @@ import { userRepository } from "~/engine/models/user.server";
 import { openPubsub } from "~/engine/pubsub.server";
 import { spawn } from "~/engine/spawn.server";
 import { getNpcKinds } from "./content/content";
+import { handleEvents } from "./content/event";
 
 export async function createIndexes() {
   console.log("create indexes");
@@ -27,5 +28,5 @@ function spawnNpcs() {
 
 export async function start() {
   // this will be executed once, not with every hot reload
-  await onStart([openDb, openPubsub, createIndexes, spawnNpcs]);
+  await onStart([openDb, openPubsub, createIndexes, spawnNpcs, handleEvents]);
 }

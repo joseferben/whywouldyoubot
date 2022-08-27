@@ -2,9 +2,9 @@ import { Entity, Schema } from "redis-om";
 import { NpcKind } from "~/engine/core/npc";
 
 import { getNpcKind } from "~/content/content";
+import * as event from "~/content/event";
 import { db } from "~/engine/db.server";
 import { pickRandomRange, Rectangle } from "~/utils";
-import { publishEvent } from "../event.server";
 import { User, userRepository } from "./user.server";
 
 export interface Npc {
@@ -81,16 +81,10 @@ export async function hitUser(npc: Npc, user: User) {
   user.dealDamage(damage);
   if (user.health <= 0) {
     user.die();
-    publishEvent({
-      type: "died",
-      payload: { user: npc },
-    });
+    event.publishDied(user);
   }
   await Promise.all([npcRepository.save(npc), userRepository.save(user)]);
-  publishEvent({
-    type: "damageDealt",
-    payload: { actor: npc, target: user, damage },
-  });
+  event.publishDamageDealt(npc, user, damage);
 }
 
 export function getNpc(id: Npc["entityId"]) {
