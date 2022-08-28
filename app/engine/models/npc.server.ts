@@ -79,12 +79,16 @@ export async function hitUser(npc: Npc, user: User) {
   const damage = npc.getHitDamage(user);
   npc.updateLastHitAt();
   user.dealDamage(damage);
+  let userDied = false;
   if (user.health <= 0) {
     user.die();
-    event.publishDied(user);
+    userDied = true;
   }
   await Promise.all([npcRepository.save(npc), userRepository.save(user)]);
-  event.publishDamageDealt(npc, user, damage);
+  event.damageDealt(npc, user, damage);
+  if (userDied) {
+    event.userDied(user);
+  }
 }
 
 export function getNpc(id: Npc["entityId"]) {

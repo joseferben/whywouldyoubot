@@ -142,6 +142,16 @@ export async function getUserByEmail(email: string) {
     .return.first();
 }
 
+export async function getUsersAt(x: number, y: number) {
+  return userRepository
+    .search()
+    .where("posX")
+    .equal(x)
+    .where("posY")
+    .equal(y)
+    .returnAll();
+}
+
 export async function createUser(
   name: string,
   password: string,

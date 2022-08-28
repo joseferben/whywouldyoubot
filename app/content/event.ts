@@ -1,53 +1,18 @@
-import { Event, observableEvent, publishEvent } from "~/engine/event.server";
+import { chat } from "~/engine/chat.server";
 import { Npc } from "~/engine/models/npc.server";
 import { User } from "~/engine/models/user.server";
+import { refresher } from "~/engine/refresher.server";
 
-type Died = {
-  type: "died";
-  payload: { user: User };
-};
-
-export function publishDied(user: User) {
-  publishEvent({
-    type: "died",
-    payload: { user: user },
-  });
+export async function userDied(user: User) {
+  await chat.local(`${user.name} died`, user.posX, user.posY);
+  await Promise.all([refresher.at(user.posX, user.posY), refresher.user(user)]);
 }
 
-async function died(event: Died) {
-  // TODO implement
-}
-
-type DamageDealt = {
-  type: "damageDealt";
-  payload: { actor: Npc; target: User; damage: number };
-};
-
-export function publishDamageDealt(npc: Npc, user: User, damage: number) {
-  const event: DamageDealt = {
-    type: "damageDealt",
-    payload: { actor: npc, target: user, damage },
-  };
-  publishEvent(event);
-}
-
-async function damageDealt(event: DamageDealt) {
-  // TODO implement
-}
-
-async function handleEvent(event: Event) {
-  if (event.type === "died") {
-    await died(event as Died);
-  } else if (event.type === "damageDealt") {
-    await damageDealt(event as DamageDealt);
-  } else {
-    console.warn(`can not handle event ${event}`);
-  }
-}
-
-export async function handleEvents() {
-  observableEvent.subscribe(
-    (event: Event) => handleEvent(event),
-    (error) => console.error(error)
+export async function damageDealt(npc: Npc, user: User, damage: number) {
+  await chat.local(
+    `${user.name} hit ${npc} and dealt ${damage} damage`,
+    user.posX,
+    user.posY
   );
+  await Promise.all([refresher.at(user.posX, user.posY)]);
 }

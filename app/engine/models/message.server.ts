@@ -1,6 +1,7 @@
+import { User } from "~/engine/models/user.server";
+
 import { Entity, Schema } from "redis-om";
 import { db } from "~/engine/db.server";
-import { User } from "~/engine/models/user.server";
 
 export interface ChatMessage {
   entityId: string;
