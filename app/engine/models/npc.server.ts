@@ -22,7 +22,6 @@ export interface Npc {
 }
 
 export class Npc extends Entity {
-  HIT_DELAY_MS = 1000;
   kind(): NpcKind {
     const kind = getNpcKind(this.name);
     if (!kind) {

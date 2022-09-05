@@ -1,7 +1,8 @@
 import { Observable } from "observable-fns";
 import { Entity, Schema } from "redis-om";
+import invariant from "tiny-invariant";
 import { db } from "~/engine/db.server";
-import { subscriber } from "../pubsub.server";
+import { publisher, subscriber } from "../pubsub.server";
 
 export interface Tickable {
   lastTickAt: Date | null;
@@ -15,6 +16,9 @@ export interface Tick {
   name: string;
   tickAt: number;
 }
+
+const DEFAULT_EXPIRATION_MS = 10 * 1000;
+const PUBSUB_CHANNEL_NAME = "tick";
 
 export class Tick extends Entity {}
 
@@ -38,43 +42,67 @@ async function getTicks() {
 }
 
 export async function getTick(id: string) {
-  return tickRepository.fetch(id);
+  const tick = await tickRepository.fetch(id);
+  return tick.entityId === null ? null : tick;
+}
+
+export async function getTickByActor(id: string) {
+  return tickRepository.search().where("actorId").equals(id).first();
+}
+
+export async function getTickOrThrow(id: string) {
+  const tick = await getTick(id);
+  if (tick === null) {
+    throw new Error(`tick with id ${id} does not exist`);
+  } else {
+    return tick;
+  }
+}
+
+export async function deleteTick(tick: Tick) {
+  tickRepository.remove(tick.entityId);
+}
+
+async function scheduleTick(tick: Tick) {
+  const ttlMs = Date.now() - tick.tickAt;
+  setTimeout(
+    () => publisher.publish(PUBSUB_CHANNEL_NAME, tick.entityId),
+    ttlMs
+  );
 }
 
 export async function createTick(
   actorId: string,
   targetId: string,
   name: string,
-  tickAt: number
+  tickAt?: number
 ) {
+  invariant(actorId, "actorId can not be null");
+  invariant(targetId, "targetId can not be null");
+  invariant(name, "name can not be null");
+  const now = Date.now();
   const tick = await tickRepository.createAndSave({
     targetId: targetId,
     actorId: actorId,
     name: name,
-    tickAt: tickAt,
+    tickAt: tickAt || now,
   });
-  const ttlMs = Date.now() - tickAt;
-  tickRepository.expire(tick.entityId, Math.ceil(ttlMs / 1000));
-  setTimeout(() => tickRepository.remove(tick.entityId), ttlMs);
+  console.log(`createTick ${tick.entityId}`);
+  const ttlMs = now - (tickAt || now);
+  tickRepository.expire(tick.entityId, DEFAULT_EXPIRATION_MS);
+  console.log(`run tick in ${ttlMs}ms`);
+  scheduleTick(tick);
   return tick;
 }
 
-const PUBSUB_CHANNEL_NAME_DEL = "__keyevent@0__:del";
-const PUBSUB_CHANNEL_NAME_EXPIRE = "__keyevent@0__:expire";
-
-export const observable: Observable<string> = new Observable((observer) => {
-  subscriber.pSubscribe(PUBSUB_CHANNEL_NAME_DEL, (msg) => {
-    observer.next(msg);
-  });
-  subscriber.pSubscribe(PUBSUB_CHANNEL_NAME_EXPIRE, (msg) => {
-    observer.next(msg);
+export const observable: Observable<Tick> = new Observable((observer) => {
+  subscriber.subscribe(PUBSUB_CHANNEL_NAME, (tickId) => {
+    getTickOrThrow(tickId).then((tick) => observer.next(tick));
   });
 });
 
 export async function attachTickTimeouts() {
   const ticks = await getTicks();
-  ticks.forEach((tick) => {
-    const ttlMs = Date.now() - tick.tickAt;
-    setTimeout(() => tickRepository.remove(tick.entityId), ttlMs);
-  });
+  console.log(`attachTickTimeouts() to ${ticks.length} ticks`);
+  ticks.forEach(scheduleTick);
 }
