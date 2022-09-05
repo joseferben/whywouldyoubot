@@ -15,9 +15,8 @@ export interface Npc {
   attack: number;
   intelligence: number;
   defense: number;
-  posX: number;
-  posY: number;
-  lastHitAt: Date | null;
+  x: number;
+  y: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,20 +35,8 @@ export class Npc extends Entity {
     return this.attack + this.intelligence + this.defense;
   }
 
-  canHit(): boolean {
-    if (this.lastHitAt !== null) {
-      return this.lastHitAt.getDate() <= Date.now() - this.HIT_DELAY_MS;
-    } else {
-      return false;
-    }
-  }
-
   getHitDamage(user: User): number {
     return Math.max(this.attack - user.defense, 0);
-  }
-
-  updateLastHitAt() {
-    this.lastHitAt = new Date();
   }
 }
 
@@ -62,8 +49,8 @@ const npcSchema = new Schema(
     attack: { type: "number" },
     intelligence: { type: "number" },
     defense: { type: "number" },
-    posX: { type: "number", indexed: true },
-    posY: { type: "number", indexed: true },
+    x: { type: "number", indexed: true },
+    y: { type: "number", indexed: true },
     lastHitAt: { type: "number" },
     createdAt: { type: "date" },
     updatedAt: { type: "date" },
@@ -77,7 +64,6 @@ export const npcRepository = db.fetchRepository(npcSchema);
 
 export async function hitUser(npc: Npc, user: User) {
   const damage = npc.getHitDamage(user);
-  npc.updateLastHitAt();
   user.dealDamage(damage);
   let userDied = false;
   if (user.health <= 0) {
@@ -95,13 +81,13 @@ export function getNpc(id: Npc["entityId"]) {
   return npcRepository.fetch(id);
 }
 
-export function getNpcsByPos(posX: number, posY: number) {
+export function getNpcsByPos(x: number, y: number) {
   return npcRepository
     .search()
-    .where("posX")
-    .equals(Math.round(posX))
-    .and("posY")
-    .equals(Math.round(posY))
+    .where("x")
+    .equals(Math.round(x))
+    .and("y")
+    .equals(Math.round(y))
     .returnAll();
 }
 
@@ -113,20 +99,20 @@ export function getNpcsByRect(rec: Rectangle, kind?: NpcKind) {
   const yMax = y + height;
   const query = npcRepository
     .search()
-    .where("posX")
+    .where("x")
     .greaterThanOrEqualTo(xMin)
-    .and("posX")
+    .and("x")
     .lessThanOrEqualTo(xMax)
-    .and("posY")
+    .and("y")
     .greaterThanOrEqualTo(yMin)
-    .and("posY")
+    .and("y")
     .lessThanOrEqualTo(yMax);
   return kind
     ? query.where("name").equal(kind.name).returnAll()
     : query.returnAll();
 }
 
-export function spawnNpc(kind: NpcKind, posX: number, posY: number) {
+export function spawnNpc(kind: NpcKind, x: number, y: number) {
   const npc = {
     name: kind.name,
     health: pickRandomRange(kind.combat.health),
@@ -143,8 +129,8 @@ export function spawnNpc(kind: NpcKind, posX: number, posY: number) {
     attack: npc.attack,
     intelligence: npc.intelligence,
     defense: npc.defense,
-    posX,
-    posY,
+    x,
+    y,
     createdAt: now,
     updatedAt: now,
   });

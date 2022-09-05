@@ -5,8 +5,9 @@ import { User } from "~/engine/models/user.server";
 import { Rectangle } from "./utils";
 
 type Player = { name: string; img: string };
-type Action = {
-  thingId: string;
+
+type PossibleAction = {
+  targetId: string;
   label: string;
   name: string;
   disabled: boolean;
@@ -16,12 +17,12 @@ export type Interactive = {
   id: string;
   img: string;
   name: string;
-  actions: Action[];
+  actions: PossibleAction[];
   players: Player[];
 };
 
 function getFieldRect(user: User): Rectangle {
-  return { x: user.posX - 1, y: user.posY - 1, width: 3, height: 3 };
+  return { x: user.x - 1, y: user.y - 1, width: 3, height: 3 };
 }
 
 function npcsToInteractives(npcs: Npc[], user: User): Interactive[] {
@@ -32,7 +33,7 @@ function npcsToInteractives(npcs: Npc[], user: User): Interactive[] {
     inAction: true,
     actions: [
       {
-        thingId: npc.entityId,
+        targetId: npc.entityId,
         label: "Attack",
         name: "attack",
         disabled: false,
@@ -53,7 +54,7 @@ function resourcesToInteractives(
     inAction: true,
     actions: [
       {
-        thingId: resource.entityId,
+        targetId: resource.entityId,
         label: "Chop",
         name: "chop",
         disabled: false,

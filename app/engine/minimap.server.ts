@@ -19,11 +19,11 @@ export interface MiniMapTile {
 
 export interface MiniMap {
   tiles: MiniMapTile[][];
-  posX: number;
-  posY: number;
+  x: number;
+  y: number;
 }
 
-type Positionable = { posX: number; posY: number };
+type Positionable = { x: number; y: number };
 
 class Map2d<T extends Positionable> {
   // This is a temporary datastructure to efficiently store thing on a 2D map
@@ -31,15 +31,15 @@ class Map2d<T extends Positionable> {
   constructor(users: T[]) {
     const result: { [key: string]: { [key: string]: T[] } } = {};
     users.forEach((u) => {
-      if (result[u.posX]) {
-        if (result[u.posX][u.posY]) {
-          result[u.posX][u.posY].push(u);
+      if (result[u.x]) {
+        if (result[u.x][u.y]) {
+          result[u.x][u.y].push(u);
         } else {
-          result[u.posX][u.posY] = [u];
+          result[u.x][u.y] = [u];
         }
       } else {
-        result[u.posX] = {};
-        result[u.posX][u.posY] = [u];
+        result[u.x] = {};
+        result[u.x][u.y] = [u];
       }
     });
     this.map = result;
@@ -77,10 +77,10 @@ function getImagePaths(userMap: Map2d<User>, npcMap: Map2d<Npc>, tile: Tile) {
 }
 
 export async function getMiniMapByUser(user: User): Promise<MiniMap> {
-  const mapSlice = sliceMap(map, user.posX, user.posY, WIDTH, HEIGHT);
+  const mapSlice = sliceMap(map, user.x, user.y, WIDTH, HEIGHT);
   const rec = {
-    x: user.posX - Math.round(WIDTH / 2),
-    y: user.posY - Math.round(HEIGHT / 2),
+    x: user.x - Math.round(WIDTH / 2),
+    y: user.y - Math.round(HEIGHT / 2),
     width: WIDTH,
     height: HEIGHT,
   };
@@ -92,7 +92,7 @@ export async function getMiniMapByUser(user: User): Promise<MiniMap> {
         imagePaths: getImagePaths(users, npcs, tile),
         canSee: user.canSee(tile.x, tile.y),
         canWalk: user.canWalk(tile.x, tile.y),
-        isCenter: user.posX === tile.x && user.posY === tile.y,
+        isCenter: user.x === tile.x && user.y === tile.y,
         x: tile.x,
         y: tile.y,
       };
@@ -100,7 +100,7 @@ export async function getMiniMapByUser(user: User): Promise<MiniMap> {
   );
   return Promise.resolve({
     tiles,
-    posX: user.posX,
-    posY: user.posY,
+    x: user.x,
+    y: user.y,
   });
 }

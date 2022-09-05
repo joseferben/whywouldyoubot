@@ -18,9 +18,8 @@ export interface User {
   attack: number;
   intelligence: number;
   defense: number;
-  posX: number;
-  posY: number;
-  lastActAt: Date;
+  x: number;
+  y: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,11 +28,11 @@ export class User extends Entity {
   HIT_DELAY_MS = 1000;
   canSee(x: number, y: number): boolean {
     return (
-      this.posX >= x - 1 &&
-      this.posX <= x + 1 &&
-      this.posY >= y - 1 &&
-      this.posY <= y + 1 &&
-      !(this.posX === x && this.posY === y)
+      this.x >= x - 1 &&
+      this.x <= x + 1 &&
+      this.y >= y - 1 &&
+      this.y <= y + 1 &&
+      !(this.x === x && this.y === y)
     );
   }
 
@@ -46,16 +45,10 @@ export class User extends Entity {
     if (!this.canWalk(x, y)) {
       console.warn(`user ${this.entityId} tried to walk to (${x}/${y})`);
     }
-    this.posX = x;
-    this.posY = y;
+    this.x = x;
+    this.y = y;
   }
-  canAct(): boolean {
-    if (this.lastActAt !== null) {
-      return this.lastActAt.getDate() <= Date.now() - this.HIT_DELAY_MS;
-    } else {
-      return false;
-    }
-  }
+
   hit(npc: Npc) {
     // 1. determine if hit
     // 2. determine damage
@@ -85,8 +78,8 @@ const userSchema = new Schema(
     attack: { type: "number" },
     intelligence: { type: "number" },
     defense: { type: "number" },
-    posX: { type: "number", indexed: true },
-    posY: { type: "number", indexed: true },
+    x: { type: "number", indexed: true },
+    y: { type: "number", indexed: true },
     lastHitAt: { type: "date" },
     createdAt: { type: "date" },
     updatedAt: { type: "date" },
@@ -103,6 +96,10 @@ export async function updateUser(user: User) {
 }
 
 export async function getUserOrThrow(id: User["entityId"]) {
+  return userRepository.fetch(id);
+}
+
+export async function getUser(id: User["entityId"]) {
   return userRepository.fetch(id);
 }
 
@@ -123,13 +120,13 @@ export async function getUsersByRect(rec: Rectangle) {
   const yMax = y + height;
   return userRepository
     .search()
-    .where("posX")
+    .where("x")
     .greaterThanOrEqualTo(xMin)
-    .where("posX")
+    .where("x")
     .lessThanOrEqualTo(xMax)
-    .where("posY")
+    .where("y")
     .greaterThanOrEqualTo(yMin)
-    .where("posY")
+    .where("y")
     .lessThanOrEqualTo(yMax)
     .return.all();
 }
@@ -145,9 +142,9 @@ export async function getUserByEmail(email: string) {
 export async function getUsersAt(x: number, y: number) {
   return userRepository
     .search()
-    .where("posX")
+    .where("x")
     .equal(x)
-    .where("posY")
+    .where("y")
     .equal(y)
     .returnAll();
 }
@@ -157,17 +154,18 @@ export async function createUser(
   password: string,
   emailOr?: string
 ) {
-  const now = Date.now();
+  const now = new Date();
   const hashedPassword = await bcrypt.hash(password, 10);
   const email = emailOr || null;
   return userRepository.createAndSave({
     name,
     password: hashedPassword,
     email,
-    posX: SPAWN_X,
-    posY: SPAWN_Y,
+    x: SPAWN_X,
+    y: SPAWN_Y,
     createdAt: now,
     updatedAt: now,
+    lastActAt: now,
   });
 }
 

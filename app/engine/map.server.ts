@@ -172,24 +172,18 @@ function loadMap(): Map {
 
 function sliceMap(
   map: Map,
-  posX: number,
-  posY: number,
+  x: number,
+  y: number,
   width: number,
   height: number
 ): Map {
-  invariant(
-    posX > Math.floor(width / 2),
-    `can not slice map at (${posX}, ${posY})`
-  );
-  invariant(
-    posY > Math.floor(height / 2),
-    `can not slice map at (${posX}, ${posY})`
-  );
+  invariant(x > Math.floor(width / 2), `can not slice map at (${x}, ${y})`);
+  invariant(y > Math.floor(height / 2), `can not slice map at (${x}, ${y})`);
   const tiles: Tile[][] = array2d(width, height);
-  const fromX = Math.round(posX - width / 2);
-  const toX = Math.round(posX + width / 2);
-  const fromY = Math.round(posY - height / 2);
-  const toY = Math.round(posY + height / 2);
+  const fromX = Math.round(x - width / 2);
+  const toX = Math.round(x + width / 2);
+  const fromY = Math.round(y - height / 2);
+  const toY = Math.round(y + height / 2);
   for (const [x, col] of map.tiles.slice(fromX, toX).entries()) {
     for (const [y, tile] of col.slice(fromY, toY).entries()) {
       // copy over

@@ -4,7 +4,8 @@ import {
     json,
     LoaderFunction
 } from "@remix-run/server-runtime";
-import { createAction } from "~/engine/models/action.server";
+import { attack } from "~/content/tick";
+import { getNpc } from "~/engine/models/npc.server";
 import {
     Field,
     getField,
@@ -34,16 +35,20 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const user = await requireUser(request);
   const formData = await request.formData();
-  const action = formData.get("action");
-  const thingId = formData.get("thingId");
+  const actionName = formData.get("action");
+  const targetId = formData.get("targetId");
   if (
-    action &&
-    thingId &&
-    typeof action === "string" &&
-    typeof thingId === "string"
+    actionName &&
+    targetId &&
+    actionName === "attack" &&
+    typeof actionName === "string" &&
+    typeof targetId === "string"
   ) {
-    await createAction(user, thingId, action);
+    const npc = await getNpc(targetId);
+    await attack(user, npc);
+    return null;
   }
+  throw new Error(`invalid form data ${actionName} ${targetId}`);
 };
 
 function Interactive({ interactive }: { interactive: Interactive }) {
@@ -64,7 +69,7 @@ function Interactive({ interactive }: { interactive: Interactive }) {
           <div className="pt-1 ml-auto pr-2">
             {interactive.actions.map((action) => (
               <Form key={action.name} className="flex p-1" method="post">
-                <input type="hidden" name="id" value={action.thingId} />
+                <input type="hidden" name="targetId" value={action.targetId} />
                 <input type="hidden" name="action" value={action.name} />
                 <button
                   type="submit"
