@@ -1,4 +1,4 @@
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { Form, Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
     ActionFunction,
     json,
@@ -15,6 +15,7 @@ import {
     Interactive,
     Item
 } from "~/field.server";
+import { useRefresh } from "~/hooks";
 import { requireUser } from "~/session.server";
 
 type LoaderData = {
@@ -153,7 +154,12 @@ function ItemList({ items }: { items: Item[] }) {
 }
 
 export default function Index() {
-  const { interactives, items, field } = useLoaderData() as LoaderData;
+  const loaderData = useLoaderData() as LoaderData;
+  const fetcher = useFetcher();
+  const { interactives, items, field }: LoaderData = fetcher.data || loaderData;
+
+  useRefresh(fetcher, "/game/index");
+
   return (
     <div className="overflow-auto">
       <h1 className="text-lg font-bold">

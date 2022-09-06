@@ -1,19 +1,20 @@
 import { FetcherWithComponents } from "@remix-run/react";
 import { useEffect } from "react";
 
-export function useRefresher(
-  eventApiPath: string,
-  refreshPath: string,
-  event: string,
-  fetcher: FetcherWithComponents<any>
-) {
+type Page = "/game" | "/game/index";
+
+const EVENT_NAME = "refresh";
+const REFRESH_API_PATH = "/api/refresh";
+
+export function useRefresh(fetcher: FetcherWithComponents<any>, page?: Page) {
   useEffect(() => {
-    const source = new EventSource(eventApiPath, { withCredentials: true });
-    source.addEventListener(event, (_: any) => {
-      console.log("get event");
+    const source = new EventSource(REFRESH_API_PATH, {
+      withCredentials: true,
+    });
+    source.addEventListener(EVENT_NAME, (_: any) => {
       if (fetcher.type === "init" || fetcher.type === "done") {
-        console.log("refreshing page");
-        fetcher.load(refreshPath);
+        console.log("refresh page");
+        fetcher.load(page || "/game");
       }
     });
     source.onerror = (e) => {

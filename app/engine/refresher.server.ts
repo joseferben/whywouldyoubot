@@ -5,7 +5,7 @@ import { publisher, subscriber } from "./pubsub.server";
 
 const PUBSUB_CHANNEL_NAME = "refresher";
 
-type Refresher = { user: User };
+type Refresher = { userId: string };
 
 const observable: Observable<Refresher> = new Observable((observer) => {
   subscriber.subscribe(PUBSUB_CHANNEL_NAME, (json) => {
@@ -19,7 +19,7 @@ async function publish(event: Refresher) {
 }
 
 async function user(user: User) {
-  await publish({ user });
+  await publish({ userId: user.entityId });
 }
 
 async function atExactly(x: number, y: number) {

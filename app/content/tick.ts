@@ -16,9 +16,9 @@ async function hitNpc(user: User, npc: Npc) {
     const delayMs = user.tickDelay();
     await createTick(user.entityId, npc.entityId, "hitNpc", delayMs);
   } else {
-    console.log(`${user.name} killed ${npc.name}`);
+    console.log(`${user.name} killed npc`);
   }
-  refresher.at(user.x, user.y);
+  await refresher.user(user);
 }
 
 async function hitUser(user: User, npc: Npc) {

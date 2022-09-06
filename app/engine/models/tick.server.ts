@@ -64,6 +64,7 @@ export async function deleteTick(tick: Tick) {
 }
 
 async function scheduleTick(tick: Tick) {
+  // TODO this scheduling needs to be done based on a create key, only on ticker process to avoid double processes
   const ttlMs = Math.max(tick.tickAt - Date.now(), 0);
   console.log(`schedule tick ${tick.entityId} in ${ttlMs}`);
   setTimeout(

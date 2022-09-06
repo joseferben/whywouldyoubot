@@ -49,7 +49,7 @@ export class User extends Entity {
   }
 
   rollDamage() {
-    return Math.round(Math.random() * 3);
+    return Math.round(Math.random() * 10);
   }
 
   dealDamage(damage: number) {
@@ -63,7 +63,7 @@ export class User extends Entity {
   }
 
   tickDelay() {
-    return 1000;
+    return 500;
   }
 }
 

@@ -18,7 +18,7 @@ import {
     getChatMessagesByUser
 } from "~/engine/models/message.server";
 import { updateUser } from "~/engine/models/user.server";
-import { useRefresher } from "~/hooks";
+import { useRefresh } from "~/hooks";
 import { requireUser } from "~/session.server";
 
 type LoaderData = {
@@ -90,7 +90,8 @@ function ChatMessages() {
   const ref = React.useRef<HTMLDivElement>(null);
   // TODO make sure that we truly need to register that twice
 
-  useRefresher("/api/chat", "/game", "chat", fetcher);
+  useRefresh(fetcher);
+  useRefresh(fetcher, "/game/index");
 
   useEffect(() => {
     if (ref.current) {
@@ -173,7 +174,8 @@ export default function Game() {
   const data: LoaderData = fetcher.data || loaderData;
   const ref = React.useRef<HTMLDivElement>(null);
 
-  useRefresher("/api/chat", "/game", "chat", fetcher);
+  useRefresh(fetcher);
+  useRefresh(fetcher, "/game/index");
 
   useEffect(() => {
     if (ref.current) {
