@@ -3,7 +3,6 @@ import { Entity, Schema } from "redis-om";
 import { db } from "~/engine/db.server";
 import { map } from "~/engine/map.server";
 import { Rectangle } from "~/utils";
-import { Npc } from "./npc.server";
 
 const SPAWN_X = 560;
 const SPAWN_Y = 580;
@@ -49,21 +48,22 @@ export class User extends Entity {
     this.y = y;
   }
 
-  hit(npc: Npc) {
-    // 1. determine if hit
-    // 2. determine damage
-    // 3. deduct health
-    // 4. update xp per level
-    // 5. update lastHitAt
-    // 6. publish damage event or killed event
+  rollDamage() {
+    return Math.round(Math.random() * 3);
   }
+
   dealDamage(damage: number) {
     this.health -= damage;
   }
+
   die() {
     // 1. drop some items
     // 2. change coords to respawn
     // 3. set health to max health
+  }
+
+  tickDelay() {
+    return 1000;
   }
 }
 

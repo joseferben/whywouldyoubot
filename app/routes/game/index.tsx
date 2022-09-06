@@ -2,7 +2,8 @@ import { Form, Link, useLoaderData } from "@remix-run/react";
 import {
     ActionFunction,
     json,
-    LoaderFunction
+    LoaderFunction,
+    redirect
 } from "@remix-run/server-runtime";
 import { attack } from "~/content/tick";
 import { getNpc } from "~/engine/models/npc.server";
@@ -40,15 +41,16 @@ export const action: ActionFunction = async ({ request }) => {
   if (
     actionName &&
     targetId &&
-    actionName === "attack" &&
     typeof actionName === "string" &&
     typeof targetId === "string"
   ) {
-    const npc = await getNpc(targetId);
-    await attack(user, npc);
-    return null;
+    if (actionName === "attack") {
+      const npc = await getNpc(targetId);
+      await attack(user, npc);
+      return redirect("/game");
+    }
   }
-  throw new Error(`invalid form data ${actionName} ${targetId}`);
+  return redirect("/game");
 };
 
 function Interactive({ interactive }: { interactive: Interactive }) {

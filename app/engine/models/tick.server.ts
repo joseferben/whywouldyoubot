@@ -64,7 +64,8 @@ export async function deleteTick(tick: Tick) {
 }
 
 async function scheduleTick(tick: Tick) {
-  const ttlMs = Date.now() - tick.tickAt;
+  const ttlMs = Math.max(tick.tickAt - Date.now(), 0);
+  console.log(`schedule tick ${tick.entityId} in ${ttlMs}`);
   setTimeout(
     () => publisher.publish(PUBSUB_CHANNEL_NAME, tick.entityId),
     ttlMs
@@ -75,7 +76,7 @@ export async function createTick(
   actorId: string,
   targetId: string,
   name: string,
-  tickAt?: number
+  delayMs: number
 ) {
   invariant(actorId, "actorId can not be null");
   invariant(targetId, "targetId can not be null");
@@ -85,12 +86,11 @@ export async function createTick(
     targetId: targetId,
     actorId: actorId,
     name: name,
-    tickAt: tickAt || now,
+    tickAt: now + delayMs,
   });
   console.log(`createTick ${tick.entityId}`);
-  const ttlMs = now - (tickAt || now);
   tickRepository.expire(tick.entityId, DEFAULT_EXPIRATION_MS);
-  console.log(`run tick in ${ttlMs}ms`);
+  console.log(`run tick in ${delayMs}ms`);
   scheduleTick(tick);
   return tick;
 }

@@ -37,6 +37,10 @@ export class Npc extends Entity {
   getHitDamage(user: User): number {
     return Math.max(this.attack - user.defense, 0);
   }
+
+  damage(amount: number) {
+    this.health = this.health - amount;
+  }
 }
 
 const npcSchema = new Schema(
@@ -73,6 +77,15 @@ export async function hitUser(npc: Npc, user: User) {
   event.damageDealt(npc, user, damage);
   if (userDied) {
     event.userDied(user);
+  }
+}
+
+export async function damageNpc(npc: Npc, amount: number) {
+  npc.health -= amount;
+  if (npc.health <= 0) {
+    npcRepository.remove(npc.entityId);
+  } else {
+    npcRepository.save(npc);
   }
 }
 

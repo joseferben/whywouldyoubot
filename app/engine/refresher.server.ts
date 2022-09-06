@@ -3,7 +3,7 @@ import { getUsersAt, getUsersByRect, User } from "./models/user.server";
 import { Observable } from "observable-fns";
 import { publisher, subscriber } from "./pubsub.server";
 
-const PUBSUB_CHANNEL_NAME = "event";
+const PUBSUB_CHANNEL_NAME = "refresher";
 
 type Refresher = { user: User };
 

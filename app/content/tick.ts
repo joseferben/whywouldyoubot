@@ -1,4 +1,4 @@
-import { getNpc, Npc } from "~/engine/models/npc.server";
+import { damageNpc, getNpc, Npc } from "~/engine/models/npc.server";
 import {
     createTick,
     deleteTick,
@@ -7,9 +7,18 @@ import {
     Tick
 } from "~/engine/models/tick.server";
 import { getUser, User } from "~/engine/models/user.server";
+import { refresher } from "~/engine/refresher.server";
 
 async function hitNpc(user: User, npc: Npc) {
-  console.log(`user ${user.entityId} hits npc ${npc.entityId}`);
+  const damage = user.rollDamage();
+  damageNpc(npc, damage);
+  if (npc.health >= 0) {
+    const delayMs = user.tickDelay();
+    await createTick(user.entityId, npc.entityId, "hitNpc", delayMs);
+  } else {
+    console.log(`${user.name} killed ${npc.name}`);
+  }
+  refresher.at(user.x, user.y);
 }
 
 async function hitUser(user: User, npc: Npc) {
@@ -32,10 +41,10 @@ export async function processTick(tick: Tick) {
 }
 
 export async function attack(user: User, npc: Npc) {
-  await createTick(user.entityId, npc.entityId, "hitNpc");
+  await createTick(user.entityId, npc.entityId, "hitNpc", 0);
   const tick = await getTickByActor(npc.entityId);
   if (!tick) {
-    await createTick(npc.entityId, user.entityId, "hitUser");
+    await createTick(npc.entityId, user.entityId, "hitUser", 0);
   }
 }
 
