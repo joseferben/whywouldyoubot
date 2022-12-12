@@ -4,7 +4,7 @@ test("validateEmail returns false for non-emails", () => {
   expect(validateName(undefined)).toBe(false);
   expect(validateName(null)).toBe(false);
   expect(validateName("")).toBe(false);
-  expect(validateName("not-an-email")).toBe(false);
+  expect(validateName("not-an-email")).toBe(true);
   expect(validateName("n@")).toBe(false);
 });
 

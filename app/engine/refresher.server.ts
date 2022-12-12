@@ -26,6 +26,7 @@ async function atExactly(x: number, y: number) {
   const users = await getUsersAt(x, y);
   await Promise.all(users.map(user));
 }
+
 async function at(x: number, y: number) {
   const rect = { x: x - 1, y: y - 1, width: 3, height: 3 };
   const users = await getUsersByRect(rect);

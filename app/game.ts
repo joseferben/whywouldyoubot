@@ -5,8 +5,8 @@ import { messageRepository } from "~/engine/models/message.server";
 import { npcRepository } from "~/engine/models/npc.server";
 import { resourceRepository } from "~/engine/models/resource.server";
 import {
-    attachTickTimeouts,
-    tickRepository
+  attachTickTimeouts,
+  tickRepository,
 } from "~/engine/models/tick.server";
 import { userRepository } from "~/engine/models/user.server";
 import { openPubsub } from "~/engine/pubsub.server";
