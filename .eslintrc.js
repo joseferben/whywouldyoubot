@@ -19,4 +19,7 @@ module.exports = {
       version: 28,
     },
   },
+  rules: {
+    "testing-library/await-async-query": "off",
+  },
 };
