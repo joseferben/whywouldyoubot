@@ -33,6 +33,7 @@ export class EntityDB<M extends Record<string, Entity>> {
     [{ id: string; key: string; value: string }]
   >;
   selectDataByTypeStmt!: Statement<{ type: string; limit: number }>;
+  selectCountEntityStmt!: Statement<{ type: string }>;
 
   constructor(readonly db: Database) {
     this.createTables();
@@ -95,6 +96,10 @@ export class EntityDB<M extends Record<string, Entity>> {
     this.deleteEntityStmt = this.db.prepare(
       "DELETE FROM entities WHERE id = @id"
     );
+    this.selectCountEntityStmt = this.db.prepare(
+      "SELECT COUNT(*) FROM entities WHERE type = @type"
+    );
+
     this.selectDataByIdStmt = this.db.prepare(
       "SELECT key, value, type FROM data WHERE id = @id"
     );
@@ -317,6 +322,16 @@ export class EntityDB<M extends Record<string, Entity>> {
       limit,
     }) as DataRow[];
     return this.deserializeAll(dataRows);
+  }
+
+  /**
+   * Return the number of entities of the given type.
+   */
+  count<K extends keyof M>(type: K): number {
+    const count = this.selectCountEntityStmt.get({ type: type as string }) as {
+      count: number;
+    };
+    return count ? count.count : 0;
   }
 
   /**

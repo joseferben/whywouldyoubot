@@ -1,5 +1,5 @@
-import type { User } from "~/pure/engine/core";
-import type { GameDB} from "./GameDB";
+import type { User } from "~/engine/core";
+import type { GameDB } from "./GameDB";
 import { userType } from "./GameDB";
 import bcrypt from "bcrypt";
 import invariant from "tiny-invariant";
@@ -13,6 +13,14 @@ export class UserService {
 
   findByEmail(email: string) {
     return this.db.findUserByEmail(email);
+  }
+
+  findById(id: string) {
+    return this.db.findById(userType, id);
+  }
+
+  findByUserId(userId: string) {
+    return this.db.findPlayerByUserId(userId);
   }
 
   create(name: string, password?: string, emailOr?: string) {

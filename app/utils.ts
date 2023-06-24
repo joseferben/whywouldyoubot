@@ -69,3 +69,16 @@ export function useUser(): User {
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
+
+function isAscii(str: string) {
+  return /[\p{ASCII}]+/u.test(str);
+}
+
+export function validateName(name: unknown): name is string {
+  return (
+    typeof name === "string" &&
+    name.length > 3 &&
+    name.length < 25 &&
+    isAscii(name)
+  );
+}

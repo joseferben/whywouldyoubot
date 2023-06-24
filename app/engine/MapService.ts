@@ -4,10 +4,10 @@ import fs from "fs";
 import type { TiledLayer, TiledTile } from "tiled-types";
 import type TiledMap from "tiled-types";
 import invariant from "tiny-invariant";
-import { getResourceKind } from "~/pure/content";
-import type { ResourceKind } from "~/pure/engine/core";
-import { array2d } from "~/pure/engine/math";
-import type { WorldDB } from "./TransientDB";
+import { getResourceKind } from "~/content";
+import type { ResourceKind } from "~/engine/core";
+import { array2d } from "~/engine/math";
+import type { WorldDB } from "./WorldDB";
 
 // TODO use EntityDB with inmemory sqlite
 export type Tile = {

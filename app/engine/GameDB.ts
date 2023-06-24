@@ -17,8 +17,8 @@ const selectDataByPlayerInventorySql = `
 SELECT D2.id, D2.key, D2.value, D2.type 
 FROM data DP
 JOIN data DB on DP.id = DB.id
-JOIN data D2 on DX.id = D2.id
-JOIN entities E on DX.id = E.id
+JOIN data D2 on DP.id = D2.id
+JOIN entities E on DP.id = E.id
 WHERE 
     E.type = @type 
     AND DP.key = 'playerId' AND DP.value = @playerId

@@ -1,4 +1,4 @@
-import type { Player } from "~/pure/engine/core";
+import type { Player } from "~/engine/core";
 import type { MapService } from "./MapService";
 import type { OnlineService } from "./OnlineService";
 import type { PlayerService } from "./PlayerService";

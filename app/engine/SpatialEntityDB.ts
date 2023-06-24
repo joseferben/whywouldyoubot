@@ -1,5 +1,5 @@
-import type { Entity } from "~/pure/engine/core";
-import type { DataRow} from "./EntityDB";
+import type { Entity } from "./core";
+import type { DataRow } from "./EntityDB";
 import { EntityDB } from "./EntityDB";
 import type { Database, Statement } from "better-sqlite3";
 

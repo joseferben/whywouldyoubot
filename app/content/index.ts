@@ -22,6 +22,11 @@ export function getNpcKind(name: string): NpcKind | null {
   return npcKinds[name];
 }
 
+export function getItemKinds(): { [name: string]: ItemKindOpts } {
+  // @ts-ignore
+  return itemKinds;
+}
+
 export function getItemKind(name: string): ItemKindOpts | null {
   // @ts-ignore
   return itemKinds[name];

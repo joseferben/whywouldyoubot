@@ -1,4 +1,4 @@
-import type { ItemKindOpts, DroppedItem, DropTable } from "~/pure/engine/core";
+import type { ItemKindOpts, DroppedItem, DropTable } from "~/engine/core";
 import { pickRandomRange } from "~/engine/math";
 import type { WorldDB } from "./WorldDB";
 import { droppedItemType } from "./WorldDB";

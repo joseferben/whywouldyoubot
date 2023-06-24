@@ -1,7 +1,7 @@
-import type { DroppedItem, Item, ItemKindOpts, Player } from "~/pure/engine/core";
-import type { GameDB} from "~/server/engine/GameDB";
-import { itemType } from "~/server/engine/GameDB";
-import type { DroppedItemService } from "~/server/engine/DroppedItemService";
+import type { DroppedItem, Item, ItemKindOpts, Player } from "~/engine/core";
+import type { GameDB } from "~/engine/GameDB";
+import { itemType } from "~/engine/GameDB";
+import type { DroppedItemService } from "~/engine/DroppedItemService";
 
 export class ItemService {
   constructor(

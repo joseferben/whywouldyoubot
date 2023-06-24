@@ -1,5 +1,5 @@
-import type { Player, Item, Npc, EquipSlot } from "~/pure/engine/core";
-import type { Rectangle } from "~/pure/engine/math";
+import type { Player, Item, Npc, EquipSlot } from "~/engine/core";
+import type { Rectangle } from "~/engine/math";
 import type { UserService } from "./UserService";
 import { playerType, type GameDB } from "./GameDB";
 import type { MapService } from "./MapService";

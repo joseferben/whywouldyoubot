@@ -7,6 +7,7 @@ export const combatType = "com";
 export const playerStatsType = "pls";
 export const mapTile = "map";
 
+// TODO
 type Combat = { id: "todo" };
 type MapTile = { id: "todo" };
 type PlayerStats = {

@@ -1,4 +1,4 @@
-import type { Player } from "~/pure/engine/core";
+import type { Player } from "~/engine/core";
 
 const TEN_SECONDS_MS = 10000;
 
