@@ -3,29 +3,27 @@ import crypto from "crypto";
 import fs from "fs";
 import type { TiledLayer, TiledTile } from "tiled-types";
 import type TiledMap from "tiled-types";
-import invariant from "tiny-invariant";
 import { getResourceKind } from "~/content";
-import type { ResourceKind } from "~/engine/core";
-import { array2d } from "~/engine/math";
-import type { WorldDB } from "./WorldDB";
+import type { Player, ResourceKind } from "~/engine/core";
+import { mapTileType, type WorldDB } from "./WorldDB";
 
-// TODO use EntityDB with inmemory sqlite
-export type Tile = {
+export type MapTile = {
   description: string;
   imagePaths: string[];
   x: number;
   y: number;
   obstacle: boolean;
   gid: number;
+  id: string;
 };
 
 export type Map = {
-  tiles: Tile[][];
+  tiles: MapTile[][];
   tiledMap: TiledMap;
 };
 
 export class MapService {
-  map: Map | undefined;
+  mapLoaded = false;
   jsonFilePath: string;
   tmxFilePath: string;
   tmxFileDir: string;
@@ -45,7 +43,7 @@ export class MapService {
     this.jsonFilePath = `${this.tmxFileDir}/map.${hash}.json`;
   }
 
-  gidToTiledTile(gid: number, tiled: TiledMap): TiledTile | undefined {
+  private gidToTiledTile(gid: number, tiled: TiledMap): TiledTile | undefined {
     if (gid === 0) {
       return undefined;
     }
@@ -77,7 +75,7 @@ export class MapService {
   }
 
   isObstacle(x: number, y: number) {
-    return this.getMap().tiles[x][y].obstacle;
+    return this.db.findByPosition(mapTileType, x, y)[0]?.obstacle;
   }
 
   getDescription(tiledTile: TiledTile): string {
@@ -98,8 +96,10 @@ export class MapService {
     return resourceKindName ? getResourceKind(resourceKindName) : null;
   }
 
-  processTile(
-    tiles: Tile[][],
+  /**
+   * Load tile map and store in database.
+   */
+  loadTile(
     layer: TiledLayer,
     tiledTile: TiledTile,
     x: number,
@@ -107,39 +107,36 @@ export class MapService {
     gid: number
   ) {
     const description = this.getDescription(tiledTile);
-    if (!tiles[x][y]) {
+    const tiles = this.db.findByPosition(mapTileType, x, y);
+    if (tiles.length === 0) {
       // Create tiled
-      tiles[x][y] = {
+      this.db.create(mapTileType, {
+        gid: gid,
         description,
         imagePaths: tiledTile.image ? [tiledTile.image] : [],
         x,
         y,
         obstacle: this.isTiledTileObstacle(layer, tiledTile),
-        gid,
-      };
+      });
     } else {
+      const tile = tiles[0];
       // Update existing tile
       const hasImageAlready =
-        tiles[x][y].imagePaths.find((i) => i === tiledTile.image) !== undefined;
+        tile.imagePaths.find((i) => i === tiledTile.image) !== undefined;
       if (tiledTile.image && !hasImageAlready) {
-        tiles[x][y].imagePaths.push(tiledTile.image);
+        tile.imagePaths.push(tiledTile.image);
       }
       // Set if obstacle
-      tiles[x][y].obstacle =
-        tiles[x][y].obstacle || this.isTiledTileObstacle(layer, tiledTile);
+      tile.obstacle =
+        tile.obstacle || this.isTiledTileObstacle(layer, tiledTile);
+      this.db.update(tile);
     }
-    // Set resource
-    // const resourceKind = this.getResourceKindOfTile(tiledTile);
-    // if (resourceKind) {
-    //   tiles[x][y].resource = await spawnResource(x, y, resourceKind);
-    // }
   }
 
-  mapOfTiledMap(tiledMap: TiledMap): Map {
+  loadTiledMap(tiledMap: TiledMap) {
     if (tiledMap.orientation !== "orthogonal") {
       throw new Error("Only orthogonal maps supported");
     }
-    const tiles: Tile[][] = array2d(tiledMap.width, tiledMap.height);
 
     for (const layer of tiledMap.layers) {
       if (layer.type === "tilelayer") {
@@ -150,7 +147,7 @@ export class MapService {
             const y = Math.floor(idx / tiledMap.width);
             const tiledTile = this.gidToTiledTile(gid, tiledMap);
             if (tiledTile !== undefined) {
-              this.processTile(tiles, layer, tiledTile, x, y, gid);
+              this.loadTile(layer, tiledTile, x, y, gid);
             }
           }
         }
@@ -158,7 +155,6 @@ export class MapService {
         console.debug("process object layer", layer.name);
       }
     }
-    return { tiles, tiledMap };
   }
 
   export() {
@@ -167,11 +163,11 @@ export class MapService {
     );
   }
 
-  loadMap(): Map {
+  loadMap() {
     console.debug("load map");
     if (fs.existsSync(this.jsonFilePath) && !process.env.BYPASS_CACHE) {
       console.debug("map found in cache, load cache");
-      return this.mapOfTiledMap(
+      return this.loadTiledMap(
         JSON.parse(fs.readFileSync(this.jsonFilePath, "utf8"))
       );
     } else {
@@ -181,41 +177,19 @@ export class MapService {
         .filter((file) => file.endsWith(".json"));
       jsonFiles.forEach((file) => fs.rmSync(`${this.tmxFileDir}/${file}`));
       this.export();
-      return this.mapOfTiledMap(
+      return this.loadTiledMap(
         JSON.parse(fs.readFileSync(this.jsonFilePath, "utf8"))
       );
     }
   }
 
-  getMap(): Map {
-    if (this.map === undefined) {
-      console.debug("initialize map once");
-      this.map = this.loadMap.bind(this)();
-    }
-    return this.map;
-  }
-
-  sliceMap(posX: number, posY: number, width: number, height: number): Map {
-    invariant(
-      posX > Math.floor(width / 2),
-      `can not slice map at (${posX}, ${posY})`
+  findTilesByPlayer(player: Player) {
+    return this.db.findByRectangle(
+      mapTileType,
+      player.x - 20,
+      player.y - 20,
+      player.x + 20,
+      player.y + 20
     );
-    invariant(
-      posY > Math.floor(height / 2),
-      `can not slice map at (${posX}, ${posY})`
-    );
-    const tiles: Tile[][] = array2d(width, height);
-    const fromX = Math.round(posX - width / 2);
-    const toX = Math.round(posX + width / 2);
-    const fromY = Math.round(posY - height / 2);
-    const toY = Math.round(posY + height / 2);
-    const map = this.getMap();
-    for (const [x, col] of map.tiles.slice(fromX, toX).entries()) {
-      for (const [y, tile] of col.slice(fromY, toY).entries()) {
-        // copy over
-        tiles[x][y] = { ...tile };
-      }
-    }
-    return { ...map, tiles };
   }
 }

@@ -20,12 +20,12 @@ export class WalkService {
 
   walk(player: Player, x: number, y: number) {
     this.onlineService.ensureOnline(player);
-    console.debug(`walk ${player.id}`, player.posX, player.posY);
+    console.debug(`walk ${player.id}`, player.x, player.y);
     if (!this.canWalk(player, x, y)) {
       console.warn(`player ${player.id} tried to walk to (${x}/${y})`);
     }
-    player.posX = x;
-    player.posY = y;
+    player.x = x;
+    player.y = y;
     this.playerService.db.update(player);
   }
 }

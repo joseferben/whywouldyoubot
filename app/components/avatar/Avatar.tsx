@@ -1,6 +1,4 @@
-import type { Avatar as AvatarType } from "~/engine/avatar/service.server";
-
-export function Avatar({ avatar }: { avatar: AvatarType }) {
+export function Avatar() {
   return (
     <div className="h-full w-full">
       <img
@@ -12,7 +10,7 @@ export function Avatar({ avatar }: { avatar: AvatarType }) {
         }}
         height="96"
         width="96"
-        src={`/assets/avatars/hair_${avatar.hair}.png`}
+        src={`/assets/avatars/hair_0.png`}
       />
       <img
         className="absolute z-20 h-full w-full"
@@ -23,7 +21,7 @@ export function Avatar({ avatar }: { avatar: AvatarType }) {
         }}
         height="96"
         width="96"
-        src={`/assets/avatars/eyes_${avatar.eyes}.png`}
+        src={`/assets/avatars/eyes_0.png`}
       />
       <img
         className="absolute z-10 h-full w-full"
@@ -34,7 +32,7 @@ export function Avatar({ avatar }: { avatar: AvatarType }) {
         }}
         height="96"
         width="96"
-        src={`/assets/avatars/head_${avatar.head}.png`}
+        src={`/assets/avatars/head_0.png`}
       />
     </div>
   );

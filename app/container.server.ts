@@ -11,9 +11,12 @@ import { WorldDB } from "./engine/WorldDB";
 import invariant from "tiny-invariant";
 import { SessionService } from "./engine/SessionService";
 import { getItemKinds } from "./content";
+import { InventoryService } from "./engine/InventoryService";
+import { config as dotenvConfig } from "dotenv";
 
 function build() {
-  invariant(process.env.SESSION_SECRET);
+  dotenvConfig();
+  invariant(process.env.SESSION_SECRET, "SESSION_SECRET is required");
 
   const config = {
     dbFilePath: process.env.DB_FILE_PATH || "db.sqlite3",
@@ -29,7 +32,7 @@ function build() {
     items: getItemKinds(),
   };
 
-  const persistent = new Database(config.dbFilePath);
+  const persistent = new Database(config.dbFilePath, { verbose: console.log });
   persistent.pragma("journal_mode = WAL");
   persistent.pragma("synchronous = off");
 
@@ -77,10 +80,10 @@ function build() {
   //   npcService,
   //   droppedItemService
   // );
-  // const inventoryService = new InventoryService(
-  //   itemService,
-  //   droppedItemService
-  // );
+  const inventoryService = new InventoryService(
+    itemService,
+    droppedItemService
+  );
   // const avatarService = new AvatarService(playerService);
 
   return {
@@ -96,7 +99,7 @@ function build() {
     // equipmentService,
     // avatarService,
     // combatStatsService,
-    // inventoryService,
+    inventoryService,
     // spawnService,
     // combatService,
   };

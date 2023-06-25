@@ -50,8 +50,8 @@ export class ItemService {
     }
     // this.messageService.postEventField(
     //   `${player.username} picks up ${droppedItem.amount} ${kind.label}.`,
-    //   player.posX,
-    //   player.posY
+    //   player.x,
+    //   player.y
     // );
     this.droppedItemService.delete(droppedItem);
   }

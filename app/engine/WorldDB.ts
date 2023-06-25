@@ -1,15 +1,15 @@
 import type { DroppedItem, Npc } from "~/engine/core";
 import { SpatialEntityDB } from "~/engine/SpatialEntityDB";
+import type { MapTile } from "./MapService";
 
 export const droppedItemType = "dro";
 export const npcType = "npc";
 export const combatType = "com";
 export const playerStatsType = "pls";
-export const mapTile = "map";
+export const mapTileType = "til";
 
 // TODO
 type Combat = { id: "todo" };
-type MapTile = { id: "todo" };
 type PlayerStats = {
   id: "todo";
   health: number;
@@ -22,7 +22,7 @@ type EntityMap = {
   [npcType]: Npc;
   [combatType]: Combat;
   [playerStatsType]: PlayerStats;
-  [mapTile]: MapTile;
+  [mapTileType]: MapTile;
 };
 
 export class WorldDB extends SpatialEntityDB<EntityMap> {}

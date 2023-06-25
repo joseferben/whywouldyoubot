@@ -1,23 +1,20 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { ActionFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Link, Outlet, useFetcher, useLoaderData } from "@remix-run/react";
-import Navigation from "~/components/navigation/Navigation";
+import type { FetcherWithComponents } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
-import MiniMap from "~/components/minimap/MiniMap";
+import { Avatar } from "~/components/avatar/Avatar";
+import type { MapTile } from "~/engine/MapService";
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader = async ({ request }: LoaderArgs) => {
   const user = await container.sessionService.requireUser(request);
   const player = container.playerService.findByUserId(user.id);
   if (!player) return redirect("/");
-  //const goldAmount = container.inventoryService.gold(player);
-  // const [messages, miniMap] = await Promise.all([
-  //   container.items.messageService.findAll(),
-  //   container.items.miniMapService.findByPlayer(player),
-  // ]);
+  const tiles = container.mapService.findTilesByPlayer(player);
+  const goldAmount = container.inventoryService.findGoldAmount(player);
   return json({
-    // goldAmount,
-    // messages,
-    // miniMap,
+    goldAmount,
+    tiles,
     player,
     hasPasswordSet: user.password !== null,
   });
@@ -74,27 +71,95 @@ function PasswordWarning() {
   );
 }
 
+function Tile({
+  tile,
+  fetcher,
+}: {
+  tile: MapTile;
+  fetcher: FetcherWithComponents<any>;
+}) {
+  function handleClick() {
+    if (!tile.obstacle) {
+      fetcher.submit(
+        { type: "walk", x: String(tile.x), y: String(tile.y) },
+        { method: "post" }
+      );
+    }
+  }
+
+  // TODO add WASDZ controls for walking
+  const [ground, ...layers] = tile.imagePaths;
+  const showWalkPattern =
+    !tile.obstacle &&
+    fetcher.state !== "submitting" &&
+    fetcher.state !== "loading";
+
+  return (
+    <div
+      onClick={handleClick}
+      className={`relative ${!tile.obstacle ? "cursor-pointer" : ""}`}
+    >
+      <Avatar />
+      <div
+        className={`${
+          showWalkPattern ? "opacity-100" : "opacity-0"
+        } absolute z-20 h-full w-full rounded-3xl backdrop-brightness-125 transition-opacity duration-75`}
+      ></div>
+      <div
+        className={`absolute z-10 h-full w-full bg-stone-900 opacity-10`}
+      ></div>
+      {layers.map((image, idx) => {
+        return (
+          <img
+            alt=""
+            draggable={false}
+            className="absolute h-full w-full"
+            style={{
+              userSelect: "none",
+              imageRendering: "pixelated",
+              zIndex: `${idx + 1}`,
+            }}
+            key={image}
+            src={`/${image}`}
+          ></img>
+        );
+      })}
+      <img
+        alt=""
+        width="96"
+        height="96"
+        draggable={false}
+        style={{
+          userSelect: "none",
+          imageRendering: "pixelated",
+          zIndex: "1",
+        }}
+        src={`/${ground}`}
+      ></img>
+    </div>
+  );
+}
+
 export default function Game() {
-  const { miniMap, player, hasPasswordSet } = useLoaderData<typeof loader>();
+  const { tiles, player, hasPasswordSet } = useLoaderData<typeof loader>();
+  console.log(tiles);
+  console.log(player.x);
+  console.log(player.y);
 
   //const id = useEventSource("/sse/updates");
 
   const fetcher = useFetcher();
 
   return (
-    <div className="mx-auto h-full w-full md:flex">
-      <div className="relative h-2/5 w-full overflow-hidden md:h-full md:w-1/2 lg:w-3/5 xl:w-2/3">
-        {!hasPasswordSet && (
-          <div className="absolute z-50 w-full">
-            <PasswordWarning />
-          </div>
-        )}
-        <MiniMap fetcher={fetcher} miniMap={miniMap} />
-      </div>
-      <div className="flex h-3/5 w-full flex-col px-1 md:h-full md:w-1/2 lg:w-2/5 xl:w-1/3">
-        <Navigation fetcher={fetcher} player={player} />
-        <Outlet />
-      </div>
+    <div className="relative left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 scale-125 transform md:scale-150 lg:scale-100">
+      {!hasPasswordSet && (
+        <div className="absolute z-50 w-full">
+          <PasswordWarning />
+        </div>
+      )}
+      {tiles.map((tile: MapTile) => (
+        <Tile fetcher={fetcher} key={`${tile.x}/${tile.y}`} tile={tile} />
+      ))}
     </div>
   );
 }

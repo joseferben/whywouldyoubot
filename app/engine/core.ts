@@ -21,8 +21,8 @@ export type Player = {
   id: string;
   userId: string;
   username: string;
-  posX: number;
-  posY: number;
+  x: number;
+  y: number;
   xp: number;
   currentHealth: number;
   // combat skills
@@ -77,8 +77,8 @@ export type Npc = {
   attack: number;
   intelligence: number;
   defense: number;
-  posX: number;
-  posY: number;
+  x: number;
+  y: number;
   lastActedAt?: number;
 };
 

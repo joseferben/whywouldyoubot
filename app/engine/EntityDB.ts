@@ -112,12 +112,14 @@ export class EntityDB<M extends Record<string, Entity>> {
        `
     );
     this.selectDataByFieldStmt = this.db.prepare(
-      `SELECT data.id, key, value, data.type FROM data 
-       JOIN entities ON entities.id = data.id
+      `SELECT D2.id, D2.key, D2.value, D2.type  
+       FROM data DF
+       JOIN data D2 ON DF.id = D2.id
+       JOIN entities ON entities.id = D2.id
        WHERE entities.type = @type 
-         AND key = @key 
-         AND value = @value 
-       ORDER BY data.id`
+         AND DF.key = @key 
+         AND DF.value = @value 
+       ORDER BY D2.id`
     );
   }
 
@@ -175,7 +177,7 @@ export class EntityDB<M extends Record<string, Entity>> {
     return { id: `${type as string}_${id}`, ...entity } as M[K];
   }
 
-  // TODO consider exposing update of singular fields
+  // TODO consider exposing update of singular fields for efficiency
   update<K extends keyof M>(entity: M[K], transaction = true) {
     const fun = () => {
       for (const key in entity) {

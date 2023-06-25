@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EntityDB } from "./EntityDB";
 import Database from "better-sqlite3";
+import invariant from "tiny-invariant";
 
 type Foo = {
   id: string;
@@ -10,6 +11,7 @@ type Foo = {
   x: number;
   y: number;
   inCombat: boolean;
+  complex?: { foo: string };
 };
 
 const fooType = "foo";
@@ -32,7 +34,7 @@ afterEach(() => {
 });
 
 describe("EntityDB", () => {
-  it.only("create foo", () => {
+  it("create foo", () => {
     const created = db.create(fooType, {
       name: "first",
       x: 1,
@@ -73,7 +75,12 @@ describe("EntityDB", () => {
     db.create(fooType, { name: "first", x: 5, y: 10, inCombat: false });
     db.create(fooType, { name: "other", x: 1, y: 3, inCombat: false });
     db.create(fooType, { name: "far", x: 30, y: 3, inCombat: false });
-    expect(db.findAllByField(fooType, "name", "first")).toHaveLength(2);
+    const found = db.findAllByField(fooType, "name", "first");
+    expect(found).toHaveLength(2);
+    expect(found[0]).toHaveProperty("name", "first");
+    expect(found[0]).toHaveProperty("x");
+    expect(found[0]).toHaveProperty("y");
+    expect(found[1]).toHaveProperty("name", "first");
     expect(db.findAllByField(fooType, "name", "other")).toHaveLength(1);
     expect(db.findAllByField(fooType, "x", 1)).toHaveLength(2);
   });
@@ -83,5 +90,17 @@ describe("EntityDB", () => {
     db.create(fooType, { name: "other", x: 1, y: 3, inCombat: false });
     db.create(fooType, { name: "far", x: 30, y: 3, inCombat: false });
     expect(db.findAll(fooType)).toHaveLength(4);
+  });
+  it("create entity with json field", () => {
+    const created = db.create(fooType, {
+      name: "first",
+      complex: { foo: "bar" },
+      x: 1,
+      y: 3,
+      inCombat: false,
+    });
+    expect(created.id.startsWith(fooType)).toBe(true);
+    const first = db.findById(fooType, created.id);
+    expect(first).toHaveProperty("complex", { foo: "bar" });
   });
 });

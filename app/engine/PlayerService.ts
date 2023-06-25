@@ -16,11 +16,11 @@ export class PlayerService {
 
   canReach(player: Player, x: number, y: number): boolean {
     return (
-      player.posX >= x - 1 &&
-      player.posX <= x + 1 &&
-      player.posY >= y - 1 &&
-      player.posY <= y + 1 &&
-      !(player.posX === x && player.posY === y)
+      player.x >= x - 1 &&
+      player.x <= x + 1 &&
+      player.y >= y - 1 &&
+      player.y <= y + 1 &&
+      !(player.x === x && player.y === y)
     );
   }
 
@@ -37,15 +37,15 @@ export class PlayerService {
     if (damage === 0) {
       //   this.messageService.postEventField(
       //     `${npc.kind} misses.`,
-      //     player.posX,
-      //     player.posY
+      //     player.x,
+      //     player.y
       //   );
       return false;
     }
     // this.messageService.postEventField(
     //   `${npc.kind} deals ${damage} damage.`,
-    //   player.posX,
-    //   player.posY
+    //   player.x,
+    //   player.y
     // );
     if (player.currentHealth <= damage) {
       this.died(player);
@@ -63,14 +63,14 @@ export class PlayerService {
     this.db.update(player);
     // this.messageService.postEventField(
     //   `${player.username} gains ${xp} XP.`,
-    //   player.posX,
-    //   player.posY
+    //   player.x,
+    //   player.y
     // );
   }
 
   died(player: Player) {
-    player.posX = this.spawn.x;
-    player.posY = this.spawn.y;
+    player.x = this.spawn.x;
+    player.y = this.spawn.y;
     player.currentHealth = player.health;
     this.db.update(player);
     // this.messageService.postEventGlobal(
@@ -106,6 +106,10 @@ export class PlayerService {
     return player.attack + player.health + player.defense + player.intelligence;
   }
 
+  findAll() {
+    return this.db.findAll(playerType);
+  }
+
   findByName(name: string) {
     return this.db.findPlayerByUserUsername(name);
   }
@@ -135,8 +139,8 @@ export class PlayerService {
     const tocreate = {
       userId: user.id,
       username: user.username,
-      posX: this.spawn.x,
-      posY: this.spawn.y,
+      x: this.spawn.x,
+      y: this.spawn.y,
       currentHealth: 10,
       xp: 0,
       health: 10,
