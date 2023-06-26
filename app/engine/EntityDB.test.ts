@@ -92,7 +92,7 @@ describe("EntityDB", () => {
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveProperty("name", "first");
   });
-  it.only("migrate", () => {
+  it("migrate", () => {
     const s = new Database(":memory:");
     s.pragma("journal_mode = WAL");
     s.pragma("synchronous = off");
@@ -103,11 +103,20 @@ describe("EntityDB", () => {
       0: (json: { foo: string }) => ({
         fooz: json.foo,
       }),
+      1: (json: { fooz: string }) => ({
+        fooz: json.fooz,
+        hello: "world",
+        foor: json.fooz,
+      }),
     };
     const testDb = new EntityDB<Foo>({ jsonDB, migrators });
+
     const migrated = testDb.findById("123");
+
     expect(migrated).toHaveProperty("fooz", "bar");
+    expect(migrated).toHaveProperty("hello", "world");
+    expect(migrated).toHaveProperty("foor", "bar");
     expect(migrated).not.toHaveProperty("foo");
-    expect(migrated).toHaveProperty("v", 1);
+    expect(migrated).toHaveProperty("v", 2);
   });
 });

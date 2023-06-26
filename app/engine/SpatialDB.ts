@@ -1,28 +1,30 @@
-import type { SpatialEntity } from "./core";
 import invariant from "tiny-invariant";
 
-export class SpatialDB<T extends SpatialEntity> {
-  map: { [x: number]: { [y: number]: string[] } };
-  entities: {
-    [id: string]: T;
-  };
+export type SpatialEntity = {
+  x: number;
+  y: number;
+};
+
+// spatial indices
+// field indices
+export class SpatialIndex<E extends SpatialEntity> {
+  map: { [x: number]: { [y: number]: E } };
 
   constructor() {
     this.map = {};
-    this.entities = {};
   }
 
-  findById(id: string): T | null {
+  findById(id: string): E | null {
     return this.entities[id] || null;
   }
 
-  findByPosition(x: number, y: number): T[] {
+  findByPosition(x: number, y: number): E[] {
     const ids = this.map[x]?.[y] || [];
-    return ids.map((id) => this.findById(id)).filter((e) => e != null) as T[];
+    return ids.map((id) => this.findById(id)).filter((e) => e != null) as E[];
   }
 
-  findByRectangle(x: number, y: number, width: number, height: number): T[] {
-    const entities: T[] = [];
+  findByRectangle(x: number, y: number, width: number, height: number): E[] {
+    const entities: E[] = [];
     for (let i = x; i < x + width; i++) {
       for (let j = y; j < y + height; j++) {
         entities.push(...this.findByPosition(i, j));
@@ -31,7 +33,7 @@ export class SpatialDB<T extends SpatialEntity> {
     return entities;
   }
 
-  insert(entity: T, x: number, y: number): void {
+  insert(entity: E, x: number, y: number): void {
     this.map[x] = this.map[x] || {};
     this.map[x][y] = this.map[x][y] || [];
     this.entities[entity.id] = entity;
@@ -39,7 +41,7 @@ export class SpatialDB<T extends SpatialEntity> {
 
   bulkInsert(
     entities: {
-      entity: T;
+      entity: E;
       x: number;
       y: number;
     }[]
@@ -51,7 +53,7 @@ export class SpatialDB<T extends SpatialEntity> {
     }
   }
 
-  update(id: string, update: (entity: T) => void): void {
+  update(id: string, update: (entity: E) => void): void {
     const entity = this.findById(id);
     if (entity) {
       update(entity);
@@ -71,4 +73,9 @@ export class SpatialDB<T extends SpatialEntity> {
     delete this.entities[id];
     delete this.map[x][y];
   }
+}
+
+export class SpatialEntityDB<E extends SpatialEntity> {
+  spatialIndex: SpatialIndex<E> = new SpatialIndex();
+  entityIndex: EntityIndex<E> = new EntityIndex();
 }
