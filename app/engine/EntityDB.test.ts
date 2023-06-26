@@ -4,9 +4,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EntityDB } from "./EntityDB";
 import Database from "better-sqlite3";
 import { JSONDB } from "./JSONDB";
+import { json } from "stream/consumers";
 
 type Foo = {
   id: string;
+  v: number;
   name: string;
   x: number;
   y: number;
@@ -41,6 +43,7 @@ describe("EntityDB", () => {
     });
     const first = db.findById(created.id);
     expect(first).toHaveProperty("name", "first");
+    expect(first).toHaveProperty("v", 0);
   });
   it("update foo", () => {
     const created = db.create({
@@ -88,5 +91,23 @@ describe("EntityDB", () => {
     const found = db.findByFilter({ name: "first", x: 1 });
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveProperty("name", "first");
+  });
+  it.only("migrate", () => {
+    const s = new Database(":memory:");
+    s.pragma("journal_mode = WAL");
+    s.pragma("synchronous = off");
+    const jsonDB = new JSONDB(s);
+    jsonDB.set("123", { id: "123", v: 0, foo: "bar" });
+
+    const migrators = {
+      0: (json: { foo: string }) => ({
+        fooz: json.foo,
+      }),
+    };
+    const testDb = new EntityDB<Foo>({ jsonDB, migrators });
+    const migrated = testDb.findById("123");
+    expect(migrated).toHaveProperty("fooz", "bar");
+    expect(migrated).not.toHaveProperty("foo");
+    expect(migrated).toHaveProperty("v", 1);
   });
 });

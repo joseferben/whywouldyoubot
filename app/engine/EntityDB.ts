@@ -1,16 +1,17 @@
 import { nanoid } from "nanoid";
 import type { JSONDB } from "./JSONDB";
 
-export type Migrator = {
-  fromVersion: number;
-  migrate: <Old, New>(entity: Old) => New;
+export type Entity = { id: string; v: number };
+
+export type Migrators = {
+  [fromVersion: number]: (entity: any) => any;
 };
 
 export type Opts<Entity> = {
   jsonDB?: JSONDB;
   persistIntervalMs?: number;
   persistAfterChangeCount?: number;
-  migrators?: Migrator[];
+  migrators?: Migrators;
   indices?: (keyof Entity)[];
 };
 
@@ -19,19 +20,25 @@ const defaultOpts = {
   persistAfterChangeCount: 10,
 };
 
-export class EntityDB<Entity extends { id: string }> {
-  entities: Map<string, Entity> = new Map();
+export class EntityDB<E extends Entity> {
+  entities: Map<string, E> = new Map();
   // a set of entity ids that have changed an need to be persisted
   changed: Set<string> = new Set();
   // {"health": {"10": ["playerid_1", "playerid_2"], "20": ["playerid_3"]}"}}
   index: Map<string, Map<string, Set<string>>> = new Map();
   timer: NodeJS.Timer | undefined;
+  migratorTargetVersion: number;
 
-  constructor(readonly opts: Opts<Entity>) {
+  constructor(readonly opts: Opts<E>) {
     this.index = new Map();
     opts.indices?.forEach((key) => {
       this.index.set(key as string, new Map());
     });
+    this.migratorTargetVersion = 0;
+    if (opts.migrators) {
+      const versions = Object.keys(opts.migrators).map((v) => parseInt(v));
+      this.migratorTargetVersion = Math.max(...versions) + 1;
+    }
     this.schedulePersist();
     this.loadEntities();
     this.installShutdownHandlers();
@@ -56,9 +63,38 @@ export class EntityDB<Entity extends { id: string }> {
     if (!this.opts.jsonDB) return;
     const jsons = this.opts.jsonDB.all();
     for (const json of jsons) {
-      const entity = json as Entity;
-      this.entities.set(entity.id, entity);
-      this.updateIndex(entity);
+      const entity = json as E;
+      if (this.needsMigration(entity)) {
+        this.migrate(entity);
+        // needs persisting
+        this.insert(entity);
+      } else {
+        this.entities.set(entity.id, entity);
+        this.updateIndex(entity);
+      }
+    }
+  }
+
+  private needsMigration(entity: E) {
+    return entity.v < this.migratorTargetVersion;
+  }
+
+  private migrate(entity: E) {
+    for (let i = entity.v; i < this.migratorTargetVersion; i++) {
+      const migrator = this.opts.migrators?.[i];
+      if (!migrator) {
+        throw new Error(`No migrator for version ${i}`);
+      }
+      const id = entity.id;
+      const migrated = migrator(entity);
+      for (const key of Object.keys(entity)) {
+        delete entity[key as keyof E];
+      }
+      for (const [key, value] of Object.entries(migrated)) {
+        entity[key as keyof E] = value as E[keyof E];
+        entity.v = i + 1;
+        entity.id = id;
+      }
     }
   }
 
@@ -69,7 +105,7 @@ export class EntityDB<Entity extends { id: string }> {
     }, this.opts.persistIntervalMs || defaultOpts.persistIntervalMs);
   }
 
-  private addChanged(entity: Entity) {
+  private addChanged(entity: E) {
     this.changed.add(entity.id);
     const hasChangedEnough =
       this.changed.size >
@@ -95,53 +131,60 @@ export class EntityDB<Entity extends { id: string }> {
     }
   }
 
-  private updateIndex(entity: Entity) {
+  private updateIndex(entity: E) {
     for (const [key, value] of this.index.entries()) {
-      const index = value.get(String(entity[key as keyof Entity])) || new Set();
+      const index = value.get(String(entity[key as keyof E])) || new Set();
       index.add(entity.id);
-      value.set(String(entity[key as keyof Entity]), index);
+      value.set(String(entity[key as keyof E]), index);
     }
   }
 
-  private deleteIndex(entity: Entity) {
+  private deleteIndex(entity: E) {
     for (const [key, value] of this.index.entries()) {
-      const index = value.get(String(entity[key as keyof Entity])) || new Set();
+      const index = value.get(String(entity[key as keyof E])) || new Set();
       index.delete(entity.id);
-      value.set(String(entity[key as keyof Entity]), index);
+      value.set(String(entity[key as keyof E]), index);
     }
   }
 
-  create(entity: Omit<Entity, "id">) {
+  create(entity: Omit<Omit<E, "id">, "v">): E {
     const id = nanoid();
-    const toInsert = { id, ...entity } as Entity;
+    const v = this.migratorTargetVersion;
+    const toInsert = { id, v, ...entity } as E;
     this.insert(toInsert);
     return toInsert;
   }
 
-  insert(entity: Entity) {
+  insert(entity: E) {
+    if (this.needsMigration(entity)) {
+      this.migrate(entity);
+    }
     this.entities.set(entity.id, entity);
     this.updateIndex(entity);
     this.addChanged(entity);
   }
 
-  update(entity: Entity) {
+  update(entity: E) {
+    if (this.needsMigration(entity)) {
+      this.migrate(entity);
+    }
     this.entities.set(entity.id, entity);
     this.updateIndex(entity);
     this.addChanged(entity);
   }
 
-  delete(entity: Entity) {
+  delete(entity: E) {
     this.entities.delete(entity.id);
     this.deleteIndex(entity);
     this.addChanged(entity);
   }
 
-  findById(id: string): Entity | null {
+  findById(id: string): E | null {
     return this.entities.get(id) ?? null;
   }
 
-  findByIds(ids: Iterable<string>): Entity[] {
-    const result: Entity[] = [];
+  findByIds(ids: Iterable<string>): E[] {
+    const result: E[] = [];
     for (const id of ids) {
       const entity = this.findById(id);
       if (entity != null) {
@@ -151,7 +194,7 @@ export class EntityDB<Entity extends { id: string }> {
     return result;
   }
 
-  findBy(key: keyof Entity, value: Entity[typeof key]): Entity[] {
+  findBy(key: keyof E, value: E[typeof key]): E[] {
     if (key === "id") {
       const entity = this.findById(value as string);
       return entity ? [entity] : [];
@@ -162,7 +205,7 @@ export class EntityDB<Entity extends { id: string }> {
       throw new Error(`Index not found for key ${key as string}`);
     }
     const ids = index.get(String(value)) || new Set();
-    const result: Entity[] = [];
+    const result: E[] = [];
     for (const id of ids) {
       const entity = this.findById(id);
       if (entity != null) {
@@ -172,7 +215,7 @@ export class EntityDB<Entity extends { id: string }> {
     return result;
   }
 
-  findByFilter(filter: Partial<Entity>) {
+  findByFilter(filter: Partial<E>) {
     const ids: Set<string> = new Set();
     let first = true;
     for (const [key, value] of Object.entries(filter)) {
