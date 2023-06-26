@@ -33,9 +33,6 @@ function build() {
     items: getItemKinds(),
   };
 
-  const game = new GameDB(config.connectionString);
-  const world = new WorldDB();
-
   const mapService = new MapService(
     new ImmutableSpatialDB(),
     config.obstacleLayerName,

@@ -1,6 +1,8 @@
-import { afterEach, beforeEach, bench, describe, expect, it } from "vitest";
+import { bench, describe } from "vitest";
 import { EntityDB } from "./EntityDB";
 import Database from "better-sqlite3";
+import { FieldIndex } from "./FieldIndex";
+import { Persistor } from "./Persistor";
 import { JSONDB } from "./JSONDB";
 
 type Foo = {
@@ -21,9 +23,8 @@ describe("EntityDB", () => {
     s.pragma("synchronous = off");
     const jsonDB = new JSONDB(s);
     db = new EntityDB<Foo>({
-      indices: ["name", "x"],
-      jsonDB,
-      persistAfterChangeCount: 100,
+      fieldIndex: new FieldIndex(["name", "x"]),
+      persistor: new Persistor(jsonDB, "foo", 100),
     });
   }
 

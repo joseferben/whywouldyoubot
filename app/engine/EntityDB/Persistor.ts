@@ -1,5 +1,7 @@
 import invariant from "tiny-invariant";
-import type { JSONDB } from "../JSONDB";
+import type { JSONDB } from "./JSONDB";
+
+const usedNamespaces = new Set<string>();
 
 export class Persistor {
   defaultOpts = {
@@ -12,9 +14,14 @@ export class Persistor {
 
   constructor(
     readonly jsonDB: JSONDB,
+    readonly namespace: string,
     readonly persistIntervalMs?: number,
     readonly persistAfterChangeCount?: number
   ) {
+    if (usedNamespaces.has(namespace)) {
+      throw new Error(`Persistor namespace ${namespace} already in use`);
+    }
+    usedNamespaces.add(namespace);
     this.schedulePersist();
   }
 
@@ -25,21 +32,18 @@ export class Persistor {
    * Load the entities from the JSON store and insert them into the in-memory store.
    */
   loadEntities(fun?: (e: any) => void) {
-    if (!this.jsonDB) return;
-    const jsons = this.jsonDB.all();
+    const jsons = this.jsonDB.all(this.namespace);
     for (const json of jsons) {
       invariant((json as any).id !== undefined, "Entity must have an id");
-      invariant(
-        (json as any).v !== undefined,
-        `Entity ${(json as any).id} must have a version`
-      );
+      if ((json as any).v === undefined) {
+        (json as any).v = 0;
+      }
       const entity = json;
       if (fun) fun(entity);
     }
   }
 
   schedulePersist() {
-    if (!this.jsonDB) return;
     this.timer = setInterval(() => {
       this.persistChanged();
     }, this.persistIntervalMs || this.defaultOpts.persistIntervalMs);
@@ -68,7 +72,7 @@ export class Persistor {
         if (!entity) {
           this.jsonDB.delete(id);
         } else {
-          this.jsonDB.set(entity.id, JSON.stringify(entity));
+          this.jsonDB.set(entity.id, JSON.stringify(entity), this.namespace);
         }
       } catch (e) {
         console.error(e);
@@ -79,8 +83,9 @@ export class Persistor {
   }
 
   close() {
-    this.jsonDB.db.close();
     this.timer && clearInterval(this.timer);
     this.persistChanged();
+    usedNamespaces.delete(this.namespace);
+    this.jsonDB.db.close();
   }
 }

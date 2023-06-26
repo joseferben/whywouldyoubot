@@ -25,7 +25,7 @@ export class EntityDB<
   }
 
   private loadEntity(entity: E) {
-    if (this.opts.migrator && this.opts.migrator.needsMigration(entity)) {
+    if (this.opts.migrator?.needsMigration(entity)) {
       this.opts.migrator.migrate(entity);
       // needs persisting
       this.insert(entity);

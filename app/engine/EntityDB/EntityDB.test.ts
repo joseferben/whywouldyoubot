@@ -2,11 +2,11 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import Database from "better-sqlite3";
-import { JSONDB } from "../JSONDB";
 import { EntityDB } from "./EntityDB";
 import { FieldIndex } from "./FieldIndex";
 import { Migrator } from "./Migrator";
 import { Persistor } from "./Persistor";
+import { JSONDB } from "./JSONDB";
 
 type Foo = {
   id: string;
@@ -26,12 +26,14 @@ beforeEach(async () => {
   s.pragma("synchronous = off");
   const jsonDB = new JSONDB(s);
   db = new EntityDB<Foo>({
-    persistor: new Persistor(jsonDB),
+    persistor: new Persistor(jsonDB, "foo"),
     fieldIndex: new FieldIndex(["name", "x"]),
   });
 });
 
-afterEach(() => {});
+afterEach(() => {
+  db.close();
+});
 
 describe("EntityDB", () => {
   it("create foo", () => {
@@ -92,12 +94,12 @@ describe("EntityDB", () => {
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveProperty("name", "first");
   });
-  it("migrate", () => {
+  it.only("migrate", () => {
     const s = new Database(":memory:");
     s.pragma("journal_mode = WAL");
     s.pragma("synchronous = off");
     const jsonDB = new JSONDB(s);
-    jsonDB.set("123", { id: "123", v: 0, foo: "bar" });
+    jsonDB.set("123", { id: "123", foo: "bar" }, "fob");
 
     const migrations = {
       0: (json: { foo: string }) => ({
@@ -111,7 +113,7 @@ describe("EntityDB", () => {
     };
     const testDb = new EntityDB<Foo>({
       migrator: new Migrator(migrations),
-      persistor: new Persistor(jsonDB),
+      persistor: new Persistor(jsonDB, "fob"),
     });
 
     const migrated = testDb.findById("123");
