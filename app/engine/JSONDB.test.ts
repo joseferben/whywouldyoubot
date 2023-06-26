@@ -7,7 +7,7 @@ import Database from "better-sqlite3";
 let db: JSONDB;
 
 beforeEach(async () => {
-  const s = new Database(":memory:", { verbose: console.log });
+  const s = new Database(":memory:");
   s.pragma("journal_mode = WAL");
   s.pragma("synchronous = off");
   db = new JSONDB(s);

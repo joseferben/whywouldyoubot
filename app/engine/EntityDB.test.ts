@@ -24,6 +24,7 @@ beforeEach(async () => {
   db = new EntityDB<Foo>({
     indices: ["name", "x"],
     jsonDB,
+    // persist after every change
     persistAfterChangeCount: 0,
   });
 });

@@ -1,5 +1,4 @@
 import type { DroppedItem, Npc } from "~/engine/core";
-import { SpatialEntityDB } from "~/engine/SpatialEntityDB";
 import type { MapTile } from "./MapService";
 
 export const droppedItemType = "dro";
@@ -25,4 +24,4 @@ type EntityMap = {
   [mapTileType]: MapTile;
 };
 
-export class WorldDB extends SpatialEntityDB<EntityMap> {}
+export class WorldDB {}

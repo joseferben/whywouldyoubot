@@ -58,7 +58,9 @@ export class EntityDB<Entity extends { id: string }> {
     this.changed.add(entity.id);
     if (
       this.changed.size >
-      (this.opts.persistAfterChangeCount || defaultOpts.persistAfterChangeCount)
+      (this.opts.persistAfterChangeCount !== undefined
+        ? this.opts.persistAfterChangeCount
+        : defaultOpts.persistAfterChangeCount)
     ) {
       this.persistChanged();
     }
@@ -67,7 +69,7 @@ export class EntityDB<Entity extends { id: string }> {
   private persistChanged() {
     if (!this.opts.jsonDB) return;
     for (const id of this.changed) {
-      console.log("persisting entity", id);
+      console.debug("persisting entity change", id);
       const entity = this.entities.get(id);
       if (!entity) {
         this.opts.jsonDB.delete(id);
