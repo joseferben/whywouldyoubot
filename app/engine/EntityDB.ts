@@ -4,19 +4,6 @@ import invariant from "tiny-invariant";
 
 export type VersionedEntity = { id: string; v: number };
 
-export type Opts<Entity> = {
-  jsonDB?: JSONDB;
-  persistIntervalMs?: number;
-  persistAfterChangeCount?: number;
-  migrators?: Migrations;
-  indices?: (keyof Entity)[];
-};
-
-const defaultOpts = {
-  persistIntervalMs: 1000,
-  persistAfterChangeCount: 10,
-};
-
 export class FieldIndex {
   index: Map<string, Map<string, Set<string>>> = new Map();
 
@@ -133,24 +120,118 @@ export class Migrator {
   }
 }
 
-// migrations
-// optional persistence
-// field indices
+export type Opts<Entity> = {
+  jsonDB: JSONDB;
+  persistIntervalMs?: number;
+  persistAfterChangeCount?: number;
+  migrators?: Migrations;
+  indices?: (keyof Entity)[];
+};
+
+const defaultOpts = {
+  persistIntervalMs: 1000,
+  persistAfterChangeCount: 10,
+};
+
+export class Persistor<E extends VersionedEntity> {
+  changed: Set<string> = new Set();
+  timer: NodeJS.Timer | undefined;
+
+  constructor(
+    readonly entities: Map<string, E>,
+    readonly jsonDB: JSONDB,
+    readonly persistIntervalMs?: number,
+    readonly persistAfterChangeCount?: number
+  ) {
+    this.schedulePersist();
+  }
+
+  /**
+   * Load the entities from the JSON store and insert them into the in-memory store.
+   */
+  loadEntities(fun?: (e: E) => void) {
+    if (!this.jsonDB) return;
+    const jsons = this.jsonDB.all<E>();
+    for (const json of jsons) {
+      invariant(json.id !== undefined, "Entity must have an id");
+      invariant(json.v !== undefined, `Entity ${json.id} must have a version`);
+      const entity = json as E;
+      if (fun) fun(entity);
+    }
+  }
+
+  schedulePersist() {
+    if (!this.jsonDB) return;
+    this.timer = setInterval(() => {
+      this.persistChanged();
+    }, this.persistIntervalMs || defaultOpts.persistIntervalMs);
+  }
+
+  addChanged(entity: E) {
+    this.changed.add(entity.id);
+    const hasChangedEnough =
+      this.changed.size >
+      (this.persistAfterChangeCount !== undefined
+        ? this.persistAfterChangeCount
+        : defaultOpts.persistAfterChangeCount);
+
+    if (hasChangedEnough) {
+      this.persistChanged();
+    }
+  }
+
+  persistChanged() {
+    if (!this.jsonDB) return;
+    for (const id of this.changed) {
+      const entity = this.entities.get(id);
+      try {
+        if (!entity) {
+          this.jsonDB.delete(id);
+        } else {
+          this.jsonDB.set(entity.id, JSON.stringify(entity));
+        }
+      } catch (e) {
+        console.error(e);
+        console.error("Failed to persist changed", entity || id);
+      }
+      this.changed.delete(id);
+    }
+  }
+
+  close() {
+    this.timer && clearInterval(this.timer);
+    this.persistChanged();
+  }
+}
+
 export class EntityDB<E extends VersionedEntity> {
   entities: Map<string, E> = new Map();
-  // a set of entity ids that have changed an need to be persisted
-  changed: Set<string> = new Set();
   fieldIndex!: FieldIndex;
-  timer: NodeJS.Timer | undefined;
-  migrator!: Migrator;
+  migrator: Migrator | undefined;
+  persistor!: Persistor<E>;
 
   constructor(readonly opts: Opts<E>) {
-    this.fieldIndex = new FieldIndex((opts.indices ?? []) as string[]);
-    this.migrator = new Migrator(opts.migrators ?? {});
-
-    this.schedulePersist();
-    this.loadEntities();
+    this.fieldIndex = new FieldIndex(opts.indices as string[]);
+    this.migrator = opts.migrators ? new Migrator(opts.migrators) : undefined;
+    this.persistor = new Persistor(
+      this.entities,
+      opts.jsonDB,
+      opts.persistIntervalMs,
+      opts.persistAfterChangeCount
+    );
+    this.persistor.loadEntities(this.loadEntity.bind(this));
     this.installShutdownHandlers();
+  }
+
+  private loadEntity(entity: E) {
+    if (this.migrator && this.migrator.needsMigration(entity)) {
+      this.migrator.migrate(entity);
+      // needs persisting
+      this.insert(entity);
+    } else {
+      this.entities.set(entity.id, entity);
+      this.fieldIndex.update(entity);
+    }
   }
 
   private installShutdownHandlers() {
@@ -165,95 +246,36 @@ export class EntityDB<E extends VersionedEntity> {
     });
   }
 
-  /**
-   * Load the entities from the JSON store and insert them into the in-memory store.
-   */
-  private loadEntities() {
-    if (!this.opts.jsonDB) return;
-    const jsons = this.opts.jsonDB.all<E>();
-    for (const json of jsons) {
-      invariant(json.id !== undefined, "Entity must have an id");
-      invariant(json.v !== undefined, `Entity ${json.id} must have a version`);
-      const entity = json as E;
-      if (this.migrator.needsMigration(entity)) {
-        this.migrator.migrate(entity);
-        // needs persisting
-        this.insert(entity);
-      } else {
-        this.entities.set(entity.id, entity);
-        this.fieldIndex.update(entity);
-      }
-    }
-  }
-
-  private schedulePersist() {
-    if (!this.opts.jsonDB) return;
-    this.timer = setInterval(() => {
-      this.persistChanged();
-    }, this.opts.persistIntervalMs || defaultOpts.persistIntervalMs);
-  }
-
-  private addChanged(entity: E) {
-    this.changed.add(entity.id);
-    const hasChangedEnough =
-      this.changed.size >
-      (this.opts.persistAfterChangeCount !== undefined
-        ? this.opts.persistAfterChangeCount
-        : defaultOpts.persistAfterChangeCount);
-
-    if (hasChangedEnough) {
-      this.persistChanged();
-    }
-  }
-
-  private persistChanged() {
-    if (!this.opts.jsonDB) return;
-    for (const id of this.changed) {
-      const entity = this.entities.get(id);
-      try {
-        if (!entity) {
-          this.opts.jsonDB.delete(id);
-        } else {
-          this.opts.jsonDB.set(entity.id, JSON.stringify(entity));
-        }
-      } catch (e) {
-        console.error(e);
-        console.error("Failed to persist changed", entity || id);
-      }
-      this.changed.delete(id);
-    }
-  }
-
   create(entity: Omit<Omit<E, "id">, "v">): E {
     const id = nanoid();
-    const v = this.migrator.migratorTargetVersion;
+    const v = this.migrator?.migratorTargetVersion || 0;
     const toInsert = { id, v, ...entity } as E;
     this.insert(toInsert);
     return toInsert;
   }
 
   insert(entity: E) {
-    if (this.migrator.needsMigration(entity)) {
+    if (this.migrator && this.migrator.needsMigration(entity)) {
       this.migrator.migrate(entity);
     }
     this.entities.set(entity.id, entity);
     this.fieldIndex.update(entity);
-    this.addChanged(entity);
+    this.persistor.addChanged(entity);
   }
 
   update(entity: E) {
-    if (this.migrator.needsMigration(entity)) {
+    if (this.migrator && this.migrator.needsMigration(entity)) {
       this.migrator.migrate(entity);
     }
     this.entities.set(entity.id, entity);
     this.fieldIndex.update(entity);
-    this.addChanged(entity);
+    this.persistor.addChanged(entity);
   }
 
   delete(entity: E) {
     this.entities.delete(entity.id);
     this.fieldIndex.delete(entity);
-    this.addChanged(entity);
+    this.persistor.addChanged(entity);
   }
 
   findById(id: string): E | null {
@@ -287,8 +309,7 @@ export class EntityDB<E extends VersionedEntity> {
 
   close() {
     console.log("shutdown gracefully, persisting entities");
-    this.timer && clearInterval(this.timer);
-    this.persistChanged();
+    this.persistor.close();
     this.opts.jsonDB?.db.close();
   }
 }

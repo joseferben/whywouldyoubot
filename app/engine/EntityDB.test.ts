@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EntityDB } from "./EntityDB";
 import Database from "better-sqlite3";
 import { JSONDB } from "./JSONDB";
-import { json } from "stream/consumers";
 
 type Foo = {
   id: string;
@@ -34,7 +33,7 @@ beforeEach(async () => {
 afterEach(() => {});
 
 describe("EntityDB", () => {
-  it("create foo", () => {
+  it.only("create foo", () => {
     const created = db.create({
       name: "first",
       x: 1,
