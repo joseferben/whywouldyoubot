@@ -3,7 +3,7 @@ import type { JSONDB } from "./JSONDB";
 
 export type Migrator = {
   fromVersion: number;
-  migrate: (entity: any) => any;
+  migrate: <Old, New>(entity: Old) => New;
 };
 
 export type Opts<Entity> = {
@@ -25,6 +25,7 @@ export class EntityDB<Entity extends { id: string }> {
   changed: Set<string> = new Set();
   // {"health": {"10": ["playerid_1", "playerid_2"], "20": ["playerid_3"]}"}}
   index: Map<string, Map<string, Set<string>>> = new Map();
+  timer: NodeJS.Timer | undefined;
 
   constructor(readonly opts: Opts<Entity>) {
     this.index = new Map();
@@ -33,6 +34,19 @@ export class EntityDB<Entity extends { id: string }> {
     });
     this.schedulePersist();
     this.loadEntities();
+    this.installShutdownHandlers();
+  }
+
+  private installShutdownHandlers() {
+    process.on("SIGINT", () => {
+      this.close();
+    });
+    process.on("SIGTERM", () => {
+      this.close();
+    });
+    process.on("exit", () => {
+      this.close();
+    });
   }
 
   /**
@@ -43,13 +57,14 @@ export class EntityDB<Entity extends { id: string }> {
     const jsons = this.opts.jsonDB.all();
     for (const json of jsons) {
       const entity = json as Entity;
-      this.insert(entity);
+      this.entities.set(entity.id, entity);
+      this.updateIndex(entity);
     }
   }
 
   private schedulePersist() {
     if (!this.opts.jsonDB) return;
-    setInterval(() => {
+    this.timer = setInterval(() => {
       this.persistChanged();
     }, this.opts.persistIntervalMs || defaultOpts.persistIntervalMs);
   }
@@ -188,5 +203,12 @@ export class EntityDB<Entity extends { id: string }> {
       first = false;
     }
     return this.findByIds(ids);
+  }
+
+  close() {
+    console.log("shutdown gracefully, persisting entities");
+    this.timer && clearInterval(this.timer);
+    this.persistChanged();
+    this.opts.jsonDB?.db.close();
   }
 }
