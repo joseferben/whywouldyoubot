@@ -1,6 +1,6 @@
 import type { Entity } from "./core";
-import type { DataRow } from "./EntityDB";
-import { EntityDB } from "./EntityDB";
+import type { DataRow } from "./EntityDB_old";
+import { EntityDB } from "./EntityDB_old";
 import type { Database, Statement } from "better-sqlite3";
 
 const selectDataByPositionAndTypeSql = `

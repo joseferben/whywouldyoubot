@@ -143,6 +143,7 @@ function Tile({
 export default function Game() {
   const { tiles, player, hasPasswordSet } = useLoaderData<typeof loader>();
   console.log(tiles);
+  console.log(player);
   console.log(player.x);
   console.log(player.y);
 

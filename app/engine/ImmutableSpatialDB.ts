@@ -1,4 +1,4 @@
-import type { Draft} from "immer";
+import type { Draft } from "immer";
 import { produce, immerable } from "immer";
 import type { SpatialEntity } from "./core";
 import invariant from "tiny-invariant";
@@ -25,7 +25,7 @@ export class ImmutableSpatialDB<T extends SpatialEntity> {
     return ids.map((id) => this.findById(id)).filter((e) => e != null) as T[];
   }
 
-  findByRect(x: number, y: number, width: number, height: number): T[] {
+  findByRectangle(x: number, y: number, width: number, height: number): T[] {
     const entities: T[] = [];
     for (let i = x; i < x + width; i++) {
       for (let j = y; j < y + height; j++) {

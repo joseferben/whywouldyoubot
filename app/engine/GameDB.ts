@@ -1,81 +1,37 @@
 import type { Item, Player, User } from "~/engine/core";
-import type { Database, Statement } from "better-sqlite3";
-import { SpatialEntityDB } from "./SpatialEntityDB";
-import type { DataRow } from "./EntityDB";
+import { createClient } from "redis";
+import type { RedisClientConnection } from "redis-om";
+import { Schema } from "redis-om";
+import { Repository } from "redis-om";
+import Item from "~/components/item/Item";
 
-export const userType = "use";
-export const playerType = "pla";
-export const itemType = "ite";
+const schema = new Schema("album", {
+  artist: { type: "string" },
+  title: { type: "text" },
+  year: { type: "number" },
+});
 
-type PersistentEntityMap = {
-  [userType]: User;
-  [playerType]: Player;
-  [itemType]: Item;
-};
-
-const selectDataByPlayerInventorySql = `
-SELECT D2.id, D2.key, D2.value, D2.type 
-FROM data DP
-JOIN data DB on DP.id = DB.id
-JOIN data D2 on DP.id = D2.id
-JOIN entities E on DP.id = E.id
-WHERE 
-    E.type = @type 
-    AND DP.key = 'playerId' AND DP.value = @playerId
-    AND DB.key = 'bank' AND DB.value = @bank
-ORDER BY D2.id
-`;
-
-const selectHashedPasswordByUserIdSql = `
-SELECT D.value
-FROM data D
-JOIN entities E on D.id = E.id
-WHERE
-    E.type = @type
-    AND D.key = 'password'
-    AND E.id = @id
-`;
-
-export class GameDB extends SpatialEntityDB<PersistentEntityMap> {
-  selectDataByPlayerInventoryStmt: Statement<{
-    playerId: string;
-    type: string;
-    bank: boolean;
-  }>;
-  selectHashedPasswordByUserIdStmt: Statement<{
-    id: string;
-    type: string;
-  }>;
-  constructor(db: Database) {
-    super(db);
-    this.selectDataByPlayerInventoryStmt = this.db.prepare(
-      selectDataByPlayerInventorySql
-    );
-    this.selectHashedPasswordByUserIdStmt = this.db.prepare(
-      selectHashedPasswordByUserIdSql
-    );
+export class GameDB {
+  redis: RedisClientConnection;
+  repo: Repository;
+  constructor(url: string) {
+    this.redis = createClient({ url });
+    this.repo = new Repository(schema, this.redis);
   }
 
-  findItemByPlayerInventory(playerId: string): Item[] {
-    const rows = this.selectDataByPlayerInventoryStmt.all({
-      type: itemType,
-      playerId,
-      bank: false,
-    }) as DataRow[];
-    return this.deserializeAll(rows) as Item[];
+  async connect() {
+    await this.redis.connect();
+    const foo = this.repo.fetch("sdf");
   }
 
-  findUserByEmail(email: string): User | null {
-    return this.findByField(userType, "email", email);
-  }
+  findItemByPlayerInventory(playerId: string): Item[] {}
 
-  findUserByUsername(username: string): User | null {
-    return this.findByField(userType, "username", username);
-  }
+  findUserByEmail(email: string): User | null {}
+  findByField(userType: any, arg1: string, email: string): User | null {}
 
-  findPlayerByUserId(userId: string): Player | null {
-    return this.findByField(playerType, "userId", userId);
-  }
+  findUserByUsername(username: string): User | null {}
+
+  findPlayerByUserId(userId: string): Player | null {}
 
   findPlayerByUserEmail(email: string): Player | null {
     const user = this.findUserByEmail(email);
@@ -93,14 +49,5 @@ export class GameDB extends SpatialEntityDB<PersistentEntityMap> {
     return this.findPlayerByUserId(user.id);
   }
 
-  findHashedPasswordByUserId(userId: string): string | null {
-    return (
-      (
-        this.selectHashedPasswordByUserIdStmt.get({
-          id: userId,
-          type: userType,
-        }) as DataRow | undefined
-      )?.value ?? null
-    );
-  }
+  findHashedPasswordByUserId(userId: string): string | null {}
 }

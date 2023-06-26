@@ -6,6 +6,7 @@ import type { PlayerService } from "./PlayerService";
 
 export class SessionService {
   sessionStorage: SessionStorage;
+
   constructor(
     readonly userService: UserService,
     readonly playerService: PlayerService,

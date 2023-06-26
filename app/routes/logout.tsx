@@ -6,10 +6,12 @@ export const action: ActionFunction = async ({ request }) => {
   const player = await container.sessionService.requirePlayer(request);
   if (!player) return redirect("/");
   console.debug(`player ${player.username} logs out`);
-  //container.onlineService.logout(player);
   return container.sessionService.logout(request);
 };
 
-export const loader: LoaderFunction = async () => {
-  return redirect("/");
+export const loader: LoaderFunction = async ({ request }) => {
+  const player = await container.sessionService.requirePlayer(request);
+  if (!player) return redirect("/");
+  console.debug(`player ${player.username} logs out`);
+  return container.sessionService.logout(request);
 };

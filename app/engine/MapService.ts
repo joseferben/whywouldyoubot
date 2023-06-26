@@ -6,6 +6,7 @@ import type TiledMap from "tiled-types";
 import { getResourceKind } from "~/content";
 import type { Player, ResourceKind } from "~/engine/core";
 import { mapTileType, type WorldDB } from "./WorldDB";
+import { ImmutableSpatialDB } from "./ImmutableSpatialDB";
 
 export type MapTile = {
   description: string;
@@ -23,16 +24,18 @@ export type Map = {
 };
 
 export class MapService {
+  db!: ImmutableSpatialDB<MapTile>;
   mapLoaded = false;
   jsonFilePath: string;
   tmxFilePath: string;
   tmxFileDir: string;
 
   constructor(
-    readonly db: WorldDB,
+    db: ImmutableSpatialDB<MapTile>,
     readonly obstacleLayerName: string,
     mapPath: string
   ) {
+    this.db = db;
     this.obstacleLayerName = obstacleLayerName;
     this.tmxFileDir = mapPath;
     this.tmxFilePath = `${this.tmxFileDir}/map.tmx`;
@@ -75,7 +78,7 @@ export class MapService {
   }
 
   isObstacle(x: number, y: number) {
-    return this.db.findByPosition(mapTileType, x, y)[0]?.obstacle;
+    return this.db.findByPosition(x, y)[0]?.obstacle;
   }
 
   getDescription(tiledTile: TiledTile): string {
@@ -106,19 +109,29 @@ export class MapService {
     y: number,
     gid: number
   ) {
+    //console.debug("load tile", x, y, gid);
     const description = this.getDescription(tiledTile);
-    const tiles = this.db.findByPosition(mapTileType, x, y);
+    const tiles = this.db.findByPosition(x, y);
     if (tiles.length === 0) {
       // Create tiled
-      this.db.create(mapTileType, {
-        gid: gid,
-        description,
-        imagePaths: tiledTile.image ? [tiledTile.image] : [],
+      const start = process.hrtime.bigint();
+      this.db = this.db.insert(
+        {
+          id: String(gid),
+          gid: gid,
+          description,
+          imagePaths: tiledTile.image ? [tiledTile.image] : [],
+          x,
+          y,
+          obstacle: this.isTiledTileObstacle(layer, tiledTile),
+        },
         x,
-        y,
-        obstacle: this.isTiledTileObstacle(layer, tiledTile),
-      });
+        y
+      );
+      const end = process.hrtime.bigint();
+      //console.log(`insert execution time: ${Number(end - start) / 1e6} ms`);
     } else {
+      console.log("update tile", x, y, gid);
       const tile = tiles[0];
       // Update existing tile
       const hasImageAlready =
@@ -126,10 +139,22 @@ export class MapService {
       if (tiledTile.image && !hasImageAlready) {
         tile.imagePaths.push(tiledTile.image);
       }
+
       // Set if obstacle
       tile.obstacle =
         tile.obstacle || this.isTiledTileObstacle(layer, tiledTile);
-      this.db.update(tile);
+
+      const start = process.hrtime.bigint();
+      this.db = this.db.update(tile.id, (tile) => {
+        if (tiledTile.image && !hasImageAlready) {
+          tile.imagePaths.push(tiledTile.image);
+        }
+
+        tile.obstacle =
+          tile.obstacle || this.isTiledTileObstacle(layer, tiledTile);
+      });
+      const end = process.hrtime.bigint();
+      console.log(`update execution time: ${Number(end - start) / 1e6} ms`);
     }
   }
 
@@ -185,11 +210,15 @@ export class MapService {
 
   findTilesByPlayer(player: Player) {
     return this.db.findByRectangle(
-      mapTileType,
+      // TODO extract players view distance
       player.x - 20,
       player.y - 20,
       player.x + 20,
       player.y + 20
     );
+  }
+
+  findTilesByPosition(x: number, y: number) {
+    return this.db.findByPosition(x, y);
   }
 }

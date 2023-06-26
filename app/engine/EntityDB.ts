@@ -1,345 +1,190 @@
-import type { Database, Statement } from "better-sqlite3";
 import { nanoid } from "nanoid";
-import type { Entity } from "~/engine/core";
+import type { JSONDB } from "./JSONDB";
 
-export type DataRow = {
-  id: string;
-  key: string;
-  value: string;
-  type: number;
+export type Migrator = {
+  fromVersion: number;
+  migrate: (entity: any) => any;
 };
 
-export class EntityDB<M extends Record<string, Entity>> {
-  private insertEntityStmt!: Statement<
-    [{ type: string; id: string; created: number }]
-  >;
-  private insertDataStmt!: Statement<
-    [
-      {
-        id: string;
-        key: string;
-        value: object | string | number | boolean;
-        type: number;
+export type Opts<Entity> = {
+  jsonDB?: JSONDB;
+  persistIntervalMs?: number;
+  persistAfterChangeCount?: number;
+  migrators?: Migrator[];
+  indices?: (keyof Entity)[];
+};
+
+const defaultOpts = {
+  persistIntervalMs: 1000,
+  persistAfterChangeCount: 10,
+};
+
+export class EntityDB<Entity extends { id: string }> {
+  entities: Map<string, Entity> = new Map();
+  // a set of entity ids that have changed an need to be persisted
+  changed: Set<string> = new Set();
+  // {"health": {"10": ["playerid_1", "playerid_2"], "20": ["playerid_3"]}"}}
+  index: Map<string, Map<string, Set<string>>> = new Map();
+
+  constructor(readonly opts: Opts<Entity>) {
+    this.index = new Map();
+    opts.indices?.forEach((key) => {
+      this.index.set(key as string, new Map());
+    });
+    this.schedulePersist();
+    this.loadEntities();
+  }
+
+  /**
+   * Load the entities from the JSON store and insert them into the in-memory store.
+   */
+  private loadEntities() {
+    if (!this.opts.jsonDB) return;
+    const jsons = this.opts.jsonDB.all();
+    for (const json of jsons) {
+      const entity = json as Entity;
+      this.insert(entity);
+    }
+  }
+
+  private schedulePersist() {
+    if (!this.opts.jsonDB) return;
+    setInterval(() => {
+      this.persistChanged();
+    }, this.opts.persistIntervalMs || defaultOpts.persistIntervalMs);
+  }
+
+  private addChanged(entity: Entity) {
+    this.changed.add(entity.id);
+    if (
+      this.changed.size >
+      (this.opts.persistAfterChangeCount || defaultOpts.persistAfterChangeCount)
+    ) {
+      this.persistChanged();
+    }
+  }
+
+  private persistChanged() {
+    if (!this.opts.jsonDB) return;
+    for (const id of this.changed) {
+      console.log("persisting entity", id);
+      const entity = this.entities.get(id);
+      if (!entity) {
+        this.opts.jsonDB.delete(id);
+      } else {
+        this.opts.jsonDB.set(entity.id, JSON.stringify(entity));
       }
-    ]
-  >;
-  private deleteDataStmt!: Statement<[{ id: string }]>;
-  private deleteEntityStmt!: Statement<[{ id: string }]>;
-  private selectDataByIdStmt!: Statement<[{ id: string }]>;
-  private selectDataByFieldStmt!: Statement<
-    [{ type: string; key: string; value: string }]
-  >;
-  private updateDataStmt!: Statement<
-    [{ id: string; key: string; value: string }]
-  >;
-  selectDataByTypeStmt!: Statement<{ type: string; limit: number }>;
-  selectCountEntityStmt!: Statement<{ type: string }>;
-
-  constructor(readonly db: Database) {
-    this.createTables();
-    this.prepareStatements();
+      this.changed.delete(id);
+    }
   }
 
-  private createTables() {
-    this.db
-      .prepare(
-        `
-      CREATE TABLE IF NOT EXISTS entities (
-        id TEXT PRIMARY KEY,
-        type TEXT NOT NULL,
-        created INT NOT NULL,
-        updated INT NULL
-      )
-    `
-      )
-      .run();
-    this.db
-      .prepare("CREATE INDEX IF NOT EXISTS entities_type ON entities(type)")
-      .run();
-    this.db.prepare(
-      "CREATE INDEX IF NOT EXISTS entities_created ON entities(created)"
-    );
-    this.db.prepare(
-      "CREATE INDEX IF NOT EXISTS entities_updated ON entities(updated)"
-    );
-
-    this.db
-      .prepare(
-        `
-      CREATE TABLE IF NOT EXISTS data (
-        id TEXT NOT NULL,
-        key TEXT NOT NULL,
-        value TEXT NOT NULL,
-        type INTEGER NOT NULL
-      )
-    `
-      )
-      .run();
-
-    this.db.prepare("CREATE INDEX IF NOT EXISTS data_id ON data(id)");
-    this.db.prepare("CREATE INDEX IF NOT EXISTS data_key ON data(key)");
-    this.db.prepare("CREATE INDEX IF NOT EXISTS data_value ON data(value)");
-    this.db.prepare("CREATE INDEX IF NOT EXISTS data_type ON data(type)");
+  private updateIndex(entity: Entity) {
+    for (const [key, value] of this.index.entries()) {
+      const index = value.get(String(entity[key as keyof Entity])) || new Set();
+      index.add(entity.id);
+      value.set(String(entity[key as keyof Entity]), index);
+    }
   }
 
-  private prepareStatements() {
-    this.insertEntityStmt = this.db.prepare(
-      "INSERT INTO entities (id, type, created) VALUES (@id, @type, @created)"
-    );
-    this.insertDataStmt = this.db.prepare(
-      "INSERT INTO data (id, key, value, type) VALUES (@id, @key, @value, @type)"
-    );
-    this.updateDataStmt = this.db.prepare(
-      "UPDATE data SET value = @value WHERE id = @id AND key = @key"
-    );
-    this.deleteDataStmt = this.db.prepare("DELETE FROM data WHERE id = @id");
-    this.deleteEntityStmt = this.db.prepare(
-      "DELETE FROM entities WHERE id = @id"
-    );
-    this.selectCountEntityStmt = this.db.prepare(
-      "SELECT COUNT(*) FROM entities WHERE type = @type"
-    );
-
-    this.selectDataByIdStmt = this.db.prepare(
-      "SELECT key, value, type FROM data WHERE id = @id"
-    );
-    this.selectDataByTypeStmt = this.db.prepare(
-      `SELECT data.id, key, value, data.type FROM data 
-       JOIN entities ON entities.id = data.id
-       WHERE entities.type = @type 
-       ORDER BY data.id
-       LIMIT @limit
-       `
-    );
-    this.selectDataByFieldStmt = this.db.prepare(
-      `SELECT D2.id, D2.key, D2.value, D2.type  
-       FROM data DF
-       JOIN data D2 ON DF.id = D2.id
-       JOIN entities ON entities.id = D2.id
-       WHERE entities.type = @type 
-         AND DF.key = @key 
-         AND DF.value = @value 
-       ORDER BY D2.id`
-    );
+  private deleteIndex(entity: Entity) {
+    for (const [key, value] of this.index.entries()) {
+      const index = value.get(String(entity[key as keyof Entity])) || new Set();
+      index.delete(entity.id);
+      value.set(String(entity[key as keyof Entity]), index);
+    }
   }
 
-  create<K extends keyof M>(
-    type: K,
-    entity: Omit<M[K], "id">,
-    transaction = true
-  ): M[K] {
+  create(entity: Omit<Entity, "id">) {
     const id = nanoid();
-    const created = Date.now();
-    const fun = () => {
-      this.insertEntityStmt.run({
-        id,
-        type: type as string,
-        created,
-      });
+    const toInsert = { id, ...entity } as Entity;
+    this.insert(toInsert);
+    return toInsert;
+  }
 
-      for (const key in entity) {
-        if (Object.prototype.hasOwnProperty.call(entity, key) && key !== "id") {
-          const value = (entity as { [key: string]: string })[key];
-          const typeOfValue = typeof value;
-          // string
-          let type = 3;
-          if (typeOfValue === "number") {
-            type = 0;
-          } else if (typeOfValue === "boolean") {
-            type = 1;
-          } else if (typeOfValue === "object") {
-            type = 2;
-          } else if (typeOfValue === "function") {
-            throw new Error("Cannot store functions in the database");
-          } else if (typeOfValue === "symbol") {
-            throw new Error("Cannot store symbols in the database");
-          }
-          let valueToStore = value;
-          if (typeOfValue === "object") {
-            valueToStore = JSON.stringify(value) as string;
-          } else if (typeOfValue === "boolean") {
-            valueToStore = value ? "true" : "false";
-          }
-          this.insertDataStmt.run({
-            id,
-            key,
-            value: valueToStore,
-            type,
-          });
+  insert(entity: Entity) {
+    this.entities.set(entity.id, entity);
+    this.updateIndex(entity);
+    this.addChanged(entity);
+  }
+
+  update(entity: Entity) {
+    this.entities.set(entity.id, entity);
+    this.updateIndex(entity);
+    this.addChanged(entity);
+  }
+
+  delete(entity: Entity) {
+    this.entities.delete(entity.id);
+    this.deleteIndex(entity);
+    this.addChanged(entity);
+  }
+
+  findById(id: string): Entity | null {
+    return this.entities.get(id) ?? null;
+  }
+
+  findByIds(ids: Iterable<string>): Entity[] {
+    const result: Entity[] = [];
+    for (const id of ids) {
+      const entity = this.findById(id);
+      if (entity != null) {
+        result.push(entity);
+      }
+    }
+    return result;
+  }
+
+  findBy(key: keyof Entity, value: Entity[typeof key]): Entity[] {
+    if (key === "id") {
+      const entity = this.findById(value as string);
+      return entity ? [entity] : [];
+    }
+
+    const index = this.index.get(key as string);
+    if (!index) {
+      throw new Error(`Index not found for key ${key as string}`);
+    }
+    const ids = index.get(String(value)) || new Set();
+    const result: Entity[] = [];
+    for (const id of ids) {
+      const entity = this.findById(id);
+      if (entity != null) {
+        result.push(entity);
+      }
+    }
+    return result;
+  }
+
+  findByFilter(filter: Partial<Entity>) {
+    const ids: Set<string> = new Set();
+    let first = true;
+    for (const [key, value] of Object.entries(filter)) {
+      if (key === "id") {
+        const entity = this.findById(value as string);
+        if (entity) {
+          ids.add(entity.id);
+          break;
         }
       }
-    };
-    if (transaction) {
-      this.db.transaction(fun)();
-    } else {
-      fun();
-    }
-    return { id: `${type as string}_${id}`, ...entity } as M[K];
-  }
 
-  // TODO consider exposing update of singular fields for efficiency
-  update<K extends keyof M>(entity: M[K], transaction = true) {
-    const fun = () => {
-      for (const key in entity) {
-        if (Object.prototype.hasOwnProperty.call(entity, key) && key !== "id") {
-          const value = (
-            entity as { [key: string]: string | object | number | boolean }
-          )[key];
-          const typeOfValue = typeof value;
-          let valueToStore = value;
-          if (typeOfValue === "object") {
-            valueToStore = JSON.stringify(value) as string;
-          } else if (typeOfValue === "boolean") {
-            valueToStore = value ? "true" : "false";
+      const index = this.index.get(key as string);
+      if (!index) {
+        throw new Error(`Index not found for key ${key as string}`);
+      }
+      const foundIds = index.get(String(value)) || new Set();
+      if (first) {
+        for (const id of foundIds) {
+          ids.add(id);
+        }
+      } else {
+        for (const id of ids) {
+          if (!foundIds.has(id)) {
+            ids.delete(id);
           }
-          this.updateDataStmt.run({
-            id: this.idToLocalId(entity.id),
-            key,
-            value: valueToStore as string,
-          });
         }
       }
-    };
-    if (transaction) {
-      this.db.transaction(fun)();
-    } else {
-      fun();
+      first = false;
     }
-  }
-
-  delete(id: string, transaction = true) {
-    const fun = () => {
-      this.deleteDataStmt.run({ id: this.idToLocalId(id) });
-      this.deleteEntityStmt.run({ id: this.idToLocalId(id) });
-    };
-    if (transaction) {
-      this.db.transaction(fun)();
-    } else {
-      fun();
-    }
-  }
-
-  idToLocalId(id: string): string {
-    return id.substring(4);
-  }
-
-  parseRow<K extends keyof M>(
-    row: DataRow
-  ): string | number | object | boolean {
-    switch (row.type) {
-      // "number"
-      case 0:
-        return Number(row.value) as M[K][keyof M[K]];
-      // "boolean"
-      case 1:
-        return (row.value === "true") as M[K][keyof M[K]];
-      // "object"
-      case 2:
-        return JSON.parse(row.value);
-      // "string"
-      default:
-        return row.value as M[K][keyof M[K]];
-    }
-  }
-
-  deserialize<K extends keyof M>(
-    _type: K,
-    id: string,
-    dataRows: DataRow[]
-  ): M[K] | null {
-    if (!dataRows.length) {
-      return null;
-    }
-    const entity = { id } as {
-      [key: string]: string | number | object | boolean;
-    };
-    for (const row of dataRows) {
-      entity[row.key] = this.parseRow(row);
-    }
-    return entity as M[K];
-  }
-
-  deserializeAll<K extends keyof M>(dataRows: DataRow[]): M[K][] {
-    if (!dataRows.length) {
-      return [];
-    }
-    const entities: {
-      [key: string]: { [key: string]: string | number | object | boolean };
-    } = {};
-    for (const row of dataRows) {
-      const id = row.id;
-      if (!entities[id]) {
-        entities[id] = { id } as M[K];
-      }
-      entities[id][row.key] = this.parseRow(row);
-    }
-    return Object.values(entities) as M[K][];
-  }
-
-  findById<K extends keyof M>(type: K, id: string): M[K] | null {
-    const dataRows = this.selectDataByIdStmt.all({
-      id: this.idToLocalId(id),
-    }) as DataRow[];
-    return this.deserialize(type, id, dataRows);
-  }
-
-  findAllByField<K extends keyof M, F extends keyof M[K]>(
-    type: K,
-    field: F,
-    value: M[K][F]
-  ): M[K][] {
-    const dataRows = this.selectDataByFieldStmt.all({
-      type: type as string,
-      key: field as string,
-      value: value,
-    }) as DataRow[];
-    return this.deserializeAll(dataRows);
-  }
-
-  /**
-   * Return the first entity found or null if none found and raises
-   * an error if more than one entity is found.
-   */
-  findByField<K extends keyof M, F extends keyof M[K]>(
-    type: K,
-    field: F,
-    value: M[K][F]
-  ): M[K] | null {
-    const entities = this.findAllByField(type, field, value);
-    if (entities.length === 0) {
-      return null;
-    } else if (entities.length > 1) {
-      throw new Error("More than one entity found");
-    } else {
-      return entities[0];
-    }
-  }
-
-  /**
-   * Return all entities of the given type with a default limit of 50.
-   */
-  findAll<K extends keyof M>(type: K, limit = 50): M[K][] {
-    const dataRows = this.selectDataByTypeStmt.all({
-      type: type as string,
-      limit,
-    }) as DataRow[];
-    return this.deserializeAll(dataRows);
-  }
-
-  /**
-   * Return the number of entities of the given type.
-   */
-  count<K extends keyof M>(type: K): number {
-    const count = this.selectCountEntityStmt.get({ type: type as string }) as {
-      count: number;
-    };
-    return count ? count.count : 0;
-  }
-
-  /**
-   * Close the database connection.
-   */
-  close() {
-    this.db.close();
+    return this.findByIds(ids);
   }
 }

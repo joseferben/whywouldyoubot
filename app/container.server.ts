@@ -13,16 +13,17 @@ import { SessionService } from "./engine/SessionService";
 import { getItemKinds } from "./content";
 import { InventoryService } from "./engine/InventoryService";
 import { config as dotenvConfig } from "dotenv";
+import { ImmutableSpatialDB } from "./engine/ImmutableSpatialDB";
 
 function build() {
   dotenvConfig();
   invariant(process.env.SESSION_SECRET, "SESSION_SECRET is required");
 
   const config = {
-    dbFilePath: process.env.DB_FILE_PATH || "db.sqlite3",
+    redisConnectionString: process.env.REDIS_CONNECTION_STRING,
     spawnPosition: {
-      x: 0,
-      y: 0,
+      x: 560,
+      y: 580,
     },
     obstacleLayerName: "obstacles",
     mapPath: "map",
@@ -32,22 +33,15 @@ function build() {
     items: getItemKinds(),
   };
 
-  const persistent = new Database(config.dbFilePath, { verbose: console.log });
-  persistent.pragma("journal_mode = WAL");
-  persistent.pragma("synchronous = off");
-
-  const transient = new Database(":memory:");
-  transient.pragma("journal_mode = WAL");
-  transient.pragma("synchronous = off");
-
-  const game = new GameDB(persistent);
-  const world = new WorldDB(transient);
+  const game = new GameDB(config.connectionString);
+  const world = new WorldDB();
 
   const mapService = new MapService(
-    world,
+    new ImmutableSpatialDB(),
     config.obstacleLayerName,
     config.mapPath
   );
+  mapService.loadMap();
   const userService = new UserService(game);
 
   const onlineService = new OnlineService(config.logoutTimeoutMs);

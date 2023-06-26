@@ -3,51 +3,46 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EntityDB } from "./EntityDB";
 import Database from "better-sqlite3";
-import invariant from "tiny-invariant";
+import { JSONDB } from "./JSONDB";
 
 type Foo = {
   id: string;
   name: string;
   x: number;
   y: number;
-  inCombat: boolean;
+  inCombat?: boolean;
   complex?: { foo: string };
 };
 
-const fooType = "foo";
+let db: EntityDB<Foo>;
 
-type EntityMap = {
-  [fooType]: Foo;
-};
-
-let db: EntityDB<EntityMap>;
-
-beforeEach(() => {
-  const s = new Database(":memory:", { verbose: console.log });
+beforeEach(async () => {
+  const s = new Database(":memory:");
   s.pragma("journal_mode = WAL");
   s.pragma("synchronous = off");
-  db = new EntityDB(s);
+  const jsonDB = new JSONDB(s);
+  db = new EntityDB<Foo>({
+    indices: ["name", "x"],
+    jsonDB,
+    persistAfterChangeCount: 0,
+  });
 });
 
-afterEach(() => {
-  db.close();
-});
+afterEach(() => {});
 
 describe("EntityDB", () => {
   it("create foo", () => {
-    const created = db.create(fooType, {
+    const created = db.create({
       name: "first",
       x: 1,
       y: 3,
       inCombat: false,
     });
-    expect(created.id.startsWith(fooType)).toBe(true);
-    const first = db.findById(fooType, created.id);
+    const first = db.findById(created.id);
     expect(first).toHaveProperty("name", "first");
-    expect(first?.id.substring(0, 3)).toBe(fooType);
   });
   it("update foo", () => {
-    const created = db.create(fooType, {
+    const created = db.create({
       name: "first",
       x: 1,
       y: 3,
@@ -56,51 +51,41 @@ describe("EntityDB", () => {
     created.name = "updated";
     created.inCombat = true;
     db.update(created);
-    const updated = db.findById(fooType, created.id);
+    const updated = db.findById(created.id);
     expect(updated).toHaveProperty("name", "updated");
   });
-  it("delete foo", () => {
-    const created = db.create(fooType, {
-      name: "first",
-      x: 1,
-      y: 3,
-      inCombat: false,
-    });
-    db.delete(created.id);
-    const deleted = db.findById(fooType, created.id);
-    expect(deleted).toBeNull();
-  });
   it("find by field", () => {
-    db.create(fooType, { name: "first", x: 1, y: 3, inCombat: false });
-    db.create(fooType, { name: "first", x: 5, y: 10, inCombat: false });
-    db.create(fooType, { name: "other", x: 1, y: 3, inCombat: false });
-    db.create(fooType, { name: "far", x: 30, y: 3, inCombat: false });
-    const found = db.findAllByField(fooType, "name", "first");
-    expect(found).toHaveLength(2);
-    expect(found[0]).toHaveProperty("name", "first");
-    expect(found[0]).toHaveProperty("x");
-    expect(found[0]).toHaveProperty("y");
-    expect(found[1]).toHaveProperty("name", "first");
-    expect(db.findAllByField(fooType, "name", "other")).toHaveLength(1);
-    expect(db.findAllByField(fooType, "x", 1)).toHaveLength(2);
-  });
-  it("find all by type", () => {
-    db.create(fooType, { name: "first", x: 1, y: 3, inCombat: false });
-    db.create(fooType, { name: "first", x: 5, y: 10, inCombat: false });
-    db.create(fooType, { name: "other", x: 1, y: 3, inCombat: false });
-    db.create(fooType, { name: "far", x: 30, y: 3, inCombat: false });
-    expect(db.findAll(fooType)).toHaveLength(4);
-  });
-  it("create entity with json field", () => {
-    const created = db.create(fooType, {
+    db.create({
       name: "first",
-      complex: { foo: "bar" },
       x: 1,
       y: 3,
       inCombat: false,
     });
-    expect(created.id.startsWith(fooType)).toBe(true);
-    const first = db.findById(fooType, created.id);
-    expect(first).toHaveProperty("complex", { foo: "bar" });
+    db.create({
+      name: "second",
+      x: 1,
+      y: 3,
+    });
+    const foundByName = db.findBy("name", "first");
+    expect(foundByName).toHaveLength(1);
+    expect(foundByName[0]).toHaveProperty("name", "first");
+    const foundByX = db.findBy("x", 1);
+    expect(foundByX).toHaveLength(2);
+  });
+  it("find by 2 fields", () => {
+    db.create({
+      name: "first",
+      x: 1,
+      y: 3,
+      inCombat: false,
+    });
+    db.create({
+      name: "second",
+      x: 1,
+      y: 3,
+    });
+    const found = db.findByFilter({ name: "first", x: 1 });
+    expect(found).toHaveLength(1);
+    expect(found[0]).toHaveProperty("name", "first");
   });
 });

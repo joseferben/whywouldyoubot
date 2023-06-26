@@ -1,7 +1,7 @@
 // create entitydb and store entity test
 
 import { bench, describe } from "vitest";
-import { EntityDB } from "./EntityDB";
+import { EntityDB } from "./EntityDB_old";
 import Database from "better-sqlite3";
 
 type Foo = {
