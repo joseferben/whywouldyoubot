@@ -2,62 +2,6 @@ import invariant from "tiny-invariant";
 import { FieldIndex } from "./EntityDB";
 import { nanoid } from "nanoid";
 
-export class SpatialIndex {
-  index: { [x: number]: { [y: number]: Set<string> } };
-
-  constructor() {
-    this.index = {};
-  }
-
-  findByPosition(x: number, y: number): Iterable<string> {
-    return this.index[x]?.[y] || [];
-  }
-
-  findByRectangle(
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ): string[] {
-    const ids: string[] = [];
-    for (let i = x; i < x + width; i++) {
-      for (let j = y; j < y + height; j++) {
-        ids.push(...this.findByPosition(i, j));
-      }
-    }
-    return ids;
-  }
-
-  update(entity: { id: string; x: number; y: number }): void {
-    this.delete(entity);
-    this.insert(entity);
-  }
-
-  insert(entity: { id: string; x: number; y: number }): void {
-    const { id, x, y } = entity;
-    this.index[x] = this.index[x] || {};
-    this.index[x][y] = this.index[x][y] || [];
-    this.index[x][y].add(id);
-  }
-
-  bulkInsert(
-    entities: {
-      id: string;
-      x: number;
-      y: number;
-    }[]
-  ): void {
-    for (const entity of entities) {
-      this.insert(entity);
-    }
-  }
-
-  delete(entity: { id: string; x: number; y: number }): void {
-    const { id, x, y } = entity;
-    this.index[x][y].delete(id);
-  }
-}
-
 export type SpatialEntity = {
   id: string;
   x: number;

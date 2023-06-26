@@ -1,9 +1,12 @@
 // create entitydb and store entity test
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { EntityDB } from "./EntityDB";
 import Database from "better-sqlite3";
-import { JSONDB } from "./JSONDB";
+import { JSONDB } from "../JSONDB";
+import { EntityDB } from "./EntityDB";
+import { FieldIndex } from "./FieldIndex";
+import { Migrator } from "./Migrator";
+import { Persistor } from "./Persistor";
 
 type Foo = {
   id: string;
@@ -23,17 +26,15 @@ beforeEach(async () => {
   s.pragma("synchronous = off");
   const jsonDB = new JSONDB(s);
   db = new EntityDB<Foo>({
-    indices: ["name", "x"],
-    jsonDB,
-    // persist after every change
-    persistAfterChangeCount: 0,
+    persistor: new Persistor(jsonDB),
+    fieldIndex: new FieldIndex(["name", "x"]),
   });
 });
 
 afterEach(() => {});
 
 describe("EntityDB", () => {
-  it.only("create foo", () => {
+  it("create foo", () => {
     const created = db.create({
       name: "first",
       x: 1,
@@ -98,7 +99,7 @@ describe("EntityDB", () => {
     const jsonDB = new JSONDB(s);
     jsonDB.set("123", { id: "123", v: 0, foo: "bar" });
 
-    const migrators = {
+    const migrations = {
       0: (json: { foo: string }) => ({
         fooz: json.foo,
       }),
@@ -108,7 +109,10 @@ describe("EntityDB", () => {
         foor: json.fooz,
       }),
     };
-    const testDb = new EntityDB<Foo>({ jsonDB, migrators });
+    const testDb = new EntityDB<Foo>({
+      migrator: new Migrator(migrations),
+      persistor: new Persistor(jsonDB),
+    });
 
     const migrated = testDb.findById("123");
 
