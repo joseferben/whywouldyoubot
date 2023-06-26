@@ -85,9 +85,6 @@ function FeatureCard({
 }) {
   return (
     <div className="card bg-base-100 mx-auto mb-6 w-full shadow-xl sm:ml-0 sm:mr-4 sm:w-96">
-      <figure>
-        <img src={image} alt="The 2d world" />
-      </figure>
       <div className="card-body">
         <h2 className="card-title">{title}</h2>
         <p>{description}</p>
@@ -104,12 +101,7 @@ export default function Index() {
     <div>
       {/* Hero */}
       <div className="bg-base-200 min-h-screen md:pt-32 lg:pt-64">
-        <div className="hero-content flex-col lg:flex-row-reverse">
-          <img
-            alt="Gameplay"
-            src="/images/gameplay.png"
-            className="rounded-lg shadow-2xl sm:max-w-sm"
-          />
+        <div className="hero-content mx-auto flex-col lg:flex-row-reverse">
           <div className="mr-5 mt-12">
             <h1 className="text-5xl font-bold">Untiled MMORPG</h1>
             <p className="py-6">

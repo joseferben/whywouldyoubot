@@ -224,6 +224,10 @@ export class EntityDB<
     return result;
   }
 
+  count(): number {
+    return this.entities.size;
+  }
+
   close() {
     console.log("shutdown gracefully, persisting entities");
     this.opts.persistor?.close();

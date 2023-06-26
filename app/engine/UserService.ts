@@ -10,6 +10,7 @@ export class UserService {
 
   constructor(readonly jsonStore: JSONStore) {
     this.db = EntityDB.builder<User>()
+      .withFieldIndex(["username", "email"])
       .withPersistor(jsonStore, "users")
       .build();
   }

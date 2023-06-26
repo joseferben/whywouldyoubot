@@ -17,6 +17,7 @@ export class PlayerService {
   ) {
     this.db = EntityDB.builder<Player>()
       .withSpatialIndex()
+      .withFieldIndex(["username", "userId"])
       .withPersistor(jsonStore, "pla")
       .build();
   }

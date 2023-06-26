@@ -105,12 +105,10 @@ export class MapService {
     y: number,
     gid: number
   ) {
-    //console.debug("load tile", x, y, gid);
     const description = this.getDescription(tiledTile);
     const tiles = Array.from(this.db.findByPosition(x, y));
     if (tiles.length === 0) {
       // Create tiled
-      const start = process.hrtime.bigint();
       this.db.insert({
         id: String(gid),
         gid: gid,
@@ -120,10 +118,7 @@ export class MapService {
         y,
         obstacle: this.isTiledTileObstacle(layer, tiledTile),
       });
-      const end = process.hrtime.bigint();
-      //console.log(`insert execution time: ${Number(end - start) / 1e6} ms`);
     } else {
-      console.log("update tile", x, y, gid);
       const tile = tiles[0];
       // Update existing tile
       const hasImageAlready =
@@ -136,7 +131,6 @@ export class MapService {
       tile.obstacle =
         tile.obstacle || this.isTiledTileObstacle(layer, tiledTile);
 
-      const start = process.hrtime.bigint();
       if (tiledTile.image && !hasImageAlready) {
         tile.imagePaths.push(tiledTile.image);
       }
@@ -144,8 +138,6 @@ export class MapService {
       tile.obstacle =
         tile.obstacle || this.isTiledTileObstacle(layer, tiledTile);
       this.db.update(tile);
-      const end = process.hrtime.bigint();
-      console.log(`update execution time: ${Number(end - start) / 1e6} ms`);
     }
   }
 

@@ -25,18 +25,20 @@ export class SpatialIndex {
   }
 
   update(entity: { id: string; x?: number; y?: number }): void {
-    if (!entity.x || !entity.y)
+    if (entity.x === undefined || entity.y === undefined) {
       throw new Error("Can not use spatial index without x or y");
+    }
     this.delete(entity);
     this.insert(entity);
   }
 
   insert(entity: { id: string; x?: number; y?: number }): void {
-    if (!entity.x || !entity.y)
+    if (entity.x === undefined || entity.y === undefined) {
       throw new Error("Can not use spatial index without x or y");
+    }
     const { id, x, y } = entity;
     this.index[x] = this.index[x] || {};
-    this.index[x][y] = this.index[x][y] || [];
+    this.index[x][y] = this.index[x][y] || new Set();
     this.index[x][y].add(id);
   }
 
@@ -53,9 +55,12 @@ export class SpatialIndex {
   }
 
   delete(entity: { id: string; x?: number; y?: number }): void {
-    if (!entity.x || !entity.y)
+    if (entity.x === undefined || entity.y === undefined) {
       throw new Error("Can not use spatial index without x or y");
+    }
     const { id, x, y } = entity;
-    this.index[x][y].delete(id);
+    if (this.index[x]?.[y]?.has(id)) {
+      this.index[x][y]?.delete(id);
+    }
   }
 }

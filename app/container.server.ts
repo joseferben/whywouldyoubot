@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import invariant from "tiny-invariant";
 import { DroppedItemService } from "./engine/DroppedItemService";
 import { ItemService } from "./engine/ItemService";
 import { MapService } from "./engine/MapService";
@@ -6,7 +7,6 @@ import { OnlineService } from "./engine/OnlineService";
 import { PlayerService } from "./engine/PlayerService";
 import { UserService } from "./engine/UserService";
 import { WalkService } from "./engine/WalkService";
-import invariant from "tiny-invariant";
 import { SessionService } from "./engine/SessionService";
 import { getItemKinds } from "./content";
 import { InventoryService } from "./engine/InventoryService";
