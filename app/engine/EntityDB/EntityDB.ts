@@ -1,9 +1,10 @@
 import { nanoid } from "nanoid";
 import invariant from "tiny-invariant";
-import type { SpatialIndex } from "./SpatialIndex";
-import type { FieldIndex } from "./FieldIndex";
-import type { Migrator } from "./Migrator";
-import type { Persistor } from "./Persistor";
+import { SpatialIndex } from "./SpatialIndex";
+import { FieldIndex } from "./FieldIndex";
+import { Migrations, Migrator } from "./Migrator";
+import { Persistor } from "./Persistor";
+import type { JSONStore } from "./JSONStore";
 
 export type Opts = {
   fieldIndex?: FieldIndex;
@@ -12,10 +13,64 @@ export type Opts = {
   migrator?: Migrator;
 };
 
+class EntityDBBuilder<
+  E extends { id: string; v?: number; x?: number; y?: number }
+> {
+  fieldIndex?: FieldIndex;
+  spatialIndex?: SpatialIndex;
+  persistor?: Persistor;
+  migrator?: Migrator;
+
+  withFieldIndex(fields: string[]) {
+    this.fieldIndex = new FieldIndex(fields);
+    return this;
+  }
+
+  withSpatialIndex() {
+    this.spatialIndex = new SpatialIndex();
+    return this;
+  }
+
+  withPersistor(
+    jsonDB: JSONStore,
+    namespace: string,
+    persistIntervalMs?: number,
+    persistAfterChangeCount?: number
+  ) {
+    this.persistor = new Persistor(
+      jsonDB,
+      namespace,
+      persistIntervalMs,
+      persistAfterChangeCount
+    );
+    return this;
+  }
+
+  withMigrator(migrations: Migrations) {
+    this.migrator = new Migrator(migrations);
+    return this;
+  }
+
+  build() {
+    return new EntityDB<E>({
+      fieldIndex: this.fieldIndex,
+      spatialIndex: this.spatialIndex,
+      persistor: this.persistor,
+      migrator: this.migrator,
+    });
+  }
+}
+
 export class EntityDB<
   E extends { id: string; v?: number; x?: number; y?: number }
 > {
   entities!: Map<string, E>;
+
+  static builder<
+    E extends { id: string; v?: number; x?: number; y?: number }
+  >() {
+    return new EntityDBBuilder<E>();
+  }
 
   constructor(readonly opts: Opts = {}) {
     this.entities = new Map();
@@ -83,6 +138,17 @@ export class EntityDB<
     this.opts.persistor?.addChanged(entity);
   }
 
+  findAll(limit = 50): E[] {
+    const result: E[] = [];
+    for (const entity of this.entities.values()) {
+      result.push(entity);
+      if (result.length >= limit) {
+        break;
+      }
+    }
+    return result;
+  }
+
   findById(id: string): E | null {
     return this.entities.get(id) ?? null;
   }
@@ -109,11 +175,27 @@ export class EntityDB<
     return this.findByIds(ids);
   }
 
+  findOneBy(key: keyof E, value: E[typeof key]): E | null {
+    const result = this.findBy(key, value);
+    if (result.length > 1) {
+      throw new Error(`Expected 1 result, got ${result.length}`);
+    }
+    return result[0] ?? null;
+  }
+
   findByFilter(filter: Partial<E>) {
     if (!this.opts.fieldIndex)
       throw new Error("Field index needed for findByFilter");
     const ids = Array.from(this.opts.fieldIndex.findByFilter(filter));
     return this.findByIds(ids || []);
+  }
+
+  findOneByFilter(filter: Partial<E>) {
+    const result = this.findByFilter(filter);
+    if (result.length > 1) {
+      throw new Error(`Expected 1 result, got ${result.length}`);
+    }
+    return result[0] ?? null;
   }
 
   findByPosition(x: number, y: number): Iterable<E> {

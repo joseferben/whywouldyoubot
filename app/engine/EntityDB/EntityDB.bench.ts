@@ -3,7 +3,7 @@ import { EntityDB } from "./EntityDB";
 import Database from "better-sqlite3";
 import { FieldIndex } from "./FieldIndex";
 import { Persistor } from "./Persistor";
-import { JSONDB } from "./JSONDB";
+import { JSONStore } from "./JSONStore";
 
 type Foo = {
   id: string;
@@ -21,7 +21,7 @@ describe("EntityDB", () => {
     const s = new Database(":memory:");
     s.pragma("journal_mode = WAL");
     s.pragma("synchronous = off");
-    const jsonDB = new JSONDB(s);
+    const jsonDB = new JSONStore(s);
     db = new EntityDB<Foo>({
       fieldIndex: new FieldIndex(["name", "x"]),
       persistor: new Persistor(jsonDB, "foo", 100),

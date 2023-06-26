@@ -1,26 +1,29 @@
 import type { User } from "~/engine/core";
 import type { GameDB } from "./GameDB";
-import { userType } from "./GameDB";
 import bcrypt from "bcrypt";
 import invariant from "tiny-invariant";
+import type { JSONStore } from "./EntityDB/JSONStore";
+import { EntityDB } from "./EntityDB/EntityDB";
 
 export class UserService {
-  constructor(readonly db: GameDB) {}
+  db!: EntityDB<User>;
+
+  constructor(readonly jsonStore: JSONStore) {
+    this.db = EntityDB.builder<User>()
+      .withPersistor(jsonStore, "users")
+      .build();
+  }
 
   findByUsername(name: string) {
-    return this.db.findUserByUsername(name);
+    return this.db.findOneBy("username", name);
   }
 
   findByEmail(email: string) {
-    return this.db.findUserByEmail(email);
+    return this.db.findOneBy("email", email);
   }
 
   findById(id: string) {
-    return this.db.findById(userType, id);
-  }
-
-  findByUserId(userId: string) {
-    return this.db.findPlayerByUserId(userId);
+    return this.db.findById(id);
   }
 
   create(name: string, password?: string, emailOr?: string) {
@@ -33,18 +36,18 @@ export class UserService {
       email,
       joinedAt: now,
     };
-    return this.db.create(userType, user);
+    return this.db.create(user);
   }
 
   deleteByEmail(email: string) {
     const user = this.findByEmail(email);
     if (user) {
-      this.db.delete(user.id);
+      this.db.delete(user);
     }
   }
 
   isValidPassword(user: User, password: string): boolean {
-    const hashedPassword = this.db.findHashedPasswordByUserId(user.id);
+    const hashedPassword = user.password;
     invariant(hashedPassword, "hashed password not found");
     return bcrypt.compareSync(password, hashedPassword);
   }

@@ -1,14 +1,19 @@
 import type { DroppedItem, Item, ItemKindOpts, Player } from "~/engine/core";
-import type { GameDB } from "~/engine/GameDB";
-import { itemType } from "~/engine/GameDB";
 import type { DroppedItemService } from "~/engine/DroppedItemService";
+import type { JSONStore } from "./EntityDB/JSONStore";
+import { EntityDB } from "./EntityDB/EntityDB";
 
 export class ItemService {
+  db!: EntityDB<Item>;
   constructor(
-    readonly db: GameDB,
+    readonly jsonStore: JSONStore,
     readonly droppedItemService: DroppedItemService,
     readonly itemKinds: { [name: string]: ItemKindOpts }
-  ) {}
+  ) {
+    this.db = EntityDB.builder<Item>()
+      .withPersistor(jsonStore, "items")
+      .build();
+  }
 
   kind(item: Item) {
     return this.kindByName(item.kind);
@@ -34,7 +39,7 @@ export class ItemService {
       kind: droppedItem.kind,
       bank: false,
     };
-    this.db.create(itemType, item);
+    this.db.create(item);
   }
 
   pickUp(player: Player, droppedItem: DroppedItem) {
@@ -57,6 +62,6 @@ export class ItemService {
   }
 
   findAllByPlayerInventory(player: Player): Item[] {
-    return this.db.findItemByPlayerInventory(player.id);
+    return this.db.findByFilter({ playerId: player.id, bank: false });
   }
 }

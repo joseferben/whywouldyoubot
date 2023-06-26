@@ -1,25 +1,24 @@
 import Database from "better-sqlite3";
 import { DroppedItemService } from "./engine/DroppedItemService";
-import { GameDB } from "./engine/GameDB";
 import { ItemService } from "./engine/ItemService";
 import { MapService } from "./engine/MapService";
 import { OnlineService } from "./engine/OnlineService";
 import { PlayerService } from "./engine/PlayerService";
 import { UserService } from "./engine/UserService";
 import { WalkService } from "./engine/WalkService";
-import { WorldDB } from "./engine/WorldDB";
 import invariant from "tiny-invariant";
 import { SessionService } from "./engine/SessionService";
 import { getItemKinds } from "./content";
 import { InventoryService } from "./engine/InventoryService";
 import { config as dotenvConfig } from "dotenv";
-import { ImmutableSpatialDB } from "./engine/ImmutableSpatialDB";
+import { JSONStore } from "./engine/EntityDB/JSONStore";
 
 function build() {
   dotenvConfig();
   invariant(process.env.SESSION_SECRET, "SESSION_SECRET is required");
 
   const config = {
+    dbFilePath: process.env.DB_FILE_PATH || ":memory:",
     redisConnectionString: process.env.REDIS_CONNECTION_STRING,
     spawnPosition: {
       x: 560,
@@ -33,17 +32,20 @@ function build() {
     items: getItemKinds(),
   };
 
-  const mapService = new MapService(
-    new ImmutableSpatialDB(),
-    config.obstacleLayerName,
-    config.mapPath
-  );
+  const s = new Database(config.dbFilePath);
+  s.pragma("journal_mode = WAL");
+  s.pragma("synchronous = off");
+  const jsonStore = new JSONStore(s);
+
+  const mapService = new MapService(config.obstacleLayerName, config.mapPath);
+
   mapService.loadMap();
-  const userService = new UserService(game);
+
+  const userService = new UserService(jsonStore);
 
   const onlineService = new OnlineService(config.logoutTimeoutMs);
   const playerService = new PlayerService(
-    game,
+    jsonStore,
     userService,
     mapService,
     onlineService,
@@ -56,8 +58,12 @@ function build() {
     config.userSessionKey
   );
   const walkService = new WalkService(mapService, playerService, onlineService);
-  const droppedItemService = new DroppedItemService(game, config.items);
-  const itemService = new ItemService(game, droppedItemService, config.items);
+  const droppedItemService = new DroppedItemService(config.items);
+  const itemService = new ItemService(
+    jsonStore,
+    droppedItemService,
+    config.items
+  );
 
   // const equipmentService = new EquipmentService(itemService);
   // const combatStatsService = new CombatStatsService(

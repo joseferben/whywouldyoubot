@@ -1,5 +1,5 @@
 import invariant from "tiny-invariant";
-import type { JSONDB } from "./JSONDB";
+import type { JSONStore } from "./JSONStore";
 
 const usedNamespaces = new Set<string>();
 
@@ -13,7 +13,7 @@ export class Persistor {
   entities: Map<string, { v?: number; id: string }> | undefined;
 
   constructor(
-    readonly jsonDB: JSONDB,
+    readonly jsonDB: JSONStore,
     readonly namespace: string,
     readonly persistIntervalMs?: number,
     readonly persistAfterChangeCount?: number

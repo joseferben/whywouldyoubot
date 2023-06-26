@@ -1,18 +1,25 @@
 import type { Player, Item, Npc, EquipSlot } from "~/engine/core";
 import type { Rectangle } from "~/engine/math";
 import type { UserService } from "./UserService";
-import { playerType, type GameDB } from "./GameDB";
 import type { MapService } from "./MapService";
 import type { OnlineService } from "./OnlineService";
+import type { JSONStore } from "./EntityDB/JSONStore";
+import { EntityDB } from "./EntityDB/EntityDB";
 
 export class PlayerService {
+  db!: EntityDB<Player>;
   constructor(
-    readonly db: GameDB,
+    readonly jsonStore: JSONStore,
     readonly userService: UserService,
     readonly mapService: MapService,
     readonly onlineService: OnlineService,
     private spawn: { x: number; y: number }
-  ) {}
+  ) {
+    this.db = EntityDB.builder<Player>()
+      .withSpatialIndex()
+      .withPersistor(jsonStore, "pla")
+      .build();
+  }
 
   canReach(player: Player, x: number, y: number): boolean {
     return (
@@ -107,19 +114,23 @@ export class PlayerService {
   }
 
   findAll() {
-    return this.db.findAll(playerType);
+    return this.db.findAll();
   }
 
   findByName(name: string) {
-    return this.db.findPlayerByUserUsername(name);
+    return this.db.findOneBy("username", name);
   }
 
   findByEmail(email: string) {
-    return this.db.findPlayerByUserEmail(email);
+    const user = this.userService.findByEmail(email);
+    if (!user) return null;
+    return this.db.findOneBy("userId", user.id);
   }
 
   findByUserId(userId: string) {
-    return this.db.findPlayerByUserId(userId);
+    const user = this.userService.findById(userId);
+    if (!user) return null;
+    return this.db.findOneBy("userId", user.id);
   }
 
   findInRectangleAndOnline(rec: Rectangle) {
@@ -128,7 +139,7 @@ export class PlayerService {
     const xMax = x + width;
     const yMin = y;
     const yMax = y + height;
-    const players = this.db.findByRectangle(playerType, xMin, yMin, xMax, yMax);
+    const players = this.db.findByRectangle(xMin, yMin, xMax, yMax);
     return players.filter(
       (player) => this.onlineService.onlinePlayers()[player.id] != null
     );
@@ -163,7 +174,7 @@ export class PlayerService {
       avatarEyes: 0,
       avatarHair: 0,
     };
-    const player = this.db.create(playerType, tocreate);
+    const player = this.db.create(tocreate);
     this.onlineService.ensureOnline(player);
     // this.messageService.postEventGlobal(
     //   `${player.username} was just born into this world`,
@@ -175,7 +186,7 @@ export class PlayerService {
   deleteByEmail(email: string) {
     const user = this.findByEmail(email);
     if (user) {
-      this.db.delete(user.id);
+      this.db.delete(user);
     }
   }
 }

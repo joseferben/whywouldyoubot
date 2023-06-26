@@ -1,12 +1,12 @@
 import type { Database, Statement } from "better-sqlite3";
 
-export interface JSONDB {
+export interface JSONStore {
   delete(id: string): void;
   set(id: string, json: string, namespace?: string): void;
   all(namespace?: string): string[];
 }
 
-export class JSONDB {
+export class JSONStore {
   deleteStmt!: Statement<{ id: string }>;
   insertStmt!: Statement<{
     id: string;

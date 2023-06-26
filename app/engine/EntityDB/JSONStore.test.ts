@@ -1,16 +1,16 @@
 // create entitydb and store entity test
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { JSONDB } from "./JSONDB";
+import { JSONStore } from "./JSONStore";
 import Database from "better-sqlite3";
 
-let db: JSONDB;
+let db: JSONStore;
 
 beforeEach(async () => {
   const s = new Database(":memory:");
   s.pragma("journal_mode = WAL");
   s.pragma("synchronous = off");
-  db = new JSONDB(s);
+  db = new JSONStore(s);
 });
 
 afterEach(() => {});

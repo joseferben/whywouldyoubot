@@ -2,12 +2,13 @@ import type { ItemKindOpts, DroppedItem, DropTable } from "~/engine/core";
 import { pickRandomRange } from "~/engine/math";
 import type { WorldDB } from "./WorldDB";
 import { droppedItemType } from "./WorldDB";
+import { EntityDB } from "./EntityDB/EntityDB";
 
 export class DroppedItemService {
-  constructor(
-    readonly db: WorldDB,
-    readonly itemKinds: { [name: string]: ItemKindOpts }
-  ) {}
+  db!: EntityDB<DroppedItem>;
+  constructor(readonly itemKinds: { [name: string]: ItemKindOpts }) {
+    this.db = EntityDB.builder<DroppedItem>().withSpatialIndex().build();
+  }
 
   spawn(x: number, y: number, itemKind: ItemKindOpts, amount?: number) {
     const item = {
@@ -16,7 +17,7 @@ export class DroppedItemService {
       y: y,
       amount: amount || 1,
     };
-    this.db.create(droppedItemType, item);
+    this.db.create(item);
     return item;
   }
 
@@ -45,6 +46,6 @@ export class DroppedItemService {
   }
 
   delete(item: DroppedItem) {
-    this.db.delete(item.id);
+    this.db.delete(item);
   }
 }

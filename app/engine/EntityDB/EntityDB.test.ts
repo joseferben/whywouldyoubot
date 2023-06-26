@@ -6,7 +6,7 @@ import { EntityDB } from "./EntityDB";
 import { FieldIndex } from "./FieldIndex";
 import { Migrator } from "./Migrator";
 import { Persistor } from "./Persistor";
-import { JSONDB } from "./JSONDB";
+import { JSONStore } from "./JSONStore";
 
 type Foo = {
   id: string;
@@ -24,7 +24,7 @@ beforeEach(async () => {
   const s = new Database(":memory:");
   s.pragma("journal_mode = WAL");
   s.pragma("synchronous = off");
-  const jsonDB = new JSONDB(s);
+  const jsonDB = new JSONStore(s);
   db = new EntityDB<Foo>({
     persistor: new Persistor(jsonDB, "foo"),
     fieldIndex: new FieldIndex(["name", "x"]),
@@ -98,7 +98,7 @@ describe("EntityDB", () => {
     const s = new Database(":memory:");
     s.pragma("journal_mode = WAL");
     s.pragma("synchronous = off");
-    const jsonDB = new JSONDB(s);
+    const jsonDB = new JSONStore(s);
     jsonDB.set("123", { id: "123", foo: "bar" }, "fob");
 
     const migrations = {
