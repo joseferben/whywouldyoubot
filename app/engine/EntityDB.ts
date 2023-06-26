@@ -21,42 +21,42 @@ const defaultOpts = {
   persistAfterChangeCount: 10,
 };
 
-export class FieldIndex<E extends { id: string }> {
+export class FieldIndex {
   index: Map<string, Map<string, Set<string>>> = new Map();
 
   constructor(readonly fields: string[]) {
     fields.forEach((field) => this.index.set(field, new Map()));
   }
 
-  private updateIndex(entity: E) {
+  private updateIndex(entity: any) {
     for (const [key, value] of this.index.entries()) {
-      const index = value.get(String(entity[key as keyof E])) || new Set();
+      const index = value.get(String(entity[key])) || new Set();
       index.add(entity.id);
-      value.set(String(entity[key as keyof E]), index);
+      value.set(String(entity[key]), index);
     }
   }
 
-  private deleteIndex(entity: E) {
+  private deleteIndex(entity: any) {
     for (const [key, value] of this.index.entries()) {
-      const index = value.get(String(entity[key as keyof E])) || new Set();
+      const index = value.get(String(entity[key])) || new Set();
       index.delete(entity.id);
-      value.set(String(entity[key as keyof E]), index);
+      value.set(String(entity[key]), index);
     }
   }
 
-  insert(entity: E) {
+  insert(entity: any) {
     this.updateIndex(entity);
   }
 
-  update(entity: E) {
+  update(entity: any) {
     this.updateIndex(entity);
   }
 
-  delete(entity: E) {
+  delete(entity: any) {
     this.deleteIndex(entity);
   }
 
-  findBy(key: keyof E, value: E[typeof key]): Iterable<string> {
+  findBy(key: string, value: any): Iterable<string> {
     const index = this.index.get(key as string);
     if (!index) {
       throw new Error(`Index not found for key ${key as string}`);
@@ -69,7 +69,7 @@ export class FieldIndex<E extends { id: string }> {
     return result;
   }
 
-  findByFilter(filter: Partial<E>): Iterable<string> {
+  findByFilter(filter: any): Iterable<string> {
     let ids: Set<string> | undefined;
     for (const [key, value] of Object.entries(filter)) {
       if (key === "id") {
@@ -99,7 +99,7 @@ export class EntityDB<E extends VersionedEntity> {
   entities: Map<string, E> = new Map();
   // a set of entity ids that have changed an need to be persisted
   changed: Set<string> = new Set();
-  fieldIndex!: FieldIndex<E>;
+  fieldIndex!: FieldIndex;
   timer: NodeJS.Timer | undefined;
   migratorTargetVersion: number;
 
@@ -267,7 +267,7 @@ export class EntityDB<E extends VersionedEntity> {
       const entity = this.findById(value as string);
       return entity ? [entity] : [];
     }
-    const ids = Array.from(this.fieldIndex.findBy(key, value));
+    const ids = Array.from(this.fieldIndex.findBy(key as string, value));
     return this.findByIds(ids);
   }
 

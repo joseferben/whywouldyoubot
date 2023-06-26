@@ -1,81 +1,130 @@
 import invariant from "tiny-invariant";
+import { FieldIndex } from "./EntityDB";
+import { nanoid } from "nanoid";
 
-export type SpatialEntity = {
-  x: number;
-  y: number;
-};
-
-// spatial indices
-// field indices
-export class SpatialIndex<E extends SpatialEntity> {
-  map: { [x: number]: { [y: number]: E } };
+export class SpatialIndex {
+  index: { [x: number]: { [y: number]: Set<string> } };
 
   constructor() {
-    this.map = {};
+    this.index = {};
   }
 
-  findById(id: string): E | null {
-    return this.entities[id] || null;
+  findByPosition(x: number, y: number): Iterable<string> {
+    return this.index[x]?.[y] || [];
   }
 
-  findByPosition(x: number, y: number): E[] {
-    const ids = this.map[x]?.[y] || [];
-    return ids.map((id) => this.findById(id)).filter((e) => e != null) as E[];
-  }
-
-  findByRectangle(x: number, y: number, width: number, height: number): E[] {
-    const entities: E[] = [];
+  findByRectangle(
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): string[] {
+    const ids: string[] = [];
     for (let i = x; i < x + width; i++) {
       for (let j = y; j < y + height; j++) {
-        entities.push(...this.findByPosition(i, j));
+        ids.push(...this.findByPosition(i, j));
       }
     }
-    return entities;
+    return ids;
   }
 
-  insert(entity: E, x: number, y: number): void {
-    this.map[x] = this.map[x] || {};
-    this.map[x][y] = this.map[x][y] || [];
-    this.entities[entity.id] = entity;
+  update(entity: { id: string; x: number; y: number }): void {
+    this.delete(entity);
+    this.insert(entity);
+  }
+
+  insert(entity: { id: string; x: number; y: number }): void {
+    const { id, x, y } = entity;
+    this.index[x] = this.index[x] || {};
+    this.index[x][y] = this.index[x][y] || [];
+    this.index[x][y].add(id);
   }
 
   bulkInsert(
     entities: {
-      entity: E;
+      id: string;
       x: number;
       y: number;
     }[]
   ): void {
-    for (const { entity, x, y } of entities) {
-      this.map[x] = this.map[x] || {};
-      this.map[x][y] = this.map[x][y] || [];
-      this.entities[entity.id] = entity;
+    for (const entity of entities) {
+      this.insert(entity);
     }
   }
 
-  update(id: string, update: (entity: E) => void): void {
-    const entity = this.findById(id);
-    if (entity) {
-      update(entity);
-    }
-  }
-
-  move(id: string, x: number, y: number): void {
-    const entity = this.findById(id);
-    invariant(entity, `Entity ${id} not found`);
-    this.map[x] = this.map[x] || {};
-    this.map[x][y] = this.map[x][y] || [];
-    this.map[x][y].push(id);
-  }
-
-  delete(id: string): void {
-    const { x, y } = this.entities[id];
-    delete this.entities[id];
-    delete this.map[x][y];
+  delete(entity: { id: string; x: number; y: number }): void {
+    const { id, x, y } = entity;
+    this.index[x][y].delete(id);
   }
 }
 
-export class SpatialEntityDB<E extends SpatialEntity> {
-  spatialIndex: SpatialIndex<E> = new SpatialIndex();
-  entityIndex: EntityIndex<E> = new EntityIndex();
+export type SpatialEntity = {
+  id: string;
+  x: number;
+  y: number;
+};
+
+export class SpatialDB<E extends SpatialEntity & { id: string }> {
+  entities: Map<string, E>;
+  spatialIndex!: SpatialIndex;
+  fieldIndex!: FieldIndex;
+
+  constructor(readonly fields: string[]) {
+    this.fieldIndex = new FieldIndex(fields);
+    this.spatialIndex = new SpatialIndex();
+    this.entities = new Map();
+  }
+
+  findById(id: string): E | null {
+    return this.entities.get(id) || null;
+  }
+
+  findAll(): Iterable<E> {
+    return this.entities.values();
+  }
+
+  findByPosition(x: number, y: number): Iterable<E> {
+    const ids = this.spatialIndex.findByPosition(x, y);
+    const result: E[] = [];
+    for (const id of ids) {
+      const entity = this.entities.get(id);
+      invariant(entity, `Entity ${id} not found`);
+      result.push(entity);
+    }
+    return result;
+  }
+
+  findByRectangle(x: number, y: number, width: number, height: number): E[] {
+    const ids = this.spatialIndex.findByRectangle(x, y, width, height);
+    const result: E[] = [];
+    for (const id of ids) {
+      const entity = this.entities.get(id);
+      invariant(entity, `Entity ${id} not found`);
+    }
+    return result;
+  }
+
+  create(entity: Omit<E, "id">): void {
+    const toInsert = { ...entity, id: nanoid() } as E;
+    this.spatialIndex.insert(toInsert);
+    this.fieldIndex.insert(toInsert);
+    this.entities.set(toInsert.id, toInsert);
+  }
+
+  update(entity: E): void {
+    this.spatialIndex.update(entity);
+    this.fieldIndex.update(entity);
+  }
+
+  insert(entity: E): void {
+    this.spatialIndex.insert(entity);
+    this.fieldIndex.insert(entity);
+    this.entities.set(entity.id, entity);
+  }
+
+  delete(entity: E): void {
+    this.spatialIndex.delete(entity);
+    this.fieldIndex.delete(entity);
+    this.entities.delete(entity.id);
+  }
 }
