@@ -6,7 +6,7 @@ const usedNamespaces = new Set<string>();
 export class Persistor {
   defaultOpts = {
     persistIntervalMs: 1000,
-    persistAfterChangeCount: 10,
+    persistAfterChangeCount: process.env.NODE_ENV === "production" ? 10 : 0,
   };
   changed: Set<string> = new Set();
   timer: NodeJS.Timer | undefined;
@@ -32,11 +32,14 @@ export class Persistor {
    * Load the entities from the JSON store and insert them into the in-memory store.
    */
   loadEntities(fun?: (e: any) => void) {
-    const jsons = this.jsonDB.all(this.namespace);
+    const jsons = this.jsonDB.all(this.namespace) as {
+      id: string;
+      v?: number;
+    }[];
     for (const json of jsons) {
-      invariant((json as any).id !== undefined, "Entity must have an id");
-      if ((json as any).v === undefined) {
-        (json as any).v = 0;
+      invariant(json.id !== undefined, "Entity must have an id");
+      if (json.v === undefined) {
+        json.v = 0;
       }
       const entity = json;
       if (fun) fun(entity);
@@ -72,7 +75,7 @@ export class Persistor {
         if (!entity) {
           this.jsonDB.delete(id);
         } else {
-          this.jsonDB.set(entity.id, JSON.stringify(entity), this.namespace);
+          this.jsonDB.set(entity.id, entity, this.namespace);
         }
       } catch (e) {
         console.error(e);

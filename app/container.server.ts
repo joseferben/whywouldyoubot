@@ -18,7 +18,7 @@ function build() {
   invariant(process.env.SESSION_SECRET, "SESSION_SECRET is required");
 
   const config = {
-    dbFilePath: process.env.DB_FILE_PATH || ":memory:",
+    dbFilePath: process.env.DB_FILE_PATH || "db.sqlite3",
     redisConnectionString: process.env.REDIS_CONNECTION_STRING,
     spawnPosition: {
       x: 560,

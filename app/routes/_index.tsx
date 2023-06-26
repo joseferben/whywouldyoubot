@@ -74,25 +74,6 @@ export const action: ActionFunction = async ({ request }) => {
   });
 };
 
-function FeatureCard({
-  image,
-  title,
-  description,
-}: {
-  image: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="card bg-base-100 mx-auto mb-6 w-full shadow-xl sm:ml-0 sm:mr-4 sm:w-96">
-      <div className="card-body">
-        <h2 className="card-title">{title}</h2>
-        <p>{description}</p>
-      </div>
-    </div>
-  );
-}
-
 export default function Index() {
   const { name, player } = useLoaderData() as LoaderData;
   const actionData = useActionData() as ActionData;
@@ -133,58 +114,6 @@ export default function Index() {
           </div>
         </div>
       </div>
-      {/* Features */}
-      <div className="bg-base-200">
-        <div className="bg-base-200 container mx-auto px-5 pb-32">
-          <h2 className="text-3xl font-bold">Features</h2>
-          <div className="mt-5 flex flex-col justify-between sm:flex-row">
-            <FeatureCard
-              image="/images/world.png"
-              title="Real-time on mobile"
-              description="A real-time 2d world that works well on mobile."
-            />
-            <FeatureCard
-              image="/images/skills.png"
-              title="6 skills"
-              description="You can hunt, trade, farm, cook, fish and mix potions."
-            />
-            <FeatureCard
-              image="/images/items.png"
-              title="Content"
-              description="NPCs, items, quests, and so on."
-            />
-          </div>
-        </div>
-      </div>
-      {/* Disclaimer */}
-      <div className="bg-base-200">
-        <div className="bg-base-200 container mx-auto px-5 pb-32">
-          <h2 className="text-3xl font-bold">Disclaimer</h2>
-          <div className="mt-5 lg:w-1/2">
-            <p>
-              This game is developed by{" "}
-              <a href="https://www.joseferben.com">one guy</a>. Everything is
-              heavily work in progress. Things will randomly break and you
-              probably will lose an item or two until all the bugs are ironed
-              out.
-            </p>
-            <br></br>
-            <p>
-              I am constantly adding new features and fixing bug. Stay tuned for
-              constant updates!
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <footer className="footer footer-center bg-base-300 text-base-content p-4">
-        <div>
-          <p>
-            Copyright © 2022 - All right reserved by{" "}
-            <a href="https://www.erben.systems">Erben Systems GmbH</a>
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

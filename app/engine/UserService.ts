@@ -1,5 +1,4 @@
 import type { User } from "~/engine/core";
-import type { GameDB } from "./GameDB";
 import bcrypt from "bcrypt";
 import invariant from "tiny-invariant";
 import type { JSONStore } from "./EntityDB/JSONStore";
