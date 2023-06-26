@@ -4,15 +4,11 @@ import invariant from "tiny-invariant";
 
 export type VersionedEntity = { id: string; v: number };
 
-export type Migrators = {
-  [fromVersion: number]: (entity: any) => any;
-};
-
 export type Opts<Entity> = {
   jsonDB?: JSONDB;
   persistIntervalMs?: number;
   persistAfterChangeCount?: number;
-  migrators?: Migrators;
+  migrators?: Migrations;
   indices?: (keyof Entity)[];
 };
 
@@ -92,6 +88,51 @@ export class FieldIndex {
   }
 }
 
+export type Migrations = {
+  [fromVersion: number]: (entity: any) => any;
+};
+
+export class Migrator {
+  readonly migratorTargetVersion: number;
+
+  constructor(readonly migrations: Migrations) {
+    this.migratorTargetVersion = 0;
+    if (migrations) {
+      try {
+        const versions = Object.keys(migrations).map((v) => parseInt(v));
+        this.migratorTargetVersion = Math.max(...versions) + 1;
+      } catch (e) {
+        console.error(e);
+        console.error("Migrators must be an object with integer keys");
+      }
+    }
+  }
+
+  needsMigration(entity: { v: number }) {
+    return entity.v < this.migratorTargetVersion;
+  }
+
+  migrate<E extends { v: number; id: string }>(entity: E) {
+    for (let i = entity.v; i < this.migratorTargetVersion; i++) {
+      console.log(`Migrating ${entity.id} from ${i} to ${i + 1}`);
+      const migrator = this.migrations?.[i];
+      if (!migrator) {
+        throw new Error(`No migrator for version ${i}`);
+      }
+      const id = entity.id;
+      const migrated = migrator(entity);
+      for (const key of Object.keys(entity)) {
+        delete (entity as any)[key as string];
+      }
+      for (const [key, value] of Object.entries(migrated)) {
+        (entity as any)[key] = value as E[];
+      }
+      entity.v = i + 1;
+      entity.id = id;
+    }
+  }
+}
+
 // migrations
 // optional persistence
 // field indices
@@ -101,20 +142,12 @@ export class EntityDB<E extends VersionedEntity> {
   changed: Set<string> = new Set();
   fieldIndex!: FieldIndex;
   timer: NodeJS.Timer | undefined;
-  migratorTargetVersion: number;
+  migrator!: Migrator;
 
   constructor(readonly opts: Opts<E>) {
     this.fieldIndex = new FieldIndex((opts.indices ?? []) as string[]);
-    this.migratorTargetVersion = 0;
-    if (opts.migrators) {
-      try {
-        const versions = Object.keys(opts.migrators).map((v) => parseInt(v));
-        this.migratorTargetVersion = Math.max(...versions) + 1;
-      } catch (e) {
-        console.error(e);
-        console.error("Migrators must be an object with integer keys");
-      }
-    }
+    this.migrator = new Migrator(opts.migrators ?? {});
+
     this.schedulePersist();
     this.loadEntities();
     this.installShutdownHandlers();
@@ -142,38 +175,14 @@ export class EntityDB<E extends VersionedEntity> {
       invariant(json.id !== undefined, "Entity must have an id");
       invariant(json.v !== undefined, `Entity ${json.id} must have a version`);
       const entity = json as E;
-      if (this.needsMigration(entity)) {
-        this.migrate(entity);
+      if (this.migrator.needsMigration(entity)) {
+        this.migrator.migrate(entity);
         // needs persisting
         this.insert(entity);
       } else {
         this.entities.set(entity.id, entity);
         this.fieldIndex.update(entity);
       }
-    }
-  }
-
-  private needsMigration(entity: E) {
-    return entity.v < this.migratorTargetVersion;
-  }
-
-  private migrate(entity: E) {
-    for (let i = entity.v; i < this.migratorTargetVersion; i++) {
-      console.log(`Migrating ${entity.id} from ${i} to ${i + 1}`);
-      const migrator = this.opts.migrators?.[i];
-      if (!migrator) {
-        throw new Error(`No migrator for version ${i}`);
-      }
-      const id = entity.id;
-      const migrated = migrator(entity);
-      for (const key of Object.keys(entity)) {
-        delete entity[key as keyof E];
-      }
-      for (const [key, value] of Object.entries(migrated)) {
-        entity[key as keyof E] = value as E[keyof E];
-      }
-      entity.v = i + 1;
-      entity.id = id;
     }
   }
 
@@ -217,15 +226,15 @@ export class EntityDB<E extends VersionedEntity> {
 
   create(entity: Omit<Omit<E, "id">, "v">): E {
     const id = nanoid();
-    const v = this.migratorTargetVersion;
+    const v = this.migrator.migratorTargetVersion;
     const toInsert = { id, v, ...entity } as E;
     this.insert(toInsert);
     return toInsert;
   }
 
   insert(entity: E) {
-    if (this.needsMigration(entity)) {
-      this.migrate(entity);
+    if (this.migrator.needsMigration(entity)) {
+      this.migrator.migrate(entity);
     }
     this.entities.set(entity.id, entity);
     this.fieldIndex.update(entity);
@@ -233,8 +242,8 @@ export class EntityDB<E extends VersionedEntity> {
   }
 
   update(entity: E) {
-    if (this.needsMigration(entity)) {
-      this.migrate(entity);
+    if (this.migrator.needsMigration(entity)) {
+      this.migrator.migrate(entity);
     }
     this.entities.set(entity.id, entity);
     this.fieldIndex.update(entity);
