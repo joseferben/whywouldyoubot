@@ -5,7 +5,9 @@ import type { TiledLayer, TiledTile } from "tiled-types";
 import type TiledMap from "tiled-types";
 import { getResourceKind } from "~/content";
 import type { Player, ResourceKind } from "~/engine/core";
-import { EntityDB } from "./EntityDB/EntityDB";
+import type { EntityDB } from "./EntityDB/EntityDB";
+import { entityDB } from "./EntityDB/EntityDB";
+import { initOnce } from "~/utils";
 
 export function stripPathToAssets(inputPath: string): string {
   const parts = inputPath.split("/");
@@ -31,28 +33,25 @@ export type WorldMapTile = {
 
 export class WorldMapService {
   db!: EntityDB<WorldMapTile>;
-  mapLoaded = false;
   jsonFilePath: string;
   tmxFilePath: string;
-  tmxFileDir: string;
 
   constructor(
     readonly obstacleLayerName: string,
     readonly playerVisibility: number,
-    mapPath: string
+    readonly mapPath: string
   ) {
-    const [db, foundInCache] = EntityDB.builder<WorldMapTile>()
-      .withSpatialIndex()
-      .buildForRemix(this.constructor.name);
+    const [db, foundInCache] = initOnce(this.constructor.name, () =>
+      entityDB<WorldMapTile>().withSpatial().build()
+    );
     this.db = db;
-    this.obstacleLayerName = obstacleLayerName;
-    this.tmxFileDir = mapPath;
-    this.tmxFilePath = `${this.tmxFileDir}/map.tmx`;
+    this.mapPath = mapPath;
+    this.tmxFilePath = `${this.mapPath}/map.tmx`;
     const tmxFile = fs.readFileSync(this.tmxFilePath);
     const hashSum = crypto.createHash("md5");
     hashSum.update(tmxFile);
     const hash = hashSum.digest("base64url");
-    this.jsonFilePath = `${this.tmxFileDir}/map.${hash}.json`;
+    this.jsonFilePath = `${this.mapPath}/map.${hash}.json`;
     if (!foundInCache) {
       this.loadMap();
     }
@@ -193,9 +192,9 @@ export class WorldMapService {
     } else {
       console.debug("map not found in cache");
       const jsonFiles = fs
-        .readdirSync(this.tmxFileDir)
+        .readdirSync(this.mapPath)
         .filter((file) => file.endsWith(".json"));
-      jsonFiles.forEach((file) => fs.rmSync(`${this.tmxFileDir}/${file}`));
+      jsonFiles.forEach((file) => fs.rmSync(`${this.mapPath}/${file}`));
       this.export();
       return this.loadTiledMap(
         JSON.parse(fs.readFileSync(this.jsonFilePath, "utf8"))

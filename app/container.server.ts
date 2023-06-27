@@ -12,6 +12,7 @@ import { getItemKinds } from "./content";
 import { InventoryService } from "./engine/InventoryService";
 import { config as dotenvConfig } from "dotenv";
 import { JSONStore } from "./engine/EntityDB/JSONStore";
+import { ClientEventService } from "./engine/ClientEventService";
 
 function build() {
   dotenvConfig();
@@ -39,7 +40,7 @@ function build() {
   s.pragma("synchronous = off");
   const jsonStore = new JSONStore(s);
 
-  const mapService = new WorldMapService(
+  const worldMapService = new WorldMapService(
     config.obstacleLayerName,
     config.playerVisibility,
     config.mapPath
@@ -51,7 +52,7 @@ function build() {
   const playerService = new PlayerService(
     jsonStore,
     userService,
-    mapService,
+    worldMapService,
     onlineService,
     config.spawnPosition
   );
@@ -61,7 +62,15 @@ function build() {
     config.sessionSecret,
     config.userSessionKey
   );
-  const walkService = new WalkService(mapService, playerService, onlineService);
+
+  const clientEventService = new ClientEventService();
+
+  const walkService = new WalkService(
+    clientEventService,
+    worldMapService,
+    playerService,
+    onlineService
+  );
   const droppedItemService = new DroppedItemService(config.items);
   const itemService = new ItemService(
     jsonStore,
@@ -91,11 +100,12 @@ function build() {
     config,
     userService,
     playerService,
-    mapService,
+    mapService: worldMapService,
     walkService,
     itemService,
     droppedItemService,
     sessionService,
+    clientEventService,
     // npcService,
     // equipmentService,
     // avatarService,

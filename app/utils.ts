@@ -82,6 +82,11 @@ export function validateName(name: unknown): name is string {
   );
 }
 
+/**
+ * The provided init function is run exactly once,
+ * even when the require cache is purged.
+ * @param k The key to use for the cache
+ */
 export function initOnce<E>(k: string, init: () => E): [E, boolean] {
   // these values can survive esbuild rebuilds, returns true if value was cached
   const globalKey = `__${k}__`;
@@ -97,14 +102,5 @@ export function initOnce<E>(k: string, init: () => E): [E, boolean] {
     }
     // @ts-ignore
     return [global[globalKey], true];
-  }
-}
-
-export function runOnce(name: string, f: () => void) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, cached] = initOnce(name, () => 1);
-  if (!cached) {
-    console.debug(`run function ${name} once`);
-    f();
   }
 }

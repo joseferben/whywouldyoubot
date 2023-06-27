@@ -4,7 +4,9 @@ import type { UserService } from "./UserService";
 import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
 import type { JSONStore } from "./EntityDB/JSONStore";
-import { EntityDB } from "./EntityDB/EntityDB";
+import type { EntityDB } from "./EntityDB/EntityDB";
+import { entityDB } from "./EntityDB/EntityDB";
+import { initOnce } from "~/utils";
 
 export class PlayerService {
   db!: EntityDB<Player>;
@@ -15,11 +17,13 @@ export class PlayerService {
     readonly onlineService: OnlineService,
     private spawn: { x: number; y: number }
   ) {
-    this.db = EntityDB.builder<Player>()
-      .withSpatialIndex()
-      .withFieldIndex(["username", "userId"])
-      .withPersistor(jsonStore, "pla")
-      .build();
+    [this.db] = initOnce(this.constructor.name, () =>
+      entityDB<Player>()
+        .withSpatial()
+        .withFields(["username", "userId"])
+        .withPersistence(jsonStore, "pla")
+        .build()
+    );
   }
 
   canReach(player: Player, x: number, y: number): boolean {

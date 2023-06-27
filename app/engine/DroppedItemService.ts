@@ -7,7 +7,7 @@ import { EntityDB } from "./EntityDB/EntityDB";
 export class DroppedItemService {
   db!: EntityDB<DroppedItem>;
   constructor(readonly itemKinds: { [name: string]: ItemKindOpts }) {
-    this.db = EntityDB.builder<DroppedItem>().withSpatialIndex().build();
+    this.db = EntityDB.builder<DroppedItem>().withSpatial().build();
   }
 
   spawn(x: number, y: number, itemKind: ItemKindOpts, amount?: number) {

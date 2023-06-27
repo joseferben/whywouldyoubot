@@ -22,11 +22,11 @@ export class Persistor {
       throw new Error(`Persistor namespace ${namespace} already in use`);
     }
     usedNamespaces.add(namespace);
-    this.schedulePersist();
   }
 
   setEntities(entities: Map<string, { v?: number; id: string }>) {
     this.entities = entities;
+    this.schedulePersist();
   }
   /**
    * Load the entities from the JSON store and insert them into the in-memory store.
@@ -67,8 +67,8 @@ export class Persistor {
 
   persistChanged() {
     if (!this.jsonDB) return;
-    if (!this.entities)
-      throw new Error("Can not persist changes without entities map");
+    if (!this.entities) throw new Error("Entities not set" + this.namespace);
+    const n = this.changed.size;
     for (const id of this.changed) {
       const entity = this.entities.get(id);
       try {
@@ -83,6 +83,7 @@ export class Persistor {
       }
       this.changed.delete(id);
     }
+    if (n > 0) console.log("persisted", n, "entities", this.namespace);
   }
 
   close() {

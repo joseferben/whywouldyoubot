@@ -6,7 +6,6 @@ import type { Migrations } from "./Migrator";
 import { Migrator } from "./Migrator";
 import { Persistor } from "./Persistor";
 import type { JSONStore } from "./JSONStore";
-import { initOnce } from "~/utils";
 
 export type Opts = {
   fieldIndex?: FieldIndex;
@@ -23,17 +22,17 @@ class EntityDBBuilder<
   persistor?: Persistor;
   migrator?: Migrator;
 
-  withFieldIndex(fields: string[]) {
+  withFields(fields: string[]) {
     this.fieldIndex = new FieldIndex(fields);
     return this;
   }
 
-  withSpatialIndex() {
+  withSpatial() {
     this.spatialIndex = new SpatialIndex();
     return this;
   }
 
-  withPersistor(
+  withPersistence(
     jsonDB: JSONStore,
     namespace: string,
     persistIntervalMs?: number,
@@ -48,7 +47,7 @@ class EntityDBBuilder<
     return this;
   }
 
-  withMigrator(migrations: Migrations) {
+  withMigrations(migrations: Migrations) {
     this.migrator = new Migrator(migrations);
     return this;
   }
@@ -60,20 +59,6 @@ class EntityDBBuilder<
       persistor: this.persistor,
       migrator: this.migrator,
     });
-  }
-
-  // Survives purge of require cache in Remix in development
-  buildForRemix(key: string) {
-    return initOnce(
-      key,
-      () =>
-        new EntityDB<E>({
-          fieldIndex: this.fieldIndex,
-          spatialIndex: this.spatialIndex,
-          persistor: this.persistor,
-          migrator: this.migrator,
-        })
-    );
   }
 }
 
@@ -154,11 +139,11 @@ export class EntityDB<
     this.opts.persistor?.addChanged(entity);
   }
 
-  findAll(limit = 50): E[] {
+  findAll(limit?: number): E[] {
     const result: E[] = [];
     for (const entity of this.entities.values()) {
       result.push(entity);
-      if (result.length >= limit) {
+      if (limit && result.length >= limit) {
         break;
       }
     }
@@ -256,4 +241,10 @@ export class EntityDB<
   close() {
     this.opts.persistor?.close();
   }
+}
+
+export function entityDB<
+  E extends { id: string; v?: number; x?: number; y?: number }
+>() {
+  return new EntityDBBuilder<E>();
 }

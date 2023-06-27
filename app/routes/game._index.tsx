@@ -6,8 +6,8 @@ import { container } from "~/container.server";
 import { Avatar } from "~/components/avatar/Avatar";
 import type { WorldMapTile } from "~/engine/WorldMapService";
 import type { Player } from "~/engine/core";
-import { useEffect, useState } from "react";
 import { useEventSource } from "remix-utils";
+import { ClientEvent } from "~/engine/ClientEventService";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await container.sessionService.requireUser(request);
@@ -168,7 +168,11 @@ export default function Game() {
     map[tile.x][tile.y] = tile;
   });
 
-  const id = useEventSource("/sse/events");
+  const event = useEventSource("/sse/events", { event: "event" });
+
+  if (event) {
+    console.log(JSON.parse(event) as ClientEvent);
+  }
 
   const fetcher = useFetcher();
 
