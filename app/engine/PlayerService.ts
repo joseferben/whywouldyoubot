@@ -1,7 +1,7 @@
 import type { Player, Item, Npc, EquipSlot } from "~/engine/core";
 import type { Rectangle } from "~/engine/math";
 import type { UserService } from "./UserService";
-import type { MapService } from "./MapService";
+import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
 import type { JSONStore } from "./EntityDB/JSONStore";
 import { EntityDB } from "./EntityDB/EntityDB";
@@ -11,7 +11,7 @@ export class PlayerService {
   constructor(
     readonly jsonStore: JSONStore,
     readonly userService: UserService,
-    readonly mapService: MapService,
+    readonly mapService: WorldMapService,
     readonly onlineService: OnlineService,
     private spawn: { x: number; y: number }
   ) {
@@ -23,13 +23,7 @@ export class PlayerService {
   }
 
   canReach(player: Player, x: number, y: number): boolean {
-    return (
-      player.x >= x - 1 &&
-      player.x <= x + 1 &&
-      player.y >= y - 1 &&
-      player.y <= y + 1 &&
-      !(player.x === x && player.y === y)
-    );
+    return !(player.x === x && player.y === y);
   }
 
   hasEquipped(player: Player, item: Item): boolean {

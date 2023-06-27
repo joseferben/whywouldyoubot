@@ -1,5 +1,5 @@
 import type { DroppedItem, Npc } from "~/engine/core";
-import type { MapTile } from "./MapService";
+import type { WorldMapTile } from "./WorldMapService";
 
 export const droppedItemType = "dro";
 export const npcType = "npc";
@@ -21,7 +21,7 @@ type EntityMap = {
   [npcType]: Npc;
   [combatType]: Combat;
   [playerStatsType]: PlayerStats;
-  [mapTileType]: MapTile;
+  [mapTileType]: WorldMapTile;
 };
 
 export class WorldDB {}

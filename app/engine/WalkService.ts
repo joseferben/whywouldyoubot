@@ -1,14 +1,28 @@
 import type { Player } from "~/engine/core";
-import type { MapService } from "./MapService";
+import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
 import type { PlayerService } from "./PlayerService";
+import { EntityDB } from "./EntityDB/EntityDB";
+
+export type Walk = {
+  id: string;
+  playerId: string;
+  x: number;
+  y: number;
+};
 
 export class WalkService {
+  db: EntityDB<Walk>;
   constructor(
-    readonly mapService: MapService,
+    readonly mapService: WorldMapService,
     readonly playerService: PlayerService,
     readonly onlineService: OnlineService
-  ) {}
+  ) {
+    const [db, foundInCache] = EntityDB.builder<Walk>().buildForRemix(
+      this.constructor.name
+    );
+    this.db = db;
+  }
 
   canWalk(player: Player, x: number, y: number): boolean {
     return (
@@ -18,7 +32,7 @@ export class WalkService {
     );
   }
 
-  walk(player: Player, x: number, y: number) {
+  startWalk(player: Player, x: number, y: number) {
     this.onlineService.ensureOnline(player);
     console.debug(`walk ${player.id}`, player.x, player.y);
     if (!this.canWalk(player, x, y)) {

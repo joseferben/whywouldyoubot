@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import invariant from "tiny-invariant";
 import { DroppedItemService } from "./engine/DroppedItemService";
 import { ItemService } from "./engine/ItemService";
-import { MapService } from "./engine/MapService";
+import { WorldMapService } from "./engine/WorldMapService";
 import { OnlineService } from "./engine/OnlineService";
 import { PlayerService } from "./engine/PlayerService";
 import { UserService } from "./engine/UserService";
@@ -39,7 +39,7 @@ function build() {
   s.pragma("synchronous = off");
   const jsonStore = new JSONStore(s);
 
-  const mapService = new MapService(
+  const mapService = new WorldMapService(
     config.obstacleLayerName,
     config.playerVisibility,
     config.mapPath

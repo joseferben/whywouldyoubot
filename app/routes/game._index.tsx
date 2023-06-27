@@ -4,8 +4,10 @@ import type { FetcherWithComponents } from "@remix-run/react";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
 import { Avatar } from "~/components/avatar/Avatar";
-import type { MapTile } from "~/engine/MapService";
-import { Player } from "~/engine/core";
+import type { WorldMapTile } from "~/engine/WorldMapService";
+import type { Player } from "~/engine/core";
+import { useEffect, useState } from "react";
+import { useEventSource } from "remix-utils";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await container.sessionService.requireUser(request);
@@ -37,7 +39,7 @@ export const action: ActionFunction = async ({ request }) => {
     y !== null &&
     container.walkService.canWalk(player, parseInt(x), parseInt(y))
   ) {
-    container.walkService.walk(player, parseInt(x), parseInt(y));
+    container.walkService.startWalk(player, parseInt(x), parseInt(y));
   }
   return null;
 };
@@ -78,7 +80,7 @@ function Tile({
   fetcher,
 }: {
   player: Player;
-  tile: MapTile;
+  tile: WorldMapTile;
   fetcher: FetcherWithComponents<any>;
 }) {
   function handleClick() {
@@ -145,10 +147,19 @@ function Tile({
   );
 }
 
+// client state
+// - menuOpen: null | "inventory" | "equipment" | "combat"
+// - playerMapTiles: (x, y) -> tile
+// - walking: player, fromX, fromY, starttime
+// - hit: player, npc, damage, starttime
+// - inventory: gold, inventoryItems (include possible actions)
+// - textBoxes (player, text)
+// - playerEquipment (specific to current player)
+// - playerCombatStats (includes buffs)
 export default function Game() {
   const { tiles, player, hasPasswordSet } = useLoaderData<typeof loader>();
 
-  const map: { [x: number]: { [y: number]: MapTile } } = {};
+  const map: { [x: number]: { [y: number]: WorldMapTile } } = {};
 
   tiles.forEach((tile) => {
     if (!map[tile.x]) {
@@ -157,26 +168,21 @@ export default function Game() {
     map[tile.x][tile.y] = tile;
   });
 
-  //const id = useEventSource("/sse/updates");
+  const id = useEventSource("/sse/events");
 
   const fetcher = useFetcher();
 
   return (
-    <div className="relative left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform lg:scale-100">
+    <div className="relative left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform transition-transform lg:scale-100">
       {!hasPasswordSet && (
         <div className="absolute z-50 w-full">
           <PasswordWarning />
         </div>
       )}
-      {Object.values(map).map((row, x) => (
-        <div key={x}>
+      {Object.entries(map).map(([key, row]) => (
+        <div key={key}>
           {Object.values(row).map((tile, y) => (
-            <Tile
-              player={player}
-              fetcher={fetcher}
-              key={`${tile.x},${tile.y}`}
-              tile={tile}
-            />
+            <Tile player={player} fetcher={fetcher} key={tile.id} tile={tile} />
           ))}
         </div>
       ))}
