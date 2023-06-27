@@ -5,6 +5,7 @@ import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
 import { Avatar } from "~/components/avatar/Avatar";
 import type { MapTile } from "~/engine/MapService";
+import { Player } from "~/engine/core";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await container.sessionService.requireUser(request);
@@ -72,9 +73,11 @@ function PasswordWarning() {
 }
 
 function Tile({
+  player,
   tile,
   fetcher,
 }: {
+  player: Player;
   tile: MapTile;
   fetcher: FetcherWithComponents<any>;
 }) {
@@ -87,19 +90,21 @@ function Tile({
     }
   }
 
+  const isCenter = tile.x === player.x && tile.y === player.y;
   // TODO add WASDZ controls for walking
   const [ground, ...layers] = tile.imagePaths;
-  const showWalkPattern =
-    !tile.obstacle &&
-    fetcher.state !== "submitting" &&
-    fetcher.state !== "loading";
+  // const showWalkPattern =
+  //   !tile.obstacle &&
+  //   fetcher.state !== "submitting" &&
+  //   fetcher.state !== "loading";
+  const showWalkPattern = false;
 
   return (
     <div
       onClick={handleClick}
       className={`relative ${!tile.obstacle ? "cursor-pointer" : ""}`}
     >
-      <Avatar />
+      {isCenter && <Avatar />}
       <div
         className={`${
           showWalkPattern ? "opacity-100" : "opacity-0"
@@ -142,7 +147,15 @@ function Tile({
 
 export default function Game() {
   const { tiles, player, hasPasswordSet } = useLoaderData<typeof loader>();
-  console.log(tiles.length);
+
+  const map: { [x: number]: { [y: number]: MapTile } } = {};
+
+  tiles.forEach((tile) => {
+    if (!map[tile.x]) {
+      map[tile.x] = {};
+    }
+    map[tile.x][tile.y] = tile;
+  });
 
   //const id = useEventSource("/sse/updates");
 
@@ -155,8 +168,17 @@ export default function Game() {
           <PasswordWarning />
         </div>
       )}
-      {tiles.map((tile: MapTile) => (
-        <Tile fetcher={fetcher} key={`${tile.x},${tile.y}`} tile={tile} />
+      {Object.values(map).map((row, x) => (
+        <div key={x}>
+          {Object.values(row).map((tile, y) => (
+            <Tile
+              player={player}
+              fetcher={fetcher}
+              key={`${tile.x},${tile.y}`}
+              tile={tile}
+            />
+          ))}
+        </div>
       ))}
     </div>
   );

@@ -26,7 +26,7 @@ function build() {
     },
     obstacleLayerName: "obstacles",
     // the client sees 20 tiles in each direction
-    playerVisibility: 5,
+    playerVisibility: 8,
     mapPath: "map",
     logoutTimeoutMs: 1000 * 10,
     sessionSecret: process.env.SESSION_SECRET,

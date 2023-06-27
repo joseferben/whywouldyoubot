@@ -70,7 +70,7 @@ export class SessionService {
 
   async requirePlayer(request: Request) {
     const userId = await this.requireUserId(request);
-    const player = this.userService.findByUserId(userId);
+    const player = this.playerService.findByUserId(userId);
     if (player) return player;
 
     throw await this.logout(request);
