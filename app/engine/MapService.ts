@@ -6,6 +6,7 @@ import type TiledMap from "tiled-types";
 import { getResourceKind } from "~/content";
 import type { Player, ResourceKind } from "~/engine/core";
 import { EntityDB } from "./EntityDB/EntityDB";
+import { initOnce } from "~/utils";
 
 export function stripPathToAssets(inputPath: string): string {
   const parts = inputPath.split("/");
@@ -46,7 +47,10 @@ export class MapService {
     readonly playerVisibility: number,
     mapPath: string
   ) {
-    this.db = EntityDB.builder<MapTile>().withSpatialIndex().build();
+    const [db, foundInCache] = EntityDB.builder<MapTile>()
+      .withSpatialIndex()
+      .buildForRemix(this.constructor.name);
+    this.db = db;
     this.obstacleLayerName = obstacleLayerName;
     this.tmxFileDir = mapPath;
     this.tmxFilePath = `${this.tmxFileDir}/map.tmx`;
@@ -55,6 +59,9 @@ export class MapService {
     hashSum.update(tmxFile);
     const hash = hashSum.digest("base64url");
     this.jsonFilePath = `${this.tmxFileDir}/map.${hash}.json`;
+    if (!foundInCache) {
+      this.loadMap();
+    }
   }
 
   private gidToTiledTile(gid: number, tiled: TiledMap): TiledTile | undefined {

@@ -2,9 +2,11 @@ import { nanoid } from "nanoid";
 import invariant from "tiny-invariant";
 import { SpatialIndex } from "./SpatialIndex";
 import { FieldIndex } from "./FieldIndex";
-import { Migrations, Migrator } from "./Migrator";
+import type { Migrations } from "./Migrator";
+import { Migrator } from "./Migrator";
 import { Persistor } from "./Persistor";
 import type { JSONStore } from "./JSONStore";
+import { initOnce } from "~/utils";
 
 export type Opts = {
   fieldIndex?: FieldIndex;
@@ -59,13 +61,26 @@ class EntityDBBuilder<
       migrator: this.migrator,
     });
   }
+
+  // Survives purge of require cache in Remix in development
+  buildForRemix(key: string) {
+    return initOnce(
+      key,
+      () =>
+        new EntityDB<E>({
+          fieldIndex: this.fieldIndex,
+          spatialIndex: this.spatialIndex,
+          persistor: this.persistor,
+          migrator: this.migrator,
+        })
+    );
+  }
 }
 
 export class EntityDB<
   E extends { id: string; v?: number; x?: number; y?: number }
 > {
   entities!: Map<string, E>;
-  closing: boolean;
 
   static builder<
     E extends { id: string; v?: number; x?: number; y?: number }

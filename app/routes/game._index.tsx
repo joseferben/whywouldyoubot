@@ -162,7 +162,7 @@ export default function Game() {
   const fetcher = useFetcher();
 
   return (
-    <div className="relative left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 scale-125 transform md:scale-150 lg:scale-100">
+    <div className="relative left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform lg:scale-100">
       {!hasPasswordSet && (
         <div className="absolute z-50 w-full">
           <PasswordWarning />

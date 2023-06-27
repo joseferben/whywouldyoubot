@@ -25,8 +25,8 @@ function build() {
       y: 580,
     },
     obstacleLayerName: "obstacles",
-    // the client sees 20 tiles in each direction
-    playerVisibility: 8,
+    // the client sees n tiles in each direction
+    playerVisibility: 12,
     mapPath: "map",
     logoutTimeoutMs: 1000 * 10,
     sessionSecret: process.env.SESSION_SECRET,
@@ -44,8 +44,6 @@ function build() {
     config.playerVisibility,
     config.mapPath
   );
-
-  mapService.loadMap();
 
   const userService = new UserService(jsonStore);
 
