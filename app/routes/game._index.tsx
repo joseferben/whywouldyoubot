@@ -147,6 +147,28 @@ function Tile({
   );
 }
 
+function Map({
+  x,
+  y,
+  map,
+  player,
+  fetcher,
+}: {
+  x: number;
+  y: number;
+  map: { [x: number]: { [y: number]: WorldMapTile } };
+  player: Player;
+  fetcher: FetcherWithComponents<any>;
+}) {
+  return Object.entries(map).map(([key, row]) => (
+    <div key={key}>
+      {Object.values(row).map((tile) => (
+        <Tile player={player} fetcher={fetcher} key={tile.id} tile={tile} />
+      ))}
+    </div>
+  ));
+}
+
 // client state
 // - menuOpen: null | "inventory" | "equipment" | "combat"
 // - playerMapTiles: (x, y) -> tile
@@ -168,28 +190,30 @@ export default function Game() {
     map[tile.x][tile.y] = tile;
   });
 
-  const event = useEventSource("/sse/events", { event: "event" });
-
-  if (event) {
-    console.log(JSON.parse(event) as ClientEvent);
-  }
-
   const fetcher = useFetcher();
 
+  const event = useEventSource("/sse/events", { event: "event" });
+  const parsedEvent = event ? (JSON.parse(event) as ClientEvent) : null;
+
+  if (parsedEvent) {
+    player.x = parsedEvent.x;
+    player.y = parsedEvent.y;
+  }
+
   return (
-    <div className="relative left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform transition-transform lg:scale-100">
+    <div className="relative left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform lg:scale-100">
       {!hasPasswordSet && (
         <div className="absolute z-50 w-full">
           <PasswordWarning />
         </div>
       )}
-      {Object.entries(map).map(([key, row]) => (
-        <div key={key}>
-          {Object.values(row).map((tile, y) => (
-            <Tile player={player} fetcher={fetcher} key={tile.id} tile={tile} />
-          ))}
-        </div>
-      ))}
+      <Map
+        x={player.x}
+        y={player.y}
+        map={map}
+        player={player}
+        fetcher={fetcher}
+      />
     </div>
   );
 }
