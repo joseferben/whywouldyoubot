@@ -142,10 +142,7 @@ function Tile({
 
 export default function Game() {
   const { tiles, player, hasPasswordSet } = useLoaderData<typeof loader>();
-  console.log(tiles);
-  console.log(player);
-  console.log(player.x);
-  console.log(player.y);
+  console.log(tiles.length);
 
   //const id = useEventSource("/sse/updates");
 
@@ -159,7 +156,7 @@ export default function Game() {
         </div>
       )}
       {tiles.map((tile: MapTile) => (
-        <Tile fetcher={fetcher} key={`${tile.x}/${tile.y}`} tile={tile} />
+        <Tile fetcher={fetcher} key={`${tile.x},${tile.y}`} tile={tile} />
       ))}
     </div>
   );

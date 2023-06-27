@@ -25,6 +25,8 @@ function build() {
       y: 580,
     },
     obstacleLayerName: "obstacles",
+    // the client sees 20 tiles in each direction
+    playerVisibility: 5,
     mapPath: "map",
     logoutTimeoutMs: 1000 * 10,
     sessionSecret: process.env.SESSION_SECRET,
@@ -37,7 +39,11 @@ function build() {
   s.pragma("synchronous = off");
   const jsonStore = new JSONStore(s);
 
-  const mapService = new MapService(config.obstacleLayerName, config.mapPath);
+  const mapService = new MapService(
+    config.obstacleLayerName,
+    config.playerVisibility,
+    config.mapPath
+  );
 
   mapService.loadMap();
 

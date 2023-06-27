@@ -86,6 +86,7 @@ export class Persistor {
   }
 
   close() {
+    console.log("shutdown gracefully, persisting entities", this.namespace);
     this.timer && clearInterval(this.timer);
     this.persistChanged();
     usedNamespaces.delete(this.namespace);

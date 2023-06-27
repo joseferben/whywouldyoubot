@@ -65,6 +65,7 @@ export class EntityDB<
   E extends { id: string; v?: number; x?: number; y?: number }
 > {
   entities!: Map<string, E>;
+  closing: boolean;
 
   static builder<
     E extends { id: string; v?: number; x?: number; y?: number }
@@ -211,6 +212,14 @@ export class EntityDB<
     return result;
   }
 
+  findOneByPosition(x: number, y: number): E | null {
+    const result = Array.from(this.findByPosition(x, y));
+    if (result.length > 1) {
+      throw new Error(`Expected 1 result, got ${result.length}`);
+    }
+    return result[0] ?? null;
+  }
+
   findByRectangle(x: number, y: number, width: number, height: number): E[] {
     if (!this.opts.spatialIndex)
       throw new Error("SpatialIndex needed for findByRectangle");
@@ -220,6 +229,7 @@ export class EntityDB<
     for (const id of ids) {
       const entity = this.entities.get(id);
       invariant(entity, `Entity ${id} not found`);
+      result.push(entity);
     }
     return result;
   }
@@ -229,7 +239,6 @@ export class EntityDB<
   }
 
   close() {
-    console.log("shutdown gracefully, persisting entities");
     this.opts.persistor?.close();
   }
 }
