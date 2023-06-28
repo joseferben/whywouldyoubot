@@ -4,8 +4,7 @@ import type { UserService } from "./UserService";
 import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
 import type { JSONStore } from "./EntityDB/JSONStore";
-import type { EntityDB } from "./EntityDB/EntityDB";
-import { entityDB } from "./EntityDB/EntityDB";
+import { EntityDB } from "./EntityDB/EntityDB";
 import { initOnce } from "~/utils";
 
 export class PlayerService {
@@ -17,12 +16,15 @@ export class PlayerService {
     readonly onlineService: OnlineService,
     private spawn: { x: number; y: number }
   ) {
-    [this.db] = initOnce(this.constructor.name, () =>
-      entityDB<Player>()
-        .withSpatial()
-        .withFields(["username", "userId"])
-        .withPersistence(jsonStore, "pla")
-        .build()
+    [this.db] = initOnce(
+      this.constructor.name,
+      () =>
+        new EntityDB<Player>({
+          spatial: true,
+          fields: ["username", "userId"],
+          jsonStore,
+          persistenceNamespace: "pla",
+        })
     );
   }
 
@@ -139,9 +141,11 @@ export class PlayerService {
     const yMin = y;
     const yMax = y + height;
     const players = this.db.findByRectangle(xMin, yMin, xMax, yMax);
-    return players.filter(
-      (player) => this.onlineService.onlinePlayers()[player.id] != null
-    );
+    return players;
+    // TODO fix
+    // return players.filter(
+    //   (player) => this.onlineService.onlinePlayers()[player.id] != null
+    // );
   }
 
   create(name: string, password?: string, emailOr?: string): Player {

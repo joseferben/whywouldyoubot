@@ -11,7 +11,6 @@ import type { ClientEvent } from "~/engine/ClientEventService";
 import { StoreContext, createGameStore, useGameStore } from "~/store";
 import { useStore } from "zustand";
 import { tileRenderedSize } from "~/config";
-import { parse } from "path";
 import { useCallback, useEffect } from "react";
 
 export const loader = async ({ request }: LoaderArgs) => {

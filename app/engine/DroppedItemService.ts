@@ -1,13 +1,13 @@
 import type { ItemKindOpts, DroppedItem, DropTable } from "~/engine/core";
 import { pickRandomRange } from "~/engine/math";
-import type { WorldDB } from "./WorldDB";
-import { droppedItemType } from "./WorldDB";
 import { EntityDB } from "./EntityDB/EntityDB";
 
 export class DroppedItemService {
   db!: EntityDB<DroppedItem>;
   constructor(readonly itemKinds: { [name: string]: ItemKindOpts }) {
-    this.db = EntityDB.builder<DroppedItem>().withSpatial().build();
+    this.db = new EntityDB<DroppedItem>({
+      spatial: true,
+    });
   }
 
   spawn(x: number, y: number, itemKind: ItemKindOpts, amount?: number) {

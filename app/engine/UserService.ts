@@ -2,19 +2,21 @@ import type { User } from "~/engine/core";
 import bcrypt from "bcrypt";
 import invariant from "tiny-invariant";
 import type { JSONStore } from "./EntityDB/JSONStore";
-import type { EntityDB } from "./EntityDB/EntityDB";
-import { entityDB } from "./EntityDB/EntityDB";
+import { EntityDB } from "./EntityDB/EntityDB";
 import { initOnce } from "~/utils";
 
 export class UserService {
   db!: EntityDB<User>;
 
   constructor(readonly jsonStore: JSONStore) {
-    [this.db] = initOnce(this.constructor.name, () =>
-      entityDB<User>()
-        .withFields(["username", "email"])
-        .withPersistence(jsonStore, "users")
-        .build()
+    [this.db] = initOnce(
+      this.constructor.name,
+      () =>
+        new EntityDB<User>({
+          fields: ["username", "email"],
+          jsonStore,
+          persistenceNamespace: "users",
+        })
     );
   }
 

@@ -1,8 +1,7 @@
 import { EventEmitter } from "node:events";
 import type { Player } from "./core";
 import { initOnce } from "~/utils";
-import type { EntityDB } from "./EntityDB/EntityDB";
-import { entityDB } from "./EntityDB/EntityDB";
+import { EntityDB } from "./EntityDB/EntityDB";
 
 export type ClientEvent = {
   tag: "playerStepped";
@@ -29,8 +28,9 @@ class Emitter {
 export class ClientEventService {
   readonly db!: EntityDB<PlayerEmitter>;
   constructor() {
-    [this.db] = initOnce(this.constructor.name, () =>
-      entityDB<PlayerEmitter>().withFields(["playerId"]).build()
+    [this.db] = initOnce(
+      this.constructor.name,
+      () => new EntityDB<PlayerEmitter>({ fields: ["playerId"] })
     );
   }
 

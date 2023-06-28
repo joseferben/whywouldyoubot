@@ -1,8 +1,7 @@
 import type { DroppedItem, Item, ItemKindOpts, Player } from "~/engine/core";
 import type { DroppedItemService } from "~/engine/DroppedItemService";
 import type { JSONStore } from "./EntityDB/JSONStore";
-import type { EntityDB } from "./EntityDB/EntityDB";
-import { entityDB } from "./EntityDB/EntityDB";
+import { EntityDB } from "./EntityDB/EntityDB";
 import { initOnce } from "~/utils";
 
 export class ItemService {
@@ -12,8 +11,9 @@ export class ItemService {
     readonly droppedItemService: DroppedItemService,
     readonly itemKinds: { [name: string]: ItemKindOpts }
   ) {
-    [this.db] = initOnce(this.constructor.name, () =>
-      entityDB<Item>().withPersistence(jsonStore, "items").build()
+    [this.db] = initOnce(
+      this.constructor.name,
+      () => new EntityDB<Item>({ jsonStore, persistenceNamespace: "items" })
     );
   }
 

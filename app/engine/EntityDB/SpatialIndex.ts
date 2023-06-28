@@ -1,5 +1,7 @@
 export class SpatialIndex {
   index: { [x: number]: { [y: number]: Set<string> } };
+  maxX: number = 0;
+  maxY: number = 0;
 
   constructor() {
     this.index = {};
@@ -35,6 +37,12 @@ export class SpatialIndex {
   insert(entity: { id: string; x?: number; y?: number }): void {
     if (entity.x === undefined || entity.y === undefined) {
       throw new Error("Can not use spatial index without x or y");
+    }
+    if (entity.x > this.maxX) {
+      this.maxX = entity.x;
+    }
+    if (entity.y > this.maxY) {
+      this.maxY = entity.y;
     }
     const { id, x, y } = entity;
     this.index[x] = this.index[x] || {};

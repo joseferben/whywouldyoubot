@@ -2,8 +2,7 @@ import type { Player } from "~/engine/core";
 import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
 import type { PlayerService } from "./PlayerService";
-import type { EntityDB } from "./EntityDB/EntityDB";
-import { entityDB } from "./EntityDB/EntityDB";
+import { EntityDB } from "./EntityDB/EntityDB";
 import easystarjs from "easystarjs";
 import { initOnce } from "~/utils";
 import type { ClientEventService } from "./ClientEventService";
@@ -25,8 +24,9 @@ export class WalkService {
     readonly playerService: PlayerService,
     readonly onlineService: OnlineService
   ) {
-    [this.db] = initOnce(this.constructor.name, () =>
-      entityDB<Walk>().withFields(["playerId"]).build()
+    [this.db] = initOnce(
+      this.constructor.name,
+      () => new EntityDB<Walk>({ fields: ["playerId"] })
     );
     const [obstacleGrid] = initOnce(
       `${this.constructor.name}.obstacleGrid`,
@@ -43,12 +43,9 @@ export class WalkService {
    * Return a 2d array where 0 is walkable and 1 is not walkable.
    */
   calculateObstacleGrid(): number[][] {
-    // TODO get somehwre else
-    const height = 1000;
-    const width = 1000;
-    const grid: number[][] = Array(height)
+    const grid: number[][] = Array(this.worldMapService.db.spatialIndex?.maxY)
       .fill(undefined)
-      .map(() => Array(width).fill(0));
+      .map(() => Array(this.worldMapService.db.spatialIndex?.maxX).fill(0));
     for (const tile of this.worldMapService.db.findAll()) {
       if (tile.obstacle) {
         grid[tile.y][tile.x] = 1;

@@ -5,8 +5,7 @@ import type { TiledLayer, TiledTile } from "tiled-types";
 import type TiledMap from "tiled-types";
 import { getResourceKind } from "~/content";
 import type { Player, ResourceKind } from "~/engine/core";
-import type { EntityDB } from "./EntityDB/EntityDB";
-import { entityDB } from "./EntityDB/EntityDB";
+import { EntityDB } from "./EntityDB/EntityDB";
 import { initOnce } from "~/utils";
 
 export function stripPathToAssets(inputPath: string): string {
@@ -41,8 +40,9 @@ export class WorldMapService {
     readonly playerVisibility: number,
     readonly mapPath: string
   ) {
-    const [db, foundInCache] = initOnce(this.constructor.name, () =>
-      entityDB<WorldMapTile>().withSpatial().build()
+    const [db, foundInCache] = initOnce(
+      this.constructor.name,
+      () => new EntityDB<WorldMapTile>({ spatial: true })
     );
     this.db = db;
     this.mapPath = mapPath;

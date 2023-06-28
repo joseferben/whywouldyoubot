@@ -6,89 +6,70 @@ import type { Migrations } from "./Migrator";
 import { Migrator } from "./Migrator";
 import { Persistor } from "./Persistor";
 import type { JSONStore } from "./JSONStore";
+import { Evictor } from "./Evictor";
 
-export type Opts = {
-  fieldIndex?: FieldIndex;
-  spatialIndex?: SpatialIndex;
-  persistor?: Persistor;
-  migrator?: Migrator;
+export type Opts<Entity> = {
+  fields?: string[];
+  spatial?: boolean;
+  jsonStore?: JSONStore;
+  persistenceNamespace?: string;
+  persistenceIntervalMs?: number;
+  persistenceAfterChangeCount?: number;
+  migrations?: Migrations;
+  evictorListener?: (entity: Entity) => void;
 };
-
-class EntityDBBuilder<
-  E extends { id: string; v?: number; x?: number; y?: number }
-> {
-  fieldIndex?: FieldIndex;
-  spatialIndex?: SpatialIndex;
-  persistor?: Persistor;
-  migrator?: Migrator;
-
-  withFields(fields: string[]) {
-    this.fieldIndex = new FieldIndex(fields);
-    return this;
-  }
-
-  withSpatial() {
-    this.spatialIndex = new SpatialIndex();
-    return this;
-  }
-
-  withPersistence(
-    jsonDB: JSONStore,
-    namespace: string,
-    persistIntervalMs?: number,
-    persistAfterChangeCount?: number
-  ) {
-    this.persistor = new Persistor(
-      jsonDB,
-      namespace,
-      persistIntervalMs,
-      persistAfterChangeCount
-    );
-    return this;
-  }
-
-  withMigrations(migrations: Migrations) {
-    this.migrator = new Migrator(migrations);
-    return this;
-  }
-
-  build() {
-    return new EntityDB<E>({
-      fieldIndex: this.fieldIndex,
-      spatialIndex: this.spatialIndex,
-      persistor: this.persistor,
-      migrator: this.migrator,
-    });
-  }
-}
 
 export class EntityDB<
   E extends { id: string; v?: number; x?: number; y?: number }
 > {
   entities!: Map<string, E>;
+  persistor!: Persistor;
+  fieldIndex!: FieldIndex;
+  spatialIndex!: SpatialIndex;
+  migrator!: Migrator;
+  evictor!: Evictor<E>;
 
-  static builder<
-    E extends { id: string; v?: number; x?: number; y?: number }
-  >() {
-    return new EntityDBBuilder<E>();
-  }
-
-  constructor(readonly opts: Opts = {}) {
+  constructor(readonly opts: Opts<E> = {}) {
     this.entities = new Map();
-    this.opts.persistor?.setEntities(this.entities);
-    this.opts.persistor?.loadEntities(this.loadEntity.bind(this));
+    if (opts.jsonStore && opts.persistenceNamespace) {
+      this.persistor = new Persistor(
+        opts.jsonStore,
+        opts.persistenceNamespace,
+        opts.persistenceIntervalMs,
+        opts.persistenceAfterChangeCount
+      );
+    } else if (opts.jsonStore && !opts.persistenceNamespace) {
+      throw new Error("jsonStoreNamespace must be provided if using jsonStore");
+    }
+    if (opts.fields) {
+      this.fieldIndex = new FieldIndex(opts.fields);
+    }
+    if (opts.spatial) {
+      this.spatialIndex = new SpatialIndex();
+    }
+    if (opts.migrations) {
+      this.migrator = new Migrator(opts.migrations);
+    }
+    this.evictor = new Evictor<E>(this.handleExpire.bind(this));
+    this.persistor?.setEntities(this.entities);
+    this.persistor?.loadEntities(this.loadEntity.bind(this));
     this.installShutdownHandlers();
   }
 
+  private handleExpire(entity: E) {
+    this.delete(entity);
+    this.opts.evictorListener?.(entity);
+  }
+
   private loadEntity(entity: E) {
-    if (this.opts.migrator?.needsMigration(entity)) {
-      this.opts.migrator.migrate(entity);
+    if (this.migrator?.needsMigration(entity)) {
+      this.migrator.migrate(entity);
       // needs persisting
       this.insert(entity);
     } else {
       this.entities.set(entity.id, entity);
-      this.opts.fieldIndex?.update(entity);
-      this.opts.spatialIndex?.update(entity);
+      this.fieldIndex?.update(entity);
+      this.spatialIndex?.update(entity);
     }
   }
 
@@ -106,37 +87,39 @@ export class EntityDB<
 
   create(entity: Omit<Omit<E, "id">, "v">): E {
     const id = nanoid();
-    const v = this.opts.migrator?.migratorTargetVersion || 0;
+    const v = this.migrator?.migratorTargetVersion || 0;
     const toInsert = { id, v, ...entity } as E;
     this.insert(toInsert);
+    this.evictor?.expire(toInsert);
     return toInsert;
   }
 
   insert(entity: E) {
-    if (this.opts.migrator && this.opts.migrator.needsMigration(entity)) {
-      this.opts.migrator.migrate(entity);
+    if (this.migrator && this.migrator.needsMigration(entity)) {
+      this.migrator.migrate(entity);
     }
     this.entities.set(entity.id, entity);
-    this.opts.fieldIndex?.update(entity);
-    this.opts.spatialIndex?.update(entity);
-    this.opts.persistor?.addChanged(entity);
+    this.fieldIndex?.update(entity);
+    this.spatialIndex?.update(entity);
+    this.persistor?.addChanged(entity);
+    this.evictor?.expire(entity);
   }
 
   update(entity: E) {
-    if (this.opts.migrator?.needsMigration(entity)) {
-      this.opts.migrator.migrate(entity);
+    if (this.migrator?.needsMigration(entity)) {
+      this.migrator.migrate(entity);
     }
     this.entities.set(entity.id, entity);
-    this.opts.fieldIndex?.update(entity);
-    this.opts.spatialIndex?.update(entity);
-    this.opts.persistor?.addChanged(entity);
+    this.fieldIndex?.update(entity);
+    this.spatialIndex?.update(entity);
+    this.persistor?.addChanged(entity);
   }
 
   delete(entity: E) {
     this.entities.delete(entity.id);
-    this.opts.fieldIndex?.delete(entity);
-    this.opts.spatialIndex?.delete(entity);
-    this.opts.persistor?.addChanged(entity);
+    this.fieldIndex?.delete(entity);
+    this.spatialIndex?.delete(entity);
+    this.persistor?.addChanged(entity);
   }
 
   findAll(limit?: number): E[] {
@@ -166,13 +149,13 @@ export class EntityDB<
   }
 
   findBy(key: keyof E, value: E[typeof key]): E[] {
-    if (!this.opts.fieldIndex)
+    if (!this.fieldIndex)
       throw new Error("Field index needed for findByFilter");
     if (key === "id") {
       const entity = this.findById(value as string);
       return entity ? [entity] : [];
     }
-    const ids = Array.from(this.opts.fieldIndex.findBy(key as string, value));
+    const ids = Array.from(this.fieldIndex.findBy(key as string, value));
     return this.findByIds(ids);
   }
 
@@ -185,9 +168,9 @@ export class EntityDB<
   }
 
   findByFilter(filter: Partial<E>) {
-    if (!this.opts.fieldIndex)
+    if (!this.fieldIndex)
       throw new Error("Field index needed for findByFilter");
-    const ids = Array.from(this.opts.fieldIndex.findByFilter(filter));
+    const ids = Array.from(this.fieldIndex.findByFilter(filter));
     return this.findByIds(ids || []);
   }
 
@@ -200,9 +183,9 @@ export class EntityDB<
   }
 
   findByPosition(x: number, y: number): Iterable<E> {
-    if (!this.opts.spatialIndex)
+    if (!this.spatialIndex)
       throw new Error("SpatialIndex needed for findByPosition");
-    const ids = this.opts.spatialIndex.findByPosition(x, y);
+    const ids = this.spatialIndex.findByPosition(x, y);
     const result: E[] = [];
     for (const id of ids) {
       const entity = this.entities.get(id);
@@ -221,10 +204,10 @@ export class EntityDB<
   }
 
   findByRectangle(x: number, y: number, width: number, height: number): E[] {
-    if (!this.opts.spatialIndex)
+    if (!this.spatialIndex)
       throw new Error("SpatialIndex needed for findByRectangle");
 
-    const ids = this.opts.spatialIndex.findByRectangle(x, y, width, height);
+    const ids = this.spatialIndex.findByRectangle(x, y, width, height);
     const result: E[] = [];
     for (const id of ids) {
       const entity = this.entities.get(id);
@@ -239,12 +222,6 @@ export class EntityDB<
   }
 
   close() {
-    this.opts.persistor?.close();
+    this.persistor?.close();
   }
-}
-
-export function entityDB<
-  E extends { id: string; v?: number; x?: number; y?: number }
->() {
-  return new EntityDBBuilder<E>();
 }
