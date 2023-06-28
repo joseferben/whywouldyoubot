@@ -200,7 +200,7 @@ function PlayerLayer() {
 // )}
 
 function Menu() {
-  return <div className="rounded bg-white p-4 shadow">THis is the menu</div>;
+  return <div className="rounded bg-white p-4 shadow">This is the menu</div>;
 }
 
 function Map() {
