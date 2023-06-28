@@ -58,10 +58,11 @@ export class WalkService {
   }
 
   calculatePath(fromX: number, fromY: number, toX: number, toY: number) {
-    let path: { x: number; y: number }[] = [];
+    let path: { x: number; y: number }[] | null = [];
     this.easystar.findPath(fromX, fromY, toX, toY, (p) => (path = p));
     this.easystar.calculate();
     // remove first element because it's the current position
+    if (!path) return null;
     path.shift();
     return path;
   }
@@ -90,7 +91,8 @@ export class WalkService {
     player.y = nextPosition.y;
     this.playerService.db.update(player);
     this.db.update(walk);
-    this.clientEventService.playerStepped(player, player.x, player.y);
+    const lastStep = walk.path.length === 0;
+    this.clientEventService.playerStepped(player, player.x, player.y, lastStep);
   }
 
   startWalk(player: Player, x: number, y: number) {
@@ -110,6 +112,10 @@ export class WalkService {
     }
 
     const path = this.calculatePath(player.x, player.y, x, y);
+    if (!path) {
+      console.warn(`no path found for ${player.id} to (${x}/${y})`);
+      return;
+    }
     this.step(player.id);
     const timer = setInterval(() => this.step(player.id), 500);
     this.db.create({ playerId: player.id, path, timer });

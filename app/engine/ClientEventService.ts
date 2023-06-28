@@ -9,6 +9,7 @@ export type ClientEvent = {
   playerId: string;
   x: number;
   y: number;
+  lastStep?: boolean;
 };
 
 export type PlayerEmitter = {
@@ -39,8 +40,14 @@ export class ClientEventService {
     });
   }
 
-  playerStepped(player: Player, x: number, y: number) {
-    this.sendToAll({ tag: "playerStepped", playerId: player.id, x, y });
+  playerStepped(player: Player, x: number, y: number, lastStep: boolean) {
+    this.sendToAll({
+      tag: "playerStepped",
+      playerId: player.id,
+      x,
+      y,
+      lastStep,
+    });
   }
 
   playerEmitter(player: Player) {

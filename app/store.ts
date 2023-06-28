@@ -7,7 +7,6 @@ import type { ClientEvent } from "./engine/ClientEventService";
 type State = {
   player: Player;
   playerWalking: boolean;
-  playerWalkingTimer?: NodeJS.Timeout;
   tiles: WorldMapTile[];
   handleEvent: (event: string | null) => void;
 };
@@ -25,18 +24,10 @@ export const createGameStore = (player: Player, tiles: WorldMapTile[]) => {
         const parsed = JSON.parse(event) as ClientEvent;
         if (parsed.tag === "playerStepped") {
           if (parsed.x === player.x && parsed.y === player.y) return;
-          set((state) => {
-            if (state.playerWalkingTimer)
-              clearTimeout(state.playerWalkingTimer);
-            const playerWalkingTimer = setTimeout(() => {
-              set((state) => ({ ...state, playerWalking: false }));
-            }, 600);
-            return {
-              player: { ...state.player, x: parsed.x, y: parsed.y },
-              playerWalking: true,
-              playerWalkingTimer,
-            };
-          });
+          set((state) => ({
+            player: { ...state.player, x: parsed.x, y: parsed.y },
+            playerWalking: !parsed.lastStep,
+          }));
         }
       } catch (e) {
         console.error("invalid event received", e);
