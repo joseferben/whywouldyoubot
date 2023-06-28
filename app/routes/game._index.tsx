@@ -142,6 +142,7 @@ function Tile({
         alt=""
         width="96"
         height="96"
+        className="h-full w-full"
         draggable={false}
         style={{
           userSelect: "none",
@@ -206,22 +207,26 @@ export default function Game() {
 
   return (
     // <div className="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform lg:scale-100">
-    <StoreContext.Provider value={store}>
-      <div className="relative left-1/2 top-1/2">
-        <div
-          className="relative"
-          style={{ transform: `translate(${translateX}px, ${translateY}px);` }}
-        >
-          {/* <ActionLayer />
+    <div className="h-full overflow-hidden">
+      <StoreContext.Provider value={store}>
+        <div className="relative left-[37.5%] top-1/2 origin-center scale-75 transform lg:left-1/2 lg:scale-100">
+          <div
+            className="relative"
+            style={{
+              transform: `translate(${translateX}px, ${translateY}px);`,
+            }}
+          >
+            {/* <ActionLayer />
       <DroppedItemsLayer />
       <CharacterLayer />
       <NPCLayer /> */}
-          <TileLayer fetcher={fetcher} />
+            <TileLayer fetcher={fetcher} />
+          </div>
         </div>
-      </div>
-      <div className="fixed bottom-5 right-5">
-        <Menu />
-      </div>
-    </StoreContext.Provider>
+        <div className="fixed bottom-5 right-5">
+          <Menu />
+        </div>
+      </StoreContext.Provider>
+    </div>
   );
 }
