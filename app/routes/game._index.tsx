@@ -10,8 +10,9 @@ import { useEventSource } from "remix-utils";
 import type { ClientEvent } from "~/engine/ClientEventService";
 import { StoreContext, createGameStore, useGameStore } from "~/store";
 import { useStore } from "zustand";
-import { tileRenderedSize, viewportHeight, viewportWidth } from "~/config";
-import { render } from "react-dom";
+import { tileRenderedSize } from "~/config";
+import { parse } from "path";
+import { useCallback, useEffect } from "react";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await container.sessionService.requireUser(request);
@@ -79,11 +80,9 @@ function PasswordWarning() {
 }
 
 function Tile({
-  player,
   tile,
   fetcher,
 }: {
-  player: Player;
   tile: WorldMapTile;
   fetcher: FetcherWithComponents<any>;
 }) {
@@ -96,7 +95,6 @@ function Tile({
     }
   }
 
-  const isCenter = player ? tile.x === player.x && tile.y === player.y : false;
   // TODO add WASDZ controls for walking
   const [ground, ...layers] = tile.imagePaths;
 
@@ -113,7 +111,6 @@ function Tile({
         !tile.obstacle ? "cursor-pointer" : ""
       }`}
     >
-      {isCenter && <Avatar />}
       <div
         className={`${
           showWalkPattern ? "opacity-100" : "opacity-0"
@@ -157,14 +154,33 @@ function Tile({
 
 function TileLayer({ fetcher }: { fetcher: FetcherWithComponents<any> }) {
   const store = useGameStore();
-  const [player, tiles] = useStore(store, (state) => [
-    state.player,
-    state.tiles,
-  ]);
+  const [tiles] = useStore(store, (state) => [state.tiles]);
 
   return tiles.map((tile) => (
-    <Tile player={player} fetcher={fetcher} key={tile.id} tile={tile} />
+    <Tile fetcher={fetcher} key={tile.id} tile={tile} />
   ));
+}
+
+function PlayerLayer() {
+  const store = useGameStore();
+  const [player, playerWalking] = useStore(store, (state) => [
+    state.player,
+    state.playerWalking,
+  ]);
+
+  const left = tileRenderedSize * player.x;
+  const top = tileRenderedSize * player.y;
+
+  return (
+    <div
+      style={{ top, left }}
+      className={`absolute z-50 h-[96px] w-[96px] transition-all duration-500 ${
+        playerWalking ? "animate-wiggle" : ""
+      }`}
+    >
+      <Avatar />
+    </div>
+  );
 }
 
 // client state
@@ -177,56 +193,69 @@ function TileLayer({ fetcher }: { fetcher: FetcherWithComponents<any> }) {
 // - playerEquipment (specific to current player)
 // - playerCombatStats (includes buffs)
 
+// {!hasPasswordSet && (
+//   <div className="absolute z-50 w-full">
+//     <PasswordWarning />
+//   </div>
+// )}
+
 function Menu() {
   return <div className="rounded bg-white p-4 shadow">THis is the menu</div>;
 }
 
-export default function Game() {
-  const { tiles, player, hasPasswordSet } = useLoaderData<typeof loader>();
-
-  const fetcher = useFetcher();
-
-  const event = useEventSource("/sse/events", { event: "event" });
-
-  const parsedEvent = event ? (JSON.parse(event) as ClientEvent) : null;
-
-  if (parsedEvent) {
-    player.x = parsedEvent.x;
-    player.y = parsedEvent.y;
-  }
-  // {!hasPasswordSet && (
-  //   <div className="absolute z-50 w-full">
-  //     <PasswordWarning />
-  //   </div>
-  // )}
-
-  const store = createGameStore(player, tiles);
+function Map() {
+  const store = useGameStore();
+  const [player] = useStore(store, (state) => [state.player]);
 
   const translateX = -tileRenderedSize * player.x - tileRenderedSize / 2;
   const translateY = -tileRenderedSize * player.y - tileRenderedSize / 2;
+  const fetcher = useFetcher();
 
   return (
-    // <div className="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform lg:scale-100">
-    <div className="h-full overflow-hidden">
-      <StoreContext.Provider value={store}>
-        <div className="relative left-[37.5%] top-1/2 origin-center scale-75 transform lg:left-1/2 lg:scale-100">
-          <div
-            className="relative"
-            style={{
-              transform: `translate(${translateX}px, ${translateY}px);`,
-            }}
-          >
-            {/* <ActionLayer />
+    <div className="relative left-[37.5%] top-1/2 origin-center scale-75 transform lg:left-1/2 lg:scale-100">
+      <div
+        className="relative transition-all duration-1000"
+        style={{
+          transform: `translate(${translateX}px, ${translateY}px)`,
+        }}
+      >
+        {/* <ActionLayer />
       <DroppedItemsLayer />
-      <CharacterLayer />
-      <NPCLayer /> */}
-            <TileLayer fetcher={fetcher} />
-          </div>
-        </div>
+            <NPCLayer /> */}
+        <PlayerLayer />
+        <TileLayer fetcher={fetcher} />
+      </div>
+    </div>
+  );
+}
+
+function EventSource() {
+  const store = useGameStore();
+  const event = useEventSource("/sse/events", { event: "event" });
+  const [handleEvent] = useStore(store, (state) => [state.handleEvent]);
+
+  useEffect(() => {
+    if (event) {
+      handleEvent(event);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event, handleEvent]);
+  return null;
+}
+
+export default function Game() {
+  const { tiles, player } = useLoaderData<typeof loader>();
+  const store = createGameStore(player, tiles);
+
+  return (
+    <StoreContext.Provider value={store}>
+      <EventSource />
+      <div className="h-full overflow-hidden">
+        <Map />
         <div className="fixed bottom-5 right-5">
           <Menu />
         </div>
-      </StoreContext.Provider>
-    </div>
+      </div>
+    </StoreContext.Provider>
   );
 }

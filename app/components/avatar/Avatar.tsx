@@ -1,6 +1,6 @@
 export function Avatar() {
   return (
-    <div className="absolute z-50 h-full w-full animate-bounce">
+    <div className="absolute z-50 h-full w-full">
       <img
         className="absolute z-30 h-full w-full"
         alt="eyes"
