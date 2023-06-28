@@ -7,7 +7,11 @@ import { Avatar } from "~/components/avatar/Avatar";
 import type { WorldMapTile } from "~/engine/WorldMapService";
 import type { Player } from "~/engine/core";
 import { useEventSource } from "remix-utils";
-import { ClientEvent } from "~/engine/ClientEventService";
+import type { ClientEvent } from "~/engine/ClientEventService";
+import { StoreContext, createGameStore, useGameStore } from "~/store";
+import { useStore } from "zustand";
+import { tileRenderedSize, viewportHeight, viewportWidth } from "~/config";
+import { render } from "react-dom";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await container.sessionService.requireUser(request);
@@ -86,25 +90,28 @@ function Tile({
   function handleClick() {
     if (!tile.obstacle) {
       fetcher.submit(
-        { type: "walk", x: String(tile.x), y: String(tile.y) },
+        { type: "walk", x: String(tile.x), y: String(tile.y) } as any,
         { method: "post" }
       );
     }
   }
 
-  const isCenter = tile.x === player.x && tile.y === player.y;
+  const isCenter = player ? tile.x === player.x && tile.y === player.y : false;
   // TODO add WASDZ controls for walking
   const [ground, ...layers] = tile.imagePaths;
-  // const showWalkPattern =
-  //   !tile.obstacle &&
-  //   fetcher.state !== "submitting" &&
-  //   fetcher.state !== "loading";
+
   const showWalkPattern = false;
+
+  const left = tileRenderedSize * tile.x;
+  const top = tileRenderedSize * tile.y;
 
   return (
     <div
       onClick={handleClick}
-      className={`relative ${!tile.obstacle ? "cursor-pointer" : ""}`}
+      style={{ top, left }}
+      className={`absolute h-[96px] w-[96px] ${
+        !tile.obstacle ? "cursor-pointer" : ""
+      }`}
     >
       {isCenter && <Avatar />}
       <div
@@ -147,25 +154,15 @@ function Tile({
   );
 }
 
-function Map({
-  x,
-  y,
-  map,
-  player,
-  fetcher,
-}: {
-  x: number;
-  y: number;
-  map: { [x: number]: { [y: number]: WorldMapTile } };
-  player: Player;
-  fetcher: FetcherWithComponents<any>;
-}) {
-  return Object.entries(map).map(([key, row]) => (
-    <div key={key}>
-      {Object.values(row).map((tile) => (
-        <Tile player={player} fetcher={fetcher} key={tile.id} tile={tile} />
-      ))}
-    </div>
+function TileLayer({ fetcher }: { fetcher: FetcherWithComponents<any> }) {
+  const store = useGameStore();
+  const [player, tiles] = useStore(store, (state) => [
+    state.player,
+    state.tiles,
+  ]);
+
+  return tiles.map((tile) => (
+    <Tile player={player} fetcher={fetcher} key={tile.id} tile={tile} />
   ));
 }
 
@@ -178,42 +175,53 @@ function Map({
 // - textBoxes (player, text)
 // - playerEquipment (specific to current player)
 // - playerCombatStats (includes buffs)
+
+function Menu() {
+  return <div className="rounded bg-white p-4 shadow">THis is the menu</div>;
+}
+
 export default function Game() {
   const { tiles, player, hasPasswordSet } = useLoaderData<typeof loader>();
-
-  const map: { [x: number]: { [y: number]: WorldMapTile } } = {};
-
-  tiles.forEach((tile) => {
-    if (!map[tile.x]) {
-      map[tile.x] = {};
-    }
-    map[tile.x][tile.y] = tile;
-  });
 
   const fetcher = useFetcher();
 
   const event = useEventSource("/sse/events", { event: "event" });
+
   const parsedEvent = event ? (JSON.parse(event) as ClientEvent) : null;
 
   if (parsedEvent) {
     player.x = parsedEvent.x;
     player.y = parsedEvent.y;
   }
+  // {!hasPasswordSet && (
+  //   <div className="absolute z-50 w-full">
+  //     <PasswordWarning />
+  //   </div>
+  // )}
+
+  const store = createGameStore(player, tiles);
+
+  const translateX = -tileRenderedSize * player.x - tileRenderedSize / 2;
+  const translateY = -tileRenderedSize * player.y - tileRenderedSize / 2;
 
   return (
-    <div className="relative left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform lg:scale-100">
-      {!hasPasswordSet && (
-        <div className="absolute z-50 w-full">
-          <PasswordWarning />
+    // <div className="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[2.0] transform lg:scale-100">
+    <StoreContext.Provider value={store}>
+      <div className="relative left-1/2 top-1/2">
+        <div
+          className="relative"
+          style={{ transform: `translate(${translateX}px, ${translateY}px);` }}
+        >
+          {/* <ActionLayer />
+      <DroppedItemsLayer />
+      <CharacterLayer />
+      <NPCLayer /> */}
+          <TileLayer fetcher={fetcher} />
         </div>
-      )}
-      <Map
-        x={player.x}
-        y={player.y}
-        map={map}
-        player={player}
-        fetcher={fetcher}
-      />
-    </div>
+      </div>
+      <div className="fixed bottom-5 right-5">
+        <Menu />
+      </div>
+    </StoreContext.Provider>
   );
 }
