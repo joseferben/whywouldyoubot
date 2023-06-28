@@ -1,1 +1,1 @@
-export const tileRenderedSize = 96;
+export const tileRenderedSize = 80;

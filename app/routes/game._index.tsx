@@ -106,10 +106,8 @@ function Tile({
   return (
     <div
       onClick={handleClick}
-      style={{ top, left }}
-      className={`absolute h-[96px] w-[96px] ${
-        !tile.obstacle ? "cursor-pointer" : ""
-      }`}
+      style={{ top, left, width: tileRenderedSize, height: tileRenderedSize }}
+      className={`absolute ${!tile.obstacle ? "cursor-pointer" : ""}`}
     >
       <div
         className={`${
@@ -124,11 +122,13 @@ function Tile({
           <img
             alt=""
             draggable={false}
-            className="absolute h-full w-full"
+            className="absolute"
             style={{
               userSelect: "none",
               imageRendering: "pixelated",
               zIndex: `${idx + 1}`,
+              width: tileRenderedSize,
+              height: tileRenderedSize,
             }}
             key={image}
             src={`/${image}`}
@@ -137,14 +137,14 @@ function Tile({
       })}
       <img
         alt=""
-        width="96"
-        height="96"
-        className="h-full w-full"
+        className="absolute"
         draggable={false}
         style={{
           userSelect: "none",
           imageRendering: "pixelated",
-          zIndex: "1",
+          zIndex: "0",
+          width: tileRenderedSize,
+          height: tileRenderedSize,
         }}
         src={`/${ground}`}
       ></img>
@@ -173,8 +173,8 @@ function PlayerLayer() {
 
   return (
     <div
-      style={{ top, left }}
-      className={`absolute z-50 h-[96px] w-[96px] transition-all duration-500 ${
+      style={{ top, left, height: tileRenderedSize, width: tileRenderedSize }}
+      className={`absolute z-50 transition-all duration-500 ${
         playerWalking ? "animate-wiggle" : ""
       }`}
     >
@@ -212,7 +212,7 @@ function Map() {
   const fetcher = useFetcher();
 
   return (
-    <div className="relative left-[37.5%] top-1/2 origin-center scale-75 transform lg:left-1/2 lg:scale-100">
+    <div className="relative left-1/2 top-1/2">
       <div
         className="relative transition-all duration-1000"
         style={{
