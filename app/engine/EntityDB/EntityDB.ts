@@ -85,12 +85,14 @@ export class EntityDB<
     });
   }
 
-  create(entity: Omit<Omit<E, "id">, "v">): E {
+  create(entity: Omit<Omit<E, "id">, "v">, opts?: { ttlMs?: number }): E {
     const id = nanoid();
     const v = this.migrator?.migratorTargetVersion || 0;
     const toInsert = { id, v, ...entity } as E;
     this.insert(toInsert);
-    this.evictor?.expire(toInsert);
+    if (opts?.ttlMs) {
+      this.evictor.expire(toInsert, opts.ttlMs);
+    }
     return toInsert;
   }
 
@@ -102,7 +104,6 @@ export class EntityDB<
     this.fieldIndex?.update(entity);
     this.spatialIndex?.update(entity);
     this.persistor?.addChanged(entity);
-    this.evictor?.expire(entity);
   }
 
   update(entity: E) {
@@ -219,6 +220,10 @@ export class EntityDB<
 
   count(): number {
     return this.entities.size;
+  }
+
+  expire(entity: E, ttlMs?: number) {
+    this.evictor?.expire(entity, ttlMs);
   }
 
   close() {

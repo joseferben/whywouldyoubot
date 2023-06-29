@@ -6,12 +6,12 @@ export default {
     extend: {
       keyframes: {
         wiggle: {
-          "0%, 100%": { transform: "rotate(-15deg)" },
-          "50%": { transform: "rotate(15deg)" },
+          "0%, 100%": { transform: "rotate(-30deg)" },
+          "50%": { transform: "rotate(30deg)" },
         },
       },
       animation: {
-        wiggle: "wiggle 1s ease-in-out infinite",
+        wiggle: "wiggle 1s ease-out infinite",
       },
     },
   },

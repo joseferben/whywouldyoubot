@@ -27,9 +27,10 @@ function build() {
     },
     obstacleLayerName: "obstacles",
     // the client sees n tiles in each direction
-    playerVisibility: 12,
+    playerVisibility: 20,
     mapPath: "map",
-    logoutTimeoutMs: 1000 * 10,
+    // how long to wait before logging out idle users
+    idleLogoutMs: 1000 * 60 * 5,
     sessionSecret: process.env.SESSION_SECRET,
     userSessionKey: "user",
     items: getItemKinds(),
@@ -48,7 +49,7 @@ function build() {
 
   const userService = new UserService(jsonStore);
 
-  const onlineService = new OnlineService(config.logoutTimeoutMs);
+  const onlineService = new OnlineService(config.idleLogoutMs);
   const playerService = new PlayerService(
     jsonStore,
     userService,

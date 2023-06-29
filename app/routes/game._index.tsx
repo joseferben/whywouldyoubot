@@ -5,13 +5,11 @@ import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
 import { Avatar } from "~/components/avatar/Avatar";
 import type { WorldMapTile } from "~/engine/WorldMapService";
-import type { Player } from "~/engine/core";
 import { useEventSource } from "remix-utils";
-import type { ClientEvent } from "~/engine/ClientEventService";
 import { StoreContext, createGameStore, useGameStore } from "~/store";
 import { useStore } from "zustand";
 import { tileRenderedSize } from "~/config";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await container.sessionService.requireUser(request);
@@ -32,9 +30,6 @@ export const action: ActionFunction = async ({ request }) => {
   const x = formData.get("x");
   const y = formData.get("y");
   const player = await container.sessionService.requirePlayer(request);
-  if (player == null) {
-    return redirect("/");
-  }
 
   if (
     typeof x === "string" &&
@@ -105,7 +100,12 @@ function Tile({
   return (
     <div
       onClick={handleClick}
-      style={{ top, left, width: tileRenderedSize, height: tileRenderedSize }}
+      style={{
+        top,
+        left,
+        width: tileRenderedSize,
+        height: tileRenderedSize,
+      }}
       className={`absolute ${!tile.obstacle ? "cursor-pointer" : ""}`}
     >
       <div

@@ -2,8 +2,6 @@ import type { Player } from "~/engine/core";
 import { initOnce } from "~/utils";
 import { EntityDB } from "./EntityDB/EntityDB";
 
-const TEN_SECONDS_MS = 10000;
-
 export type PlayerOnline = {
   id: string;
   playerId: string;
@@ -11,46 +9,48 @@ export type PlayerOnline = {
 };
 
 export class OnlineService {
-  db: EntityDB<Player>;
+  db: EntityDB<PlayerOnline>;
 
-  constructor(onlineTimeoutMs: number) {
+  constructor(readonly onlineTimeoutMs: number) {
     [this.db] = initOnce(
       this.constructor.name,
       () =>
-        new EntityDB<Player>({
-          evictorListener: (p) => this.logout(p),
+        new EntityDB<PlayerOnline>({
+          fields: ["playerId"],
+          evictorListener: (p) => this.setOffline(p),
         })
     );
-
-    //TODO use helper
-    // setInterval(() => {
-    //   for (const [playerId, lastOnlineAt] of Object.entries(this.players)) {
-    //     if (lastOnlineAt + this.logoutAfterIdleMs <= Date.now()) {
-    //       console.debug(`player ${playerId} not online anymore`);
-    //       delete this.players[playerId];
-    //     }
-    //   }
-    // }, TEN_SECONDS_MS);
   }
 
-  onlinePlayers() {
-    return this.db;
+  findAllOnlinePlayerIds() {
+    return this.db.findAll().map((p) => p.playerId);
   }
 
   ensureOnline(player: Player) {
     console.debug(`ensure player is online: ${player.username}`);
     const now = Date.now();
-    this.db.evictor.expire(player);
-    //this.players[player.id] = now;
+    const found = this.db.findOneBy("playerId", player.id);
+    if (!found) {
+      this.db.create(
+        {
+          playerId: player.id,
+          lastOnlineAt: now,
+        },
+        { ttlMs: this.onlineTimeoutMs }
+      );
+    } else {
+      // resetting the counter
+      this.db.expire(found, this.onlineTimeoutMs);
+    }
   }
 
   /** Return true if player is online. */
-  online(p: Player): boolean {
-    //return !!this.players[p.id];
-    return true;
+  isOnline(p: Player): boolean {
+    return this.db.findOneBy("playerId", p.id) !== null;
   }
 
-  logout(player: Player) {
-    //delete this.players[player.id];
+  private setOffline(p: PlayerOnline) {
+    console.log("logging out player", p.playerId);
+    // TODO logout player
   }
 }
