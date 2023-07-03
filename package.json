@@ -62,6 +62,7 @@
     "binode": "^1.0.5",
     "cookie": "^0.5.0",
     "cross-env": "^7.0.3",
+    "daisyui": "^3.1.7",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-cypress": "^2.13.3",

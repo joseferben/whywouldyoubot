@@ -79,7 +79,7 @@ function MapTile({
       style={{
         top,
         left,
-        width: tileRenderedSize,
+        width: tileRenderedSize + 1,
         height: tileRenderedSize,
       }}
       className={`absolute ${!tile.obstacle ? "cursor-pointer" : ""}`}
@@ -94,8 +94,8 @@ function MapTile({
               userSelect: "none",
               imageRendering: "pixelated",
               zIndex: `${idx + 1}`,
-              width: tileRenderedSize,
-              height: tileRenderedSize,
+              width: tileRenderedSize + 1,
+              height: tileRenderedSize + 1,
             }}
             key={image}
             src={`/${image}`}

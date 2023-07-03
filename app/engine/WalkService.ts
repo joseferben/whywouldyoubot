@@ -113,8 +113,8 @@ export class WalkService {
       console.warn(`no path found for ${player.id} to (${x}/${y})`);
       return;
     }
-    this.step(player.id);
     const timer = setInterval(() => this.step(player.id), 500);
     this.db.create({ playerId: player.id, path, timer });
+    this.step(player.id);
   }
 }
