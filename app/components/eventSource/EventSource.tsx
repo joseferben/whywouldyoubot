@@ -13,6 +13,7 @@ export function EventSource() {
       handleEvent(event);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event, handleEvent]);
+  }, [event]);
+
   return null;
 }

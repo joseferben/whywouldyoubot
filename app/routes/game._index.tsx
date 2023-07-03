@@ -1,4 +1,4 @@
-import type { ActionFunction, LoaderArgs } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
@@ -19,24 +19,6 @@ export const loader = async ({ request }: LoaderArgs) => {
     player,
     hasPasswordSet: user.password !== null,
   });
-};
-
-export const action: ActionFunction = async ({ request }) => {
-  const formData = await request.formData();
-  const x = formData.get("x");
-  const y = formData.get("y");
-  const player = await container.sessionService.requirePlayer(request);
-
-  if (
-    typeof x === "string" &&
-    typeof y === "string" &&
-    x !== null &&
-    y !== null &&
-    container.walkService.canWalk(player, parseInt(x), parseInt(y))
-  ) {
-    container.walkService.startWalk(player, parseInt(x), parseInt(y));
-  }
-  return null;
 };
 
 function PasswordWarning() {
@@ -85,8 +67,10 @@ function PasswordWarning() {
 //   </div>
 // )}
 
-export default function Game() {
-  const { tiles, player } = useLoaderData<typeof loader>();
+type Props = Awaited<ReturnType<Awaited<ReturnType<typeof loader>>["json"]>>;
+
+function Game(initialData: Props) {
+  const { tiles, player } = initialData;
   const store = createGameStore(player, tiles);
 
   return (
@@ -100,4 +84,9 @@ export default function Game() {
       </div>
     </StoreContext.Provider>
   );
+}
+
+export default function Loader() {
+  const initialData = useLoaderData<typeof loader>();
+  return <Game {...initialData} />;
 }

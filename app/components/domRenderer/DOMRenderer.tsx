@@ -61,12 +61,20 @@ function MapTile({
   tile: WorldMapTile;
   fetcher: FetcherWithComponents<any>;
 }) {
+  const store = useGameStore();
+  const [startWalking] = useStore(store, (state) => [state.startWalking]);
+
   function handleClick() {
+    startWalking();
     if (!tile.obstacle) {
-      fetcher.submit(
-        { type: "walk", x: String(tile.x), y: String(tile.y) } as any,
-        { method: "post" }
-      );
+      fetch("/actions", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "walk",
+          x: tile.x,
+          y: tile.y,
+        }),
+      });
     }
   }
 
@@ -117,13 +125,14 @@ function TileLayer({ fetcher }: { fetcher: FetcherWithComponents<any> }) {
 
 function PlayerLayer() {
   const store = useGameStore();
-  const [player, playerWalking] = useStore(store, (state) => [
-    state.player,
+  const [x, y, playerWalking] = useStore(store, (state) => [
+    state.player.x,
+    state.player.y,
     state.playerWalking,
   ]);
 
-  const left = tileRenderedSize * player.x;
-  const top = tileRenderedSize * player.y;
+  const left = tileRenderedSize * x;
+  const top = tileRenderedSize * y;
 
   return (
     <div
@@ -151,10 +160,10 @@ function NPCLayer() {
 
 export function DOMRenderer() {
   const store = useGameStore();
-  const [player] = useStore(store, (state) => [state.player]);
+  const [x, y] = useStore(store, (state) => [state.player.x, state.player.y]);
 
-  const translateX = -tileRenderedSize * player.x - tileRenderedSize / 2;
-  const translateY = -tileRenderedSize * player.y - tileRenderedSize / 2;
+  const translateX = -tileRenderedSize * x - tileRenderedSize / 2;
+  const translateY = -tileRenderedSize * y - tileRenderedSize / 2;
   const fetcher = useFetcher();
 
   return (

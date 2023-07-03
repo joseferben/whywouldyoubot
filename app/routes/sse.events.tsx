@@ -11,9 +11,12 @@ export async function loader({ request }: LoaderArgs) {
       try {
         send({ event: "event", data: JSON.stringify(event) });
       } catch (e) {
+        console.error(e);
         // falls through
       }
     });
-    return function clear() {};
+    return function clear() {
+      playerEmitter.emitter.emitter.removeAllListeners();
+    };
   });
 }
