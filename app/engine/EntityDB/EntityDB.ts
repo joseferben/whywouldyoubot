@@ -39,7 +39,9 @@ export class EntityDB<
         opts.persistenceAfterChangeCount
       );
     } else if (opts.jsonStore && !opts.persistenceNamespace) {
-      throw new Error("jsonStoreNamespace must be provided if using jsonStore");
+      throw new Error(
+        "persistenceNamespace must be provided if using jsonStore"
+      );
     }
     if (opts.fields) {
       this.fieldIndex = new FieldIndex(opts.fields);

@@ -1,15 +1,11 @@
 import type { ActionFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import type { FetcherWithComponents } from "@remix-run/react";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
-import { Avatar } from "~/components/avatar/Avatar";
-import type { WorldMapTile } from "~/engine/WorldMapService";
-import { useEventSource } from "remix-utils";
-import { StoreContext, createGameStore, useGameStore } from "~/store";
-import { useStore } from "zustand";
-import { tileRenderedSize } from "~/config";
-import { useEffect } from "react";
+import { StoreContext, createGameStore } from "~/store";
+import { DOMRenderer } from "~/components/domRenderer/DOMRenderer";
+import { Menu } from "~/components/menu/Menu";
+import { EventSource } from "~/components/eventSource/EventSource";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await container.sessionService.requireUser(request);
@@ -73,115 +69,6 @@ function PasswordWarning() {
   );
 }
 
-function Tile({
-  tile,
-  fetcher,
-}: {
-  tile: WorldMapTile;
-  fetcher: FetcherWithComponents<any>;
-}) {
-  function handleClick() {
-    if (!tile.obstacle) {
-      fetcher.submit(
-        { type: "walk", x: String(tile.x), y: String(tile.y) } as any,
-        { method: "post" }
-      );
-    }
-  }
-
-  // TODO add WASDZ controls for walking
-  const [ground, ...layers] = tile.imagePaths;
-
-  const showWalkPattern = false;
-
-  const left = tileRenderedSize * tile.x;
-  const top = tileRenderedSize * tile.y;
-
-  return (
-    <div
-      onClick={handleClick}
-      style={{
-        top,
-        left,
-        width: tileRenderedSize,
-        height: tileRenderedSize,
-      }}
-      className={`absolute ${!tile.obstacle ? "cursor-pointer" : ""}`}
-    >
-      <div
-        className={`${
-          showWalkPattern ? "opacity-100" : "opacity-0"
-        } absolute z-20 h-full w-full rounded-3xl backdrop-brightness-125 transition-opacity duration-75`}
-      ></div>
-      <div
-        className={`absolute z-10 h-full w-full bg-stone-900 opacity-10`}
-      ></div>
-      {layers.map((image, idx) => {
-        return (
-          <img
-            alt=""
-            draggable={false}
-            className="absolute"
-            style={{
-              userSelect: "none",
-              imageRendering: "pixelated",
-              zIndex: `${idx + 1}`,
-              width: tileRenderedSize,
-              height: tileRenderedSize,
-            }}
-            key={image}
-            src={`/${image}`}
-          ></img>
-        );
-      })}
-      <img
-        alt=""
-        className="absolute"
-        draggable={false}
-        style={{
-          userSelect: "none",
-          imageRendering: "pixelated",
-          zIndex: "0",
-          width: tileRenderedSize,
-          height: tileRenderedSize,
-        }}
-        src={`/${ground}`}
-      ></img>
-    </div>
-  );
-}
-
-function TileLayer({ fetcher }: { fetcher: FetcherWithComponents<any> }) {
-  const store = useGameStore();
-  const [tiles] = useStore(store, (state) => [state.tiles]);
-
-  return tiles.map((tile) => (
-    <Tile fetcher={fetcher} key={tile.id} tile={tile} />
-  ));
-}
-
-function PlayerLayer() {
-  const store = useGameStore();
-  const [player, playerWalking] = useStore(store, (state) => [
-    state.player,
-    state.playerWalking,
-  ]);
-
-  const left = tileRenderedSize * player.x;
-  const top = tileRenderedSize * player.y;
-
-  return (
-    <div
-      style={{ top, left, height: tileRenderedSize, width: tileRenderedSize }}
-      className={`absolute z-50 transition-all duration-500 ${
-        playerWalking ? "animate-wiggle" : ""
-      }`}
-    >
-      <Avatar />
-    </div>
-  );
-}
-
 // client state
 // - menuOpen: null | "inventory" | "equipment" | "combat"
 // - playerMapTiles: (x, y) -> tile
@@ -198,50 +85,6 @@ function PlayerLayer() {
 //   </div>
 // )}
 
-function Menu() {
-  return <div className="rounded bg-white p-4 shadow">This is the menu</div>;
-}
-
-function Map() {
-  const store = useGameStore();
-  const [player] = useStore(store, (state) => [state.player]);
-
-  const translateX = -tileRenderedSize * player.x - tileRenderedSize / 2;
-  const translateY = -tileRenderedSize * player.y - tileRenderedSize / 2;
-  const fetcher = useFetcher();
-
-  return (
-    <div className="relative left-1/2 top-1/2">
-      <div
-        className="relative transition-all duration-1000"
-        style={{
-          transform: `translate(${translateX}px, ${translateY}px)`,
-        }}
-      >
-        {/* <ActionLayer />
-      <DroppedItemsLayer />
-            <NPCLayer /> */}
-        <PlayerLayer />
-        <TileLayer fetcher={fetcher} />
-      </div>
-    </div>
-  );
-}
-
-function EventSource() {
-  const store = useGameStore();
-  const event = useEventSource("/sse/events", { event: "event" });
-  const [handleEvent] = useStore(store, (state) => [state.handleEvent]);
-
-  useEffect(() => {
-    if (event) {
-      handleEvent(event);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event, handleEvent]);
-  return null;
-}
-
 export default function Game() {
   const { tiles, player } = useLoaderData<typeof loader>();
   const store = createGameStore(player, tiles);
@@ -250,7 +93,7 @@ export default function Game() {
     <StoreContext.Provider value={store}>
       <EventSource />
       <div className="h-full overflow-hidden">
-        <Map />
+        <DOMRenderer />
         <div className="fixed bottom-5 right-5">
           <Menu />
         </div>
