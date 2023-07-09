@@ -3,8 +3,9 @@ import type { Player } from "./engine/core";
 import type { WorldMapTile } from "./engine/WorldMapService";
 import { createContext, useContext } from "react";
 import type { ClientEvent } from "./engine/ClientEventService";
+import { handleEvent } from "./events";
 
-type State = {
+export type State = {
   openMenu: null | "inventory" | "settings" | "character";
   player: Player;
   playerWalking: boolean;
@@ -13,21 +14,12 @@ type State = {
   startWalking: () => void;
 };
 
-type GameStore = ReturnType<typeof createGameStore>;
-
-type SetFunction = (
+export type SetFunction = (
   partial: State | Partial<State> | ((state: State) => State | Partial<State>),
   replace?: boolean | undefined
 ) => void;
 
-function handleEvent(set: SetFunction, event: ClientEvent) {
-  if (event.tag === "playerStepped") {
-    set((state: State) => ({
-      player: { ...state.player, x: event.x, y: event.y },
-      playerWalking: !event.lastStep,
-    }));
-  }
-}
+type GameStore = ReturnType<typeof createGameStore>;
 
 export const createGameStore = (player: Player, tiles: WorldMapTile[]) => {
   return createStore<State>()((set) => ({

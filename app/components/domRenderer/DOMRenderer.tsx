@@ -5,6 +5,7 @@ import { tileRenderedSize } from "~/config";
 import type { WorldMapTile } from "~/engine/WorldMapService";
 import { useGameStore } from "~/store";
 import { Avatar } from "../avatar/Avatar";
+import type { Action } from "~/action";
 
 type Tile = {
   x: number;
@@ -70,10 +71,10 @@ function MapTile({
       fetch("/actions", {
         method: "POST",
         body: JSON.stringify({
-          type: "walk",
+          tag: "walk",
           x: tile.x,
           y: tile.y,
-        }),
+        } as Action),
       });
     }
   }
@@ -88,7 +89,7 @@ function MapTile({
         top,
         left,
         width: tileRenderedSize + 1,
-        height: tileRenderedSize,
+        height: tileRenderedSize + 1,
       }}
       className={`absolute ${!tile.obstacle ? "cursor-pointer" : ""}`}
     >

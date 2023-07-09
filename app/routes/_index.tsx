@@ -81,10 +81,10 @@ export default function Index() {
   return (
     <div>
       {/* Hero */}
-      <div className="bg-base-200 min-h-screen md:pt-32 lg:pt-64">
+      <div className="min-h-screen bg-base-200 md:pt-32 lg:pt-64">
         <div className="hero-content mx-auto flex-col lg:flex-row-reverse">
           <div className="mr-5 mt-12">
-            <h1 className="text-5xl font-bold">Untiled MMORPG</h1>
+            <h1 className="text-5xl font-bold">Build Your Bot</h1>
             <p className="py-6">
               Hunt, farm, cook or trade. With thousands of others, in real-time.
               <br></br>
@@ -97,10 +97,10 @@ export default function Index() {
                   name="name"
                   defaultValue={player ? player.username : ""}
                   placeholder={name}
-                  className="input input-bordered"
+                  className="input-bordered input"
                 />
 
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn-primary btn">
                   Play
                 </button>
               </div>

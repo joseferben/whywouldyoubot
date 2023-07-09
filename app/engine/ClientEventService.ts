@@ -3,13 +3,20 @@ import type { Player } from "./core";
 import { initOnce } from "~/utils";
 import { EntityDB } from "./EntityDB/EntityDB";
 
-export type ClientEvent = {
+type PlayerStepped = {
   tag: "playerStepped";
   playerId: string;
   x: number;
   y: number;
   lastStep?: boolean;
 };
+
+type PlayerAttacked = {
+  tag: "playerAttacked";
+  characterId: string;
+};
+
+export type ClientEvent = PlayerStepped | PlayerAttacked;
 
 export type PlayerEmitter = {
   id: string;
