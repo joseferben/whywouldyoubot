@@ -1,6 +1,7 @@
 import invariant from "tiny-invariant";
-import { FieldIndex } from "./EntityDB";
 import { nanoid } from "nanoid";
+import { FieldIndex } from "./EntityDB/FieldIndex";
+import { SpatialIndex } from "./EntityDB/SpatialIndex";
 
 export type SpatialEntity = {
   id: string;

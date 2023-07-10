@@ -1,6 +1,5 @@
 import type { Player, Item, Npc, EquipSlot } from "@wwyb/core";
 import type { Rectangle } from "~/engine/math";
-import type { UserService } from "./UserService";
 import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
 import type { JSONStore } from "./EntityDB/JSONStore";
@@ -11,7 +10,6 @@ export class PlayerService {
   db!: EntityDB<Player>;
   constructor(
     readonly jsonStore: JSONStore,
-    readonly userService: UserService,
     readonly mapService: WorldMapService,
     readonly onlineService: OnlineService,
     private spawn: { x: number; y: number }
@@ -122,16 +120,8 @@ export class PlayerService {
     return this.db.findOneBy("username", name);
   }
 
-  findByEmail(email: string) {
-    const user = this.userService.findByEmail(email);
-    if (!user) return null;
-    return this.db.findOneBy("userId", user.id);
-  }
-
   findByUserId(userId: string) {
-    const user = this.userService.findById(userId);
-    if (!user) return null;
-    return this.db.findOneBy("userId", user.id);
+    return this.db.findOneBy("userId", userId);
   }
 
   findInRectangleAndOnline(rec: Rectangle) {
@@ -148,11 +138,10 @@ export class PlayerService {
     // );
   }
 
-  create(name: string, password?: string, emailOr?: string): Player {
-    const user = this.userService.create(name, password, emailOr);
+  create(userId: string, username: string): Player {
     const tocreate = {
-      userId: user.id,
-      username: user.username,
+      userId: userId,
+      username: username,
       x: this.spawn.x,
       y: this.spawn.y,
       currentHealth: 10,
@@ -184,12 +173,5 @@ export class PlayerService {
     //   true
     // );
     return player;
-  }
-
-  deleteByEmail(email: string) {
-    const user = this.findByEmail(email);
-    if (user) {
-      this.db.delete(user);
-    }
   }
 }

@@ -1,6 +1,6 @@
 import type { FetcherWithComponents } from "@remix-run/react";
 import { NavLink, useTransition } from "@remix-run/react";
-import type { Player } from "~/engine/player/entity";
+import type { Player } from "@wwyb/core";
 
 type Props = {
   player: Player;

@@ -1,8 +1,6 @@
 import { bench, describe } from "vitest";
 import { EntityDB } from "./EntityDB";
 import Database from "better-sqlite3";
-import { FieldIndex } from "./FieldIndex";
-import { Persistor } from "./Persistor";
 import { JSONStore } from "./JSONStore";
 
 type Foo = {
@@ -23,8 +21,10 @@ describe("EntityDB", () => {
     s.pragma("synchronous = off");
     const jsonDB = new JSONStore(s);
     db = new EntityDB<Foo>({
-      fieldIndex: new FieldIndex(["name", "x"]),
-      persistor: new Persistor(jsonDB, "foo", 100),
+      fields: ["name", "x"],
+      jsonStore: jsonDB,
+      persistenceNamespace: "foo",
+      persistenceIntervalMs: 100,
     });
   }
 

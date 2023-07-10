@@ -5,7 +5,6 @@ import { ItemService } from "./engine/ItemService";
 import { WorldMapService } from "./engine/WorldMapService";
 import { OnlineService } from "./engine/OnlineService";
 import { PlayerService } from "./engine/PlayerService";
-import { UserService } from "./engine/UserService";
 import { WalkService } from "./engine/WalkService";
 import { SessionService } from "./engine/SessionService";
 import { getItemKinds } from "@wwyb/core";
@@ -13,10 +12,20 @@ import { InventoryService } from "./engine/InventoryService";
 import { config as dotenvConfig } from "dotenv";
 import { JSONStore } from "./engine/EntityDB/JSONStore";
 import { ClientEventService } from "./engine/ClientEventService";
+import { AuthService } from "./engine/AuthService";
 
 function build() {
   dotenvConfig();
   invariant(process.env.SESSION_SECRET, "SESSION_SECRET is required");
+  invariant(process.env.DISCORD_CLIENT_ID, "DISCORD_CLIENT_ID is required");
+  invariant(
+    process.env.DISCORD_CLIENT_SECRET,
+    "DISCORD_CLIENT_SECRET is required"
+  );
+  invariant(
+    process.env.DISCORD_CALLBACK_URL,
+    "DISCORD_CALLBACK_URL is required"
+  );
 
   const config = {
     dbFilePath: process.env.DB_FILE_PATH || "db.sqlite3",
@@ -34,6 +43,9 @@ function build() {
     sessionSecret: process.env.SESSION_SECRET,
     userSessionKey: "user",
     items: getItemKinds(),
+    discordClientId: process.env.DISCORD_CLIENT_ID,
+    discordClientSecret: process.env.DISCORD_CLIENT_SECRET,
+    discordCallbackUrl: process.env.DISCORD_CALLBACK_URL,
   };
 
   const s = new Database(config.dbFilePath);
@@ -47,21 +59,24 @@ function build() {
     config.mapPath
   );
 
-  const userService = new UserService(jsonStore);
-
   const onlineService = new OnlineService(config.idleLogoutMs);
   const playerService = new PlayerService(
     jsonStore,
-    userService,
     worldMapService,
     onlineService,
     config.spawnPosition
   );
   const sessionService = new SessionService(
-    userService,
     playerService,
     config.sessionSecret,
     config.userSessionKey
+  );
+  const authService = new AuthService(
+    sessionService,
+    playerService,
+    config.discordClientId,
+    config.discordClientSecret,
+    config.discordCallbackUrl
   );
 
   const clientEventService = new ClientEventService();
@@ -99,7 +114,6 @@ function build() {
 
   return {
     config,
-    userService,
     playerService,
     mapService: worldMapService,
     walkService,
@@ -107,6 +121,7 @@ function build() {
     droppedItemService,
     sessionService,
     clientEventService,
+    authService,
     // npcService,
     // equipmentService,
     // avatarService,

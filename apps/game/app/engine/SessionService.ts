@@ -1,14 +1,11 @@
 import type { SessionStorage } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import type { User } from "./core";
-import type { UserService } from "./UserService";
 import type { PlayerService } from "./PlayerService";
 
 export class SessionService {
   sessionStorage: SessionStorage;
 
   constructor(
-    readonly userService: UserService,
     readonly playerService: PlayerService,
     readonly sessionSecret: string,
     readonly userSessionKey: string
@@ -30,20 +27,10 @@ export class SessionService {
     return this.sessionStorage.getSession(cookie);
   }
 
-  async getUserId(request: Request): Promise<User["id"] | undefined> {
+  async getUserId(request: Request): Promise<string | undefined> {
     const session = await this.getSession(request);
     const userId = session.get(this.userSessionKey);
     return userId;
-  }
-
-  async getUser(request: Request) {
-    const userId = await this.getUserId(request);
-    if (userId === undefined) return null;
-
-    const user = await this.userService.findById(userId);
-    if (user) return user;
-
-    throw await this.logout(request);
   }
 
   async getPlayer(request: Request) {
@@ -52,35 +39,6 @@ export class SessionService {
 
     const player = this.playerService.findByUserId(userId);
     if (player) return player;
-
-    throw await this.logout(request);
-  }
-
-  async requireUserId(
-    request: Request,
-    redirectTo: string = new URL(request.url).pathname
-  ) {
-    const userId = await this.getUserId(request);
-    if (!userId) {
-      const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-      throw redirect(`/login?${searchParams}`);
-    }
-    return userId;
-  }
-
-  async requirePlayer(request: Request) {
-    const userId = await this.requireUserId(request);
-    const player = this.playerService.findByUserId(userId);
-    if (player) return player;
-
-    throw await this.logout(request);
-  }
-
-  async requireUser(request: Request) {
-    const userId = await this.requireUserId(request);
-
-    const user = this.userService.findById(userId);
-    if (user) return user;
 
     throw await this.logout(request);
   }

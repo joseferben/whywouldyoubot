@@ -9,12 +9,13 @@
     "build": "turbo build",
     "dev": "turbo dev --no-cache --continue",
     "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "test": "turbo test"
   },
   "devDependencies": {
     "@turbo/gen": "^1.9.7",
-    "eslint-config-custom": "workspace:*",
+    "eslint-config-custom": "*",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-cypress": "^2.13.3",

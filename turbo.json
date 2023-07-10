@@ -3,15 +3,21 @@
   "globalDependencies": ["**/.env"],
   "globalEnv": ["PORT"],
   "pipeline": {
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [        
+      "outputs": [
         "dist/**",
         ".next/**",
         "!.next/cache/**",
         "build/**",
         "api/**",
-        "public/build/**"]
+        "public/build/**"
+      ]
     },
     "lint": {
       "dependsOn": ["^build"]

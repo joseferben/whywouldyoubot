@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
-import type { Player } from "./core";
 import { initOnce } from "~/utils";
 import { EntityDB } from "./EntityDB/EntityDB";
+import type { Player } from "@wwyb/core";
 
 type PlayerStepped = {
   tag: "playerStepped";

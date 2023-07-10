@@ -1,0 +1,27 @@
+{
+  "name": "@wwyb/sdk",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup index.ts --format cjs --dts",
+    "dev": "npm run build -- --watch",
+    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@wwyb/core": "*"
+  },
+  "prettier": {},
+  "eslintIgnore": [
+    "/node_modules",
+    "/build"
+  ],
+  "devDependencies": {
+    "tsup": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

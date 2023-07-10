@@ -1,6 +1,6 @@
 import type { DroppedItemService } from "./DroppedItemService";
 import type { ItemService } from "./ItemService";
-import type { Player } from "./core";
+import type { Player } from "@wwyb/core";
 
 export class InventoryService {
   constructor(

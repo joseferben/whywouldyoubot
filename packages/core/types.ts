@@ -7,16 +7,6 @@ export type SpatialEntity = Entity & {
   y: number;
 };
 
-export type User = {
-  id: string;
-  username: string;
-  joinedAt: number;
-  password: string | null;
-  email: string | null;
-};
-
-export const user_type = "use";
-
 export type Player = {
   id: string;
   userId: string;

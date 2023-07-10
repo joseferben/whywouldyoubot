@@ -6,6 +6,7 @@ module.exports = {
     "@remix-run/eslint-config/node",
     "@remix-run/eslint-config/jest-testing-library",
     "prettier",
+    "turbo",
   ],
   settings: {
     jest: {
@@ -14,5 +15,6 @@ module.exports = {
   },
   rules: {
     "testing-library/await-async-query": "off",
+    "no-useless-constructor": "off",
   },
 };

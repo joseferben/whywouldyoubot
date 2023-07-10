@@ -4,7 +4,7 @@ import { container } from "~/container.server";
 import type { ClientEvent } from "~/engine/ClientEventService";
 
 export async function loader({ request }: LoaderArgs) {
-  const player = await container.sessionService.requirePlayer(request);
+  const player = await container.authService.ensurePlayer(request);
   return eventStream(request.signal, function setup(send) {
     const playerEmitter = container.clientEventService.playerEmitter(player);
     playerEmitter.emitter.on((event: ClientEvent) => {

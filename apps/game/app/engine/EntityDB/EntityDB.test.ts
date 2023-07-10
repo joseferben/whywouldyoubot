@@ -3,9 +3,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import Database from "better-sqlite3";
 import { EntityDB } from "./EntityDB";
-import { FieldIndex } from "./FieldIndex";
-import { Migrator } from "./Migrator";
-import { Persistor } from "./Persistor";
 import { JSONStore } from "./JSONStore";
 
 type Foo = {
@@ -26,8 +23,9 @@ beforeEach(async () => {
   s.pragma("synchronous = off");
   const jsonDB = new JSONStore(s);
   db = new EntityDB<Foo>({
-    persistor: new Persistor(jsonDB, "foo"),
-    fieldIndex: new FieldIndex(["name", "x"]),
+    jsonStore: jsonDB,
+    persistenceNamespace: "foo",
+    fields: ["name", "x"],
   });
 });
 
@@ -112,8 +110,9 @@ describe("EntityDB", () => {
       }),
     };
     const testDb = new EntityDB<Foo>({
-      migrator: new Migrator(migrations),
-      persistor: new Persistor(jsonDB, "fob"),
+      migrations,
+      jsonStore: jsonDB,
+      persistenceNamespace: "fob",
     });
 
     const migrated = testDb.findById("123");

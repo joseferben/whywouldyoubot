@@ -1,9 +1,16 @@
-import type { User } from "@wwyb/core";
 import bcrypt from "bcrypt";
 import invariant from "tiny-invariant";
 import type { JSONStore } from "./EntityDB/JSONStore";
 import { EntityDB } from "./EntityDB/EntityDB";
 import { initOnce } from "~/utils";
+
+type User = {
+  id: string;
+  username: string;
+  password: string;
+  email: string;
+  joinedAt: number;
+};
 
 export class UserService {
   db!: EntityDB<User>;
@@ -36,13 +43,13 @@ export class UserService {
     const now = Date.now();
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : null;
     const email = emailOr || null;
-    const user = {
-      username: name,
-      password: hashedPassword,
-      email,
-      joinedAt: now,
-    };
-    return this.db.create(user);
+    // const user: Omit<User, "id"> = {
+    //   username: name,
+    //   password: hashedPassword,
+    //   email,
+    //   joinedAt: now,
+    // };
+    return this.db.create("" as any);
   }
 
   deleteByEmail(email: string) {

@@ -1,6 +1,6 @@
 import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
-import type { User } from "@wwyb/core";
+import type { Player } from "@wwyb/core";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -43,11 +43,13 @@ export function useMatchesData(
   return route?.data;
 }
 
-function isUser(user: any): user is User {
-  return user && typeof user === "object" && typeof user.email === "string";
+function isUser(player: any): player is Player {
+  return (
+    player && typeof player === "object" && typeof player.userId === "string"
+  );
 }
 
-export function useOptionalUser(): User | undefined {
+export function useOptionalPlayer(): Player | undefined {
   const data = useMatchesData("root");
   if (!data || !isUser(data.user)) {
     return undefined;
@@ -55,14 +57,14 @@ export function useOptionalUser(): User | undefined {
   return data.user;
 }
 
-export function useUser(): User {
-  const maybeUser = useOptionalUser();
-  if (!maybeUser) {
+export function usePlayer(): Player {
+  const maybePlayer = useOptionalPlayer();
+  if (!maybePlayer) {
     throw new Error(
       "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
     );
   }
-  return maybeUser;
+  return maybePlayer;
 }
 
 export function validateEmail(email: unknown): email is string {
