@@ -1,8 +1,7 @@
 import { create as createStore } from "zustand";
-import type { Player } from "@wwyb/core";
+import type { Player, ServerEvent } from "@wwyb/core";
 import type { WorldMapTile } from "./engine/WorldMapService";
 import { createContext, useContext } from "react";
-import type { ClientEvent } from "./engine/ClientEventService";
 import { handleEvent } from "./events";
 import { EntityDB } from "@wwyb/entitydb";
 
@@ -51,7 +50,7 @@ export const createGameStore = (
     handleEvent: (event: string | null) => {
       if (!event) return;
       try {
-        const parsed = JSON.parse(event) as ClientEvent;
+        const parsed = JSON.parse(event) as ServerEvent;
         handleEvent(set, parsed);
       } catch (e) {
         console.error("invalid event received", e);

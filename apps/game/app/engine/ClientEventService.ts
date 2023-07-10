@@ -1,22 +1,7 @@
 import { EventEmitter } from "node:events";
 import { initOnce } from "~/utils";
-import type { Player } from "@wwyb/core";
+import type { Player, ServerEvent } from "@wwyb/core";
 import { EntityDB } from "@wwyb/entitydb";
-
-type PlayerStepped = {
-  tag: "playerStepped";
-  playerId: string;
-  x: number;
-  y: number;
-  lastStep?: boolean;
-};
-
-type PlayerAttacked = {
-  tag: "playerAttacked";
-  characterId: string;
-};
-
-export type ClientEvent = PlayerStepped | PlayerAttacked;
 
 export type PlayerEmitter = {
   id: string;
@@ -27,7 +12,7 @@ export type PlayerEmitter = {
 class Emitter {
   constructor(readonly emitter: EventEmitter) {}
 
-  on(listener: (event: ClientEvent) => void) {
+  on(listener: (event: ServerEvent) => void) {
     this.emitter.on("event", listener);
   }
 }
@@ -41,7 +26,7 @@ export class ClientEventService {
     );
   }
 
-  sendToAll(event: ClientEvent) {
+  sendToAll(event: ServerEvent) {
     this.db.findAll().forEach((playerEmitter) => {
       playerEmitter.emitter.emitter.emit("event", event);
     });

@@ -4,6 +4,8 @@ import * as resourceKinds from "./resource";
 import type { ItemKindOpts, ResourceKind, NpcKind, NpcKinds } from "./types";
 
 export * from "./types";
+export * from "./events";
+export * from "./actions";
 
 export function getResourceKind(name: string): ResourceKind | null {
   // @ts-ignore

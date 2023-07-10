@@ -1,5 +1,5 @@
 import type { ActionFunction } from "@remix-run/node";
-import type { Action } from "~/action";
+import type { Action } from "@wwyb/core";
 import { container } from "~/container.server";
 
 export const action: ActionFunction = async ({ request }) => {

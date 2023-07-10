@@ -5,7 +5,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "tsup index.ts --format cjs --dts",
+    "build": "tsup ./src/index.ts --format cjs --dts",
     "dev": "npm run build -- --watch --ignore-watch .turbo",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "format": "prettier --write ."

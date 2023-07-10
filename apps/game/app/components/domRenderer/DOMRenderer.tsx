@@ -3,8 +3,7 @@ import { tileRenderedSize } from "~/config";
 import type { WorldMapTile } from "~/engine/WorldMapService";
 import { useGameStore } from "~/store";
 import { Avatar } from "../avatar/Avatar";
-import type { Action } from "~/action";
-import type { Player } from "@wwyb/core";
+import type { Player, Action } from "@wwyb/core";
 
 function PlayerTile({ player }: { player: Player }) {
   const left = tileRenderedSize * player.x;

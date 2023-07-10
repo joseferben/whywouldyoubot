@@ -27,13 +27,13 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// index.ts
-var entitydb_exports = {};
-__export(entitydb_exports, {
+// src/index.ts
+var src_exports = {};
+__export(src_exports, {
   EntityDB: () => EntityDB,
   JSONStore: () => JSONStore
 });
-module.exports = __toCommonJS(entitydb_exports);
+module.exports = __toCommonJS(src_exports);
 
 // src/EntityDB.ts
 var import_nanoid = require("nanoid");
@@ -157,7 +157,7 @@ var FieldIndex = class {
         ids = new Set([...ids].filter((id) => foundIds.has(id)));
       }
     }
-    return ids ?? [];
+    return ids != null ? ids : [];
   }
 };
 
@@ -436,7 +436,8 @@ var EntityDB = class {
     return result;
   }
   findById(id) {
-    return this.entities.get(id) ?? null;
+    var _a;
+    return (_a = this.entities.get(id)) != null ? _a : null;
   }
   findByIds(ids) {
     const result = [];
@@ -459,11 +460,12 @@ var EntityDB = class {
     return this.findByIds(ids);
   }
   findOneBy(key, value) {
+    var _a;
     const result = this.findBy(key, value);
     if (result.length > 1) {
       throw new Error(`Expected 1 result, got ${result.length}`);
     }
-    return result[0] ?? null;
+    return (_a = result[0]) != null ? _a : null;
   }
   findByFilter(filter) {
     if (!this.fieldIndex)
@@ -472,11 +474,12 @@ var EntityDB = class {
     return this.findByIds(ids || []);
   }
   findOneByFilter(filter) {
+    var _a;
     const result = this.findByFilter(filter);
     if (result.length > 1) {
       throw new Error(`Expected 1 result, got ${result.length}`);
     }
-    return result[0] ?? null;
+    return (_a = result[0]) != null ? _a : null;
   }
   findByPosition(x, y) {
     if (!this.spatialIndex)
@@ -491,11 +494,12 @@ var EntityDB = class {
     return result;
   }
   findOneByPosition(x, y) {
+    var _a;
     const result = Array.from(this.findByPosition(x, y));
     if (result.length > 1) {
       throw new Error(`Expected 1 result, got ${result.length}`);
     }
-    return result[0] ?? null;
+    return (_a = result[0]) != null ? _a : null;
   }
   findByRectangle(x, y, width, height) {
     if (!this.spatialIndex)
