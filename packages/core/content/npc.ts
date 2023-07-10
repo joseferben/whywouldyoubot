@@ -1,4 +1,4 @@
-import type { NpcKind } from "~/engine/core";
+import type { NpcKind } from "./types";
 import { bee_sting, bee_sting_poison, bones, gold, honey } from "./item";
 
 export const bee: NpcKind = {

@@ -1,0 +1,24 @@
+{
+  "name": "@wwyb/core",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup content/index.ts --format cjs --dts",
+    "dev": "npm run build -- --watch",
+    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
+    "format": "prettier --write ."
+  },
+  "prettier": {},
+  "eslintIgnore": [
+    "/node_modules",
+    "/build"
+  ],
+  "devDependencies": {
+    "tsup": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

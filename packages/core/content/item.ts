@@ -1,5 +1,5 @@
-import type { Player } from "~/engine/core";
-import { createItemKind } from "~/engine/core";
+import type { Player } from "./types";
+import { createItemKind } from "./types";
 
 export const gold = createItemKind({
   name: "gold",

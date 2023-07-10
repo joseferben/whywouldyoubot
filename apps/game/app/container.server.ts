@@ -8,7 +8,7 @@ import { PlayerService } from "./engine/PlayerService";
 import { UserService } from "./engine/UserService";
 import { WalkService } from "./engine/WalkService";
 import { SessionService } from "./engine/SessionService";
-import { getItemKinds } from "./content";
+import { getItemKinds } from "@wwyb/core";
 import { InventoryService } from "./engine/InventoryService";
 import { config as dotenvConfig } from "dotenv";
 import { JSONStore } from "./engine/EntityDB/JSONStore";
