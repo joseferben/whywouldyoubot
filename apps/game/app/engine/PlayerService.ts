@@ -1,4 +1,4 @@
-import type { Player, Item, Npc, EquipSlot } from "~/engine/core";
+import type { Player, Item, Npc, EquipSlot } from "@wwyb/core";
 import type { Rectangle } from "~/engine/math";
 import type { UserService } from "./UserService";
 import type { WorldMapService } from "./WorldMapService";

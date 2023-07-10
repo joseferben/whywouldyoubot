@@ -1,6 +1,6 @@
 import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
-import { User } from "./engine/core";
+import type { User } from "@wwyb/core";
 
 const DEFAULT_REDIRECT = "/";
 

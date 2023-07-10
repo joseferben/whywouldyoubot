@@ -1,4 +1,4 @@
-import type { Player } from "~/engine/core";
+import type { Player } from "@wwyb/core";
 import { initOnce } from "~/utils";
 import { EntityDB } from "./EntityDB/EntityDB";
 

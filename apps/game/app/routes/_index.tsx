@@ -1,7 +1,7 @@
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/server-runtime";
 import { json, redirect } from "@remix-run/server-runtime";
-import type { Player } from "~/engine/core";
+import type { Player } from "@wwyb/core";
 import { container } from "~/container.server";
 import { safeRedirect, validateName } from "~/utils";
 

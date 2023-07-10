@@ -1,5 +1,5 @@
 import { Form } from "@remix-run/react";
-import type { CombatStat, Effect } from "~/engine/core/item";
+import type { CombatStat, Effect } from "@wwyb/core";
 
 export type Props = {
   item: {

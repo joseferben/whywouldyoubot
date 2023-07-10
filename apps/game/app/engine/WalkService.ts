@@ -1,4 +1,4 @@
-import type { Player } from "~/engine/core";
+import type { Player } from "@wwyb/core";
 import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
 import type { PlayerService } from "./PlayerService";

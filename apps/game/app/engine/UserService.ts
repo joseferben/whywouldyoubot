@@ -1,4 +1,4 @@
-import type { User } from "~/engine/core";
+import type { User } from "@wwyb/core";
 import bcrypt from "bcrypt";
 import invariant from "tiny-invariant";
 import type { JSONStore } from "./EntityDB/JSONStore";

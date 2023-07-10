@@ -1,4 +1,4 @@
-import type { ItemKindOpts, DroppedItem, DropTable } from "~/engine/core";
+import type { ItemKindOpts, DroppedItem, DropTable } from "@wwyb/core";
 import { pickRandomRange } from "~/engine/math";
 import { EntityDB } from "./EntityDB/EntityDB";
 

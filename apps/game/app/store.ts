@@ -1,5 +1,5 @@
 import { create as createStore } from "zustand";
-import type { Player } from "./engine/core";
+import type { Player } from "@wwyb/core";
 import type { WorldMapTile } from "./engine/WorldMapService";
 import { createContext, useContext } from "react";
 import type { ClientEvent } from "./engine/ClientEventService";

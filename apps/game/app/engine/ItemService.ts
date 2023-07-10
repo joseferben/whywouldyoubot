@@ -1,4 +1,4 @@
-import type { DroppedItem, Item, ItemKindOpts, Player } from "~/engine/core";
+import type { DroppedItem, Item, ItemKindOpts, Player } from "@wwyb/core";
 import type { DroppedItemService } from "~/engine/DroppedItemService";
 import type { JSONStore } from "./EntityDB/JSONStore";
 import { EntityDB } from "./EntityDB/EntityDB";
