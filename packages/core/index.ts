@@ -1,7 +1,15 @@
 import * as npcKinds from "./npc";
 import * as itemKinds from "./item";
 import * as resourceKinds from "./resource";
-import type { ItemKindOpts, ResourceKind, NpcKind, NpcKinds } from "./types";
+import type {
+  Player,
+  ItemKindOpts,
+  ResourceKind,
+  NpcKind,
+  NpcKinds,
+} from "./types";
+
+export { Player, ResourceKind };
 
 export function getResourceKind(name: string): ResourceKind | null {
   // @ts-ignore

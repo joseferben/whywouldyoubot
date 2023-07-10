@@ -3,8 +3,8 @@ import crypto from "crypto";
 import fs from "fs";
 import type { TiledLayer, TiledTile } from "tiled-types";
 import type TiledMap from "tiled-types";
-import { getResourceKind } from "~/content";
-import type { Player, ResourceKind } from "~/engine/core";
+import { getResourceKind } from "@wwyb/core";
+import type { Player, ResourceKind } from "@wwyb/core";
 import { EntityDB } from "./EntityDB/EntityDB";
 import { initOnce } from "~/utils";
 
