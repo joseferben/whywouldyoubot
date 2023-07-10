@@ -1,4 +1,3 @@
-import { LoaderArgs } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 
 export default function Index() {

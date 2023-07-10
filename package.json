@@ -15,12 +15,15 @@
   },
   "devDependencies": {
     "@turbo/gen": "^1.9.7",
-    "eslint-config-custom": "*",
     "eslint": "^8.42.0",
+    "eslint-config-custom": "*",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-cypress": "^2.13.3",
     "prettier": "^2.5.1",
     "turbo": "^1.9.7"
   },
-  "packageManager": "npm@8.12.2"
+  "packageManager": "npm@8.12.2",
+  "dependencies": {
+    "eslint-config-turbo": "^1.10.7"
+  }
 }

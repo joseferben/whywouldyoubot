@@ -1,5 +1,3 @@
-import type { FetcherWithComponents } from "@remix-run/react";
-import { useFetcher } from "@remix-run/react";
 import { useStore } from "zustand";
 import { tileRenderedSize } from "~/config";
 import type { WorldMapTile } from "~/engine/WorldMapService";
@@ -7,61 +5,7 @@ import { useGameStore } from "~/store";
 import { Avatar } from "../avatar/Avatar";
 import type { Action } from "~/action";
 
-type Tile = {
-  x: number;
-  y: number;
-  imagePaths: string[];
-};
-
-function TileRenderer({
-  tile,
-  fetcher,
-}: {
-  tile: Tile;
-  fetcher: FetcherWithComponents<any>;
-}) {
-  const left = tileRenderedSize * tile.x;
-  const top = tileRenderedSize * tile.y;
-
-  return (
-    <div
-      style={{
-        top,
-        left,
-        width: tileRenderedSize,
-        height: tileRenderedSize,
-      }}
-      className="absolute"
-    >
-      {tile.imagePaths.map((image, idx) => {
-        return (
-          <img
-            alt=""
-            draggable={false}
-            className="absolute"
-            style={{
-              userSelect: "none",
-              imageRendering: "pixelated",
-              zIndex: `${idx + 1}`,
-              width: tileRenderedSize,
-              height: tileRenderedSize,
-            }}
-            key={image}
-            src={`/${image}`}
-          ></img>
-        );
-      })}
-    </div>
-  );
-}
-
-function MapTile({
-  tile,
-  fetcher,
-}: {
-  tile: WorldMapTile;
-  fetcher: FetcherWithComponents<any>;
-}) {
+function MapTile({ tile }: { tile: WorldMapTile }) {
   const store = useGameStore();
   const [startWalking] = useStore(store, (state) => [state.startWalking]);
 
@@ -115,13 +59,11 @@ function MapTile({
   );
 }
 
-function TileLayer({ fetcher }: { fetcher: FetcherWithComponents<any> }) {
+function TileLayer() {
   const store = useGameStore();
   const [tiles] = useStore(store, (state) => [state.tiles]);
 
-  return tiles.map((tile) => (
-    <MapTile fetcher={fetcher} key={tile.id} tile={tile} />
-  ));
+  return tiles.map((tile) => <MapTile key={tile.id} tile={tile} />);
 }
 
 function PlayerLayer() {
@@ -165,7 +107,6 @@ export function DOMRenderer() {
 
   const translateX = -tileRenderedSize * x - tileRenderedSize / 2;
   const translateY = -tileRenderedSize * y - tileRenderedSize / 2;
-  const fetcher = useFetcher();
 
   return (
     <div className="relative left-1/2 top-1/2">
@@ -179,7 +120,7 @@ export function DOMRenderer() {
         <DroppedItemsLayer />
         <NPCLayer />
         <PlayerLayer />
-        <TileLayer fetcher={fetcher} />
+        <TileLayer />
       </div>
     </div>
   );

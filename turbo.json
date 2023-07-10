@@ -1,7 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env"],
-  "globalEnv": ["PORT"],
+  "globalEnv": [
+    "PORT",
+    "NODE_ENV",
+    "BYPASS_CACHE",
+    "SESSION_SECRET",
+    "DISCORD_CLIENT_ID",
+    "DISCORD_CLIENT_SECRET",
+    "DISCORD_CALLBACK_URL",
+    "DB_FILE_PATH",
+    "REDIS_CONNECTION_STRING"
+  ],
   "pipeline": {
     "typecheck": {
       "dependsOn": ["^build"],

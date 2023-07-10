@@ -1,4 +1,4 @@
-import { LoaderArgs } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import { container } from "~/container.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
