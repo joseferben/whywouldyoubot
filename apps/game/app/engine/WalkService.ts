@@ -12,6 +12,7 @@ export type Walk = {
   playerId: string;
   path: { x: number; y: number }[];
   timer: NodeJS.Timer;
+  created: number;
 };
 
 export class WalkService {
@@ -101,20 +102,26 @@ export class WalkService {
     console.debug(`start walking ${player.id}`, player.x, player.y);
     this.onlineService.ensureOnline(player);
 
-    // stop previous walk
     const found = this.db.findOneBy("playerId", player.id);
+
+    // wait for cooldown
+    if (found && found.created >= Date.now() - 1000) return;
+
+    const path = this.calculatePath(player.x, player.y, x, y);
+
+    if (!path) {
+      console.warn(`no path found for ${player.id} to (${x}/${y})`);
+      return;
+    }
+
+    // stop previous walk
     if (found) {
       clearInterval(found.timer);
       this.db.delete(found);
     }
 
-    const path = this.calculatePath(player.x, player.y, x, y);
-    if (!path) {
-      console.warn(`no path found for ${player.id} to (${x}/${y})`);
-      return;
-    }
     const timer = setInterval(() => this.step(player.id), 500);
-    this.db.create({ playerId: player.id, path, timer });
+    this.db.create({ playerId: player.id, path, timer, created: Date.now() });
     this.step(player.id);
   }
 }
