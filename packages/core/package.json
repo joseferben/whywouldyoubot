@@ -16,7 +16,8 @@
     "/build"
   ],
   "devDependencies": {
-    "tsup": "^7.1.0"
+    "tsup": "^7.1.0",
+    "wwyb/tsconfig": "*"
   },
   "engines": {
     "node": ">=14"

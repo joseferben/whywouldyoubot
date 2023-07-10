@@ -1,10 +1,9 @@
 import type { Player, Item, Npc, EquipSlot } from "@wwyb/core";
-import type { Rectangle } from "~/engine/math";
 import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
-import type { JSONStore } from "./EntityDB/JSONStore";
-import { EntityDB } from "./EntityDB/EntityDB";
 import { initOnce } from "~/utils";
+import type { JSONStore } from "@wwyb/entitydb";
+import { EntityDB } from "@wwyb/entitydb";
 
 export class PlayerService {
   db!: EntityDB<Player>;
@@ -12,6 +11,7 @@ export class PlayerService {
     readonly jsonStore: JSONStore,
     readonly mapService: WorldMapService,
     readonly onlineService: OnlineService,
+    readonly playerVisibility: number,
     private spawn: { x: number; y: number }
   ) {
     [this.db] = initOnce(
@@ -124,13 +124,8 @@ export class PlayerService {
     return this.db.findOneBy("userId", userId);
   }
 
-  findInRectangleAndOnline(rec: Rectangle) {
-    const { x, y, width, height } = rec;
-    const xMin = x;
-    const xMax = x + width;
-    const yMin = y;
-    const yMax = y + height;
-    const players = this.db.findByRectangle(xMin, yMin, xMax, yMax);
+  findInRectangleAndOnline(x1: number, y1: number, x2: number, y2: number) {
+    const players = this.db.findByRectangle(x1, x2, y1, y2);
     return players;
     // TODO fix
     // return players.filter(
@@ -173,5 +168,14 @@ export class PlayerService {
     //   true
     // );
     return player;
+  }
+
+  findAroundPlayer(player: Player) {
+    return this.findInRectangleAndOnline(
+      player.x - this.playerVisibility,
+      player.y - this.playerVisibility,
+      player.x + this.playerVisibility,
+      player.y + this.playerVisibility
+    );
   }
 }

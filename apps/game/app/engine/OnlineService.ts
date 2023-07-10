@@ -1,6 +1,6 @@
 import type { Player } from "@wwyb/core";
+import { EntityDB } from "@wwyb/entitydb";
 import { initOnce } from "~/utils";
-import { EntityDB } from "./EntityDB/EntityDB";
 
 export type PlayerOnline = {
   id: string;

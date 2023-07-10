@@ -76,6 +76,7 @@ export class EntityDB<
   }
 
   private installShutdownHandlers() {
+    if (typeof process === "undefined") return;
     process.on("SIGINT", () => {
       this.close();
     });
@@ -85,6 +86,11 @@ export class EntityDB<
     process.on("exit", () => {
       this.close();
     });
+  }
+
+  fromArray(entities: E[]) {
+    entities.forEach((e) => this.insert(e));
+    return this;
   }
 
   create(entity: Omit<Omit<E, "id">, "v">, opts?: { ttlMs?: number }): E {

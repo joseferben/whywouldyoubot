@@ -2,10 +2,10 @@ import type { Player } from "@wwyb/core";
 import type { WorldMapService } from "./WorldMapService";
 import type { OnlineService } from "./OnlineService";
 import type { PlayerService } from "./PlayerService";
-import { EntityDB } from "./EntityDB/EntityDB";
 import easystarjs from "easystarjs";
 import { initOnce } from "~/utils";
 import type { ClientEventService } from "./ClientEventService";
+import { EntityDB } from "@wwyb/entitydb";
 
 export type Walk = {
   id: string;

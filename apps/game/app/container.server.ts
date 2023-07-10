@@ -10,9 +10,9 @@ import { SessionService } from "./engine/SessionService";
 import { getItemKinds } from "@wwyb/core";
 import { InventoryService } from "./engine/InventoryService";
 import { config as dotenvConfig } from "dotenv";
-import { JSONStore } from "./engine/EntityDB/JSONStore";
 import { ClientEventService } from "./engine/ClientEventService";
 import { AuthService } from "./engine/AuthService";
+import { JSONStore } from "@wwyb/entitydb";
 
 function build() {
   dotenvConfig();
@@ -64,6 +64,7 @@ function build() {
     jsonStore,
     worldMapService,
     onlineService,
+    config.playerVisibility,
     config.spawnPosition
   );
   const sessionService = new SessionService(

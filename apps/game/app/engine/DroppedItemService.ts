@@ -1,6 +1,6 @@
 import type { ItemKindOpts, DroppedItem, DropTable } from "@wwyb/core";
+import { EntityDB } from "@wwyb/entitydb";
 import { pickRandomRange } from "~/engine/math";
-import { EntityDB } from "./EntityDB/EntityDB";
 
 export class DroppedItemService {
   db!: EntityDB<DroppedItem>;

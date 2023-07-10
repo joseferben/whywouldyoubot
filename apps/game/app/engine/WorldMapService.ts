@@ -5,8 +5,8 @@ import type { TiledLayer, TiledTile } from "tiled-types";
 import type TiledMap from "tiled-types";
 import { getResourceKind } from "@wwyb/core";
 import type { Player, ResourceKind } from "@wwyb/core";
-import { EntityDB } from "./EntityDB/EntityDB";
 import { initOnce } from "~/utils";
+import { EntityDB } from "@wwyb/entitydb";
 
 export function stripPathToAssets(inputPath: string): string {
   const parts = inputPath.split("/");

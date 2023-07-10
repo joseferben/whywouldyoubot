@@ -1,5 +1,5 @@
 {
-  "name": "@wwyb/sdk",
+  "name": "@wwyb/entitydb",
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,7 +11,9 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@wwyb/core": "*"
+    "@wwyb/core": "*",
+    "nanoid": "^4.0.2",
+    "tiny-invariant": "^1.3.1"
   },
   "prettier": {},
   "eslintIgnore": [
@@ -20,7 +22,7 @@
   ],
   "devDependencies": {
     "tsup": "^7.1.0",
-    "wwyb/tsconfig": "*"
+    "@wwyb/tsconfig": "*"
   },
   "engines": {
     "node": ">=14"
