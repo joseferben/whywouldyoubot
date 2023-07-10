@@ -126,11 +126,7 @@ export class PlayerService {
 
   findInRectangleAndOnline(x1: number, y1: number, x2: number, y2: number) {
     const players = this.db.findByRectangle(x1, x2, y1, y2);
-    return players;
-    // TODO fix
-    // return players.filter(
-    //   (player) => this.onlineService.onlinePlayers()[player.id] != null
-    // );
+    return players.filter((player) => this.onlineService.isOnline(player));
   }
 
   create(userId: string, username: string): Player {

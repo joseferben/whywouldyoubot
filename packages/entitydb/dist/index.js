@@ -30,7 +30,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // index.ts
 var entitydb_exports = {};
 __export(entitydb_exports, {
-  EntityDB: () => EntityDB
+  EntityDB: () => EntityDB,
+  JSONStore: () => JSONStore
 });
 module.exports = __toCommonJS(entitydb_exports);
 
@@ -40,10 +41,9 @@ var import_tiny_invariant3 = __toESM(require("tiny-invariant"));
 
 // src/SpatialIndex.ts
 var SpatialIndex = class {
-  index;
-  maxX = 0;
-  maxY = 0;
   constructor() {
+    this.maxX = 0;
+    this.maxY = 0;
     this.index = {};
   }
   findByPosition(x, y) {
@@ -102,9 +102,9 @@ var SpatialIndex = class {
 var FieldIndex = class {
   constructor(fields) {
     this.fields = fields;
+    this.index = /* @__PURE__ */ new Map();
     fields.forEach((field) => this.index.set(field, /* @__PURE__ */ new Map()));
   }
-  index = /* @__PURE__ */ new Map();
   updateIndex(entity) {
     for (const [key, value] of this.index.entries()) {
       const index = value.get(String(entity[key])) || /* @__PURE__ */ new Set();
@@ -176,7 +176,6 @@ var Migrator = class {
       }
     }
   }
-  migratorTargetVersion;
   needsMigration(entity) {
     return (entity.v || 0) < this.migratorTargetVersion;
   }
@@ -211,18 +210,16 @@ var Persistor = class {
     this.namespace = namespace;
     this.persistIntervalMs = persistIntervalMs;
     this.persistAfterChangeCount = persistAfterChangeCount;
+    this.defaultOpts = {
+      persistIntervalMs: 1e3,
+      persistAfterChangeCount: process.env.NODE_ENV === "production" ? 10 : 0
+    };
+    this.changed = /* @__PURE__ */ new Set();
     if (usedNamespaces.has(namespace)) {
       throw new Error(`Persistor namespace ${namespace} already in use`);
     }
     usedNamespaces.add(namespace);
   }
-  defaultOpts = {
-    persistIntervalMs: 1e3,
-    persistAfterChangeCount: process.env.NODE_ENV === "production" ? 10 : 0
-  };
-  changed = /* @__PURE__ */ new Set();
-  timer;
-  entities;
   setEntities(entities) {
     this.entities = entities;
     this.schedulePersist();
@@ -291,8 +288,8 @@ var import_tiny_invariant2 = __toESM(require("tiny-invariant"));
 var Evictor = class {
   constructor(listener) {
     this.listener = listener;
+    this.entities = /* @__PURE__ */ new Map();
   }
-  entities = /* @__PURE__ */ new Map();
   expire(entity, ttlMs) {
     const found = this.entities.get(entity.id);
     if (found) {
@@ -357,12 +354,6 @@ var EntityDB = class {
     (_b = this.persistor) == null ? void 0 : _b.loadEntities(this.loadEntity.bind(this));
     this.installShutdownHandlers();
   }
-  entities;
-  persistor;
-  fieldIndex;
-  spatialIndex;
-  migrator;
-  evictor;
   handleExpire(entity) {
     var _a, _b;
     this.delete(entity);
@@ -530,7 +521,68 @@ var EntityDB = class {
     (_a = this.persistor) == null ? void 0 : _a.close();
   }
 };
+
+// src/JSONStore.ts
+var JSONStore = class {
+  constructor(db) {
+    this.db = db;
+    this.createTables();
+    this.prepareStatements();
+  }
+  createTables() {
+    this.db.prepare(
+      `
+      CREATE TABLE IF NOT EXISTS entities (
+        id TEXT PRIMARY KEY,
+        namespace TEXT NOT NULL,
+        data TEXT NOT NULL CHECK(json_valid(data)),
+        created INT NOT NULL
+      )
+    `
+    ).run();
+    this.db.prepare(
+      "CREATE INDEX IF NOT EXISTS entities_created ON entities(created)"
+    );
+    this.db.prepare(
+      "CREATE INDEX IF NOT EXISTS entities_namespace ON entities(namespace)"
+    );
+  }
+  prepareStatements() {
+    this.selectStmt = this.db.prepare(
+      "SELECT id, data FROM entities WHERE namespace = @namespace ORDER BY created ASC"
+    );
+    this.deleteStmt = this.db.prepare("DELETE FROM entities WHERE id = @id");
+    this.insertStmt = this.db.prepare(
+      "INSERT INTO entities VALUES (@id, @namespace, @data, @created)"
+    );
+    this.updateStmt = this.db.prepare(
+      "UPDATE entities SET data = @data WHERE id = @id"
+    );
+    this.hasStmt = this.db.prepare("SELECT id FROM entities WHERE id = @id");
+  }
+  delete(id) {
+    this.deleteStmt.run({ id });
+  }
+  set(id, json, namespace = "def") {
+    if (this.hasStmt.get({ id })) {
+      this.updateStmt.run({ id, data: JSON.stringify(json) });
+    } else {
+      this.insertStmt.run({
+        id,
+        namespace,
+        data: JSON.stringify(json),
+        created: Date.now()
+      });
+    }
+  }
+  all(namespace = "def") {
+    return this.selectStmt.all({ namespace }).map(
+      (row) => JSON.parse(row.data)
+    );
+  }
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  EntityDB
+  EntityDB,
+  JSONStore
 });

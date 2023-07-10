@@ -6,7 +6,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup index.ts --format cjs --dts",
-    "dev": "npm run build -- --watch",
+    "dev": "npm run build -- --watch --ignore-watch .turbo",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "format": "prettier --write ."
   },
@@ -19,8 +19,8 @@
     "/build"
   ],
   "devDependencies": {
-    "tsup": "^7.1.0",
-    "wwyb/tsconfig": "*"
+    "@wwyb/tsconfig": "*",
+    "tsup": "^6.6.2"
   },
   "engines": {
     "node": ">=14"

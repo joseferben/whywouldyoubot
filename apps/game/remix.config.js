@@ -8,7 +8,7 @@ module.exports = {
     v2_normalizeFormMethod: true,
     v2_routeConvention: true,
   },
-  serverDependenciesToBundle: ["nanoid"],
+  serverDependenciesToBundle: ["nanoid", "@wwyb/entitydb"],
   ignoredRouteFiles: ["**/.*", "**/*.test.{js,jsx,ts,tsx}"],
   postcss: true,
   serverModuleFormat: "cjs",
