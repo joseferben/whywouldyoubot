@@ -16,13 +16,14 @@ import { handleEvent } from "./handleEvent";
 enableMapSet();
 
 export type ClientState = {
+  // playerId of current player
   me: string;
   actions: PotentialAction[];
   ground: WorldMapTile[];
   npcs: Npc[];
   inventory: Item[];
   droppedItems: DroppedItem[];
-  players: Player[];
+  players: Map<string, Player>;
 };
 
 export type UIState = {
@@ -49,7 +50,7 @@ export const createGameStore = (
       openMenu: null,
       me: player.id,
       ground: tiles,
-      players: players,
+      players: new Map(players.map((p) => [p.id, p])),
       actions: [],
       animations: new Map(),
       npcs: [],

@@ -10,7 +10,7 @@ import { SessionService } from "./engine/SessionService";
 import { getItemKinds } from "@wwyb/core";
 import { InventoryService } from "./engine/InventoryService";
 import { config as dotenvConfig } from "dotenv";
-import { ClientEventService } from "./engine/ClientEventService";
+import { ServerEventService } from "./engine/ServerEventService";
 import { AuthService } from "./engine/AuthService";
 import { JSONStore } from "@wwyb/entitydb";
 
@@ -80,7 +80,7 @@ function build() {
     config.discordCallbackUrl
   );
 
-  const clientEventService = new ClientEventService();
+  const clientEventService = new ServerEventService(playerService);
 
   const walkService = new WalkService(
     clientEventService,

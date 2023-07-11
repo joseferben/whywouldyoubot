@@ -1,7 +1,8 @@
 import { EventEmitter } from "node:events";
 import { initOnce } from "~/utils";
-import type { Player, ServerEvent } from "@wwyb/core";
+import type { Player, SerializedClientState, ServerEvent } from "@wwyb/core";
 import { EntityDB } from "@wwyb/entitydb";
+import type { PlayerService } from "./PlayerService";
 
 export type PlayerEmitter = {
   id: string;
@@ -17,9 +18,9 @@ class Emitter {
   }
 }
 
-export class ClientEventService {
+export class ServerEventService {
   readonly db!: EntityDB<PlayerEmitter>;
-  constructor() {
+  constructor(readonly playerService: PlayerService) {
     [this.db] = initOnce(
       this.constructor.name,
       () => new EntityDB<PlayerEmitter>({ fields: ["playerId"] })
@@ -33,12 +34,18 @@ export class ClientEventService {
   }
 
   playerStepped(player: Player, x: number, y: number, lastStep: boolean) {
+    const state: SerializedClientState = {
+      players: this.playerService.findAroundPlayer(player),
+    };
     this.sendToAll({
-      tag: "playerStepped",
-      playerId: player.id,
-      x,
-      y,
-      lastStep,
+      state,
+      event: {
+        tag: "playerStepped",
+        playerId: player.id,
+        x,
+        y,
+        lastStep,
+      },
     });
   }
 

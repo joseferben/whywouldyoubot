@@ -1,9 +1,9 @@
 import { useStore } from "zustand";
 import { tileRenderedSize } from "~/config";
-import type { WorldMapTile } from "~/engine/WorldMapService";
 import { useGameStore } from "~/store";
 import { Avatar } from "../avatar/Avatar";
-import type { Player, Action } from "@wwyb/core";
+import type { Player, Action, WorldMapTile } from "@wwyb/core";
+import invariant from "tiny-invariant";
 
 function PlayerTile({ player }: { player: Player }) {
   const left = tileRenderedSize * player.x;
@@ -91,9 +91,9 @@ function MapTile({ tile }: { tile: WorldMapTile }) {
 
 function TileLayer() {
   const store = useGameStore();
-  const [tiles] = useStore(store, (state) => [state.tiles]);
+  const [tiles] = useStore(store, (state) => [state.ground]);
 
-  return tiles.findAll().map((tile) => <MapTile key={tile.id} tile={tile} />);
+  return tiles.map((tile) => <MapTile key={tile.id} tile={tile} />);
 }
 
 function PlayersLayer() {
@@ -102,7 +102,7 @@ function PlayersLayer() {
 
   return (
     <div className="isolate">
-      {players.findAll().map((player) => (
+      {Array.from(players.values()).map((player) => (
         <PlayerTile key={player.id} player={player} />
       ))}
     </div>
@@ -111,19 +111,19 @@ function PlayersLayer() {
 
 function PlayerLayer() {
   const store = useGameStore();
-  const { x, y } = useStore(store, (state) => state.players.getById(state.me));
-  const ca = useStore(store, (state) =>
-    state.characterAnimations.findById(state.me)
-  );
+  const player = useStore(store, (state) => state.players.get(state.me));
+  const animation = useStore(store, (state) => state.animations.get(state.me));
 
-  const left = tileRenderedSize * x;
-  const top = tileRenderedSize * y;
+  invariant(player, "Player not found");
+
+  const left = tileRenderedSize * player.x;
+  const top = tileRenderedSize * player.y;
 
   return (
     <div
       style={{ top, left, height: tileRenderedSize, width: tileRenderedSize }}
       className={`absolute z-50 transition-all duration-500 ${
-        ca?.animation === "walk" ? "animate-wiggle" : ""
+        animation === "walk" ? "animate-wiggle" : ""
       }`}
     >
       <Avatar />
@@ -145,10 +145,12 @@ function NPCLayer() {
 
 export function DOMRenderer() {
   const store = useGameStore();
-  const { x, y } = useStore(store, (state) => state.players.getById(state.me));
+  const player = useStore(store, (state) => state.players.get(state.me));
 
-  const translateX = -tileRenderedSize * x - tileRenderedSize / 2;
-  const translateY = -tileRenderedSize * y - tileRenderedSize / 2;
+  invariant(player, "Player not found");
+
+  const translateX = -tileRenderedSize * player.x - tileRenderedSize / 2;
+  const translateY = -tileRenderedSize * player.y - tileRenderedSize / 2;
 
   return (
     <div className="relative left-1/2 top-1/2">

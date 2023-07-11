@@ -4,7 +4,7 @@ import fs from "fs";
 import type { TiledLayer, TiledTile } from "tiled-types";
 import type TiledMap from "tiled-types";
 import { getResourceKind } from "@wwyb/core";
-import type { Player, ResourceKind } from "@wwyb/core";
+import type { Player, ResourceKind, WorldMapTile } from "@wwyb/core";
 import { initOnce } from "~/utils";
 import { EntityDB } from "@wwyb/entitydb";
 
@@ -19,16 +19,6 @@ export function stripPathToAssets(inputPath: string): string {
   const newPathParts = parts.slice(assetsIndex);
   return newPathParts.join("/");
 }
-
-export type WorldMapTile = {
-  description: string;
-  imagePaths: string[];
-  x: number;
-  y: number;
-  obstacle: boolean;
-  gid: number;
-  id: string;
-};
 
 export class WorldMapService {
   db!: EntityDB<WorldMapTile>;

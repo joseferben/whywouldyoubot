@@ -4,7 +4,7 @@ import type { OnlineService } from "./OnlineService";
 import type { PlayerService } from "./PlayerService";
 import easystarjs from "easystarjs";
 import { initOnce } from "~/utils";
-import type { ClientEventService } from "./ClientEventService";
+import type { ServerEventService } from "./ServerEventService";
 import { EntityDB } from "@wwyb/entitydb";
 
 export type Walk = {
@@ -20,7 +20,7 @@ export class WalkService {
   easystar: easystarjs.js;
 
   constructor(
-    readonly clientEventService: ClientEventService,
+    readonly clientEventService: ServerEventService,
     readonly worldMapService: WorldMapService,
     readonly playerService: PlayerService,
     readonly onlineService: OnlineService
