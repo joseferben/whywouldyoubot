@@ -16,16 +16,14 @@ import { JSONStore } from "@wwyb/entitydb";
 
 function build() {
   dotenvConfig();
-  invariant(process.env.SESSION_SECRET, "SESSION_SECRET is required");
-  invariant(process.env.DISCORD_CLIENT_ID, "DISCORD_CLIENT_ID is required");
-  invariant(
-    process.env.DISCORD_CLIENT_SECRET,
-    "DISCORD_CLIENT_SECRET is required"
-  );
-  invariant(
-    process.env.DISCORD_CALLBACK_URL,
-    "DISCORD_CALLBACK_URL is required"
-  );
+  if (!process.env.SESSION_SECRET)
+    throw new Error("SESSION_SECRET is required");
+  if (!process.env.DISCORD_CLIENT_ID)
+    throw new Error("DISCORD_CLIENT_ID is required");
+  if (!process.env.DISCORD_CLIENT_SECRET)
+    throw new Error("DISCORD_CLIENT_SECRET is required");
+  if (!process.env.DISCORD_CALLBACK_URL)
+    throw new Error("DISCORD_CALLBACK_URL is required");
 
   const config = {
     dbFilePath: process.env.DB_FILE_PATH || "db.sqlite3",
