@@ -8,6 +8,9 @@ import invariant from "tiny-invariant";
 const tileRenderedSize = config.tileRenderedSize;
 
 function PlayerTile({ player }: { player: Player }) {
+  const store = useGameStore();
+  const animation = useStore(store, (state) => state.animations.get(state.me));
+
   const left = tileRenderedSize * player.x;
   const top = tileRenderedSize * player.y;
 
@@ -19,15 +22,17 @@ function PlayerTile({ player }: { player: Player }) {
         width: tileRenderedSize + 1,
         height: tileRenderedSize + 1,
       }}
+      className={`absolute z-50 transition-all duration-500 ${
+        animation === "walk" ? "animate-wiggle" : ""
+      }`}
     >
       <img
         alt=""
         draggable={false}
-        className="absolute"
         style={{
           userSelect: "none",
           imageRendering: "pixelated",
-          zIndex: `${1}`,
+          zIndex: 50,
           width: tileRenderedSize + 1,
           height: tileRenderedSize + 1,
         }}
@@ -102,35 +107,9 @@ function PlayersLayer() {
   const store = useGameStore();
   const [players] = useStore(store, (state) => [state.players]);
 
-  return (
-    <div className="isolate">
-      {Array.from(players.values()).map((player) => (
-        <PlayerTile key={player.id} player={player} />
-      ))}
-    </div>
-  );
-}
-
-function PlayerLayer() {
-  const store = useGameStore();
-  const player = useStore(store, (state) => state.players.get(state.me));
-  const animation = useStore(store, (state) => state.animations.get(state.me));
-
-  invariant(player, "Player not found");
-
-  const left = tileRenderedSize * player.x;
-  const top = tileRenderedSize * player.y;
-
-  return (
-    <div
-      style={{ top, left, height: tileRenderedSize, width: tileRenderedSize }}
-      className={`absolute z-50 transition-all duration-500 ${
-        animation === "walk" ? "animate-wiggle" : ""
-      }`}
-    >
-      <Avatar />
-    </div>
-  );
+  return Array.from(players.values()).map((player) => (
+    <PlayerTile key={player.id} player={player} />
+  ));
 }
 
 function ActionLayer() {
@@ -163,7 +142,6 @@ export function DOMRenderer() {
         }}
       >
         <ActionLayer />
-        <PlayerLayer />
         <PlayersLayer />
         <DroppedItemsLayer />
         <NPCLayer />

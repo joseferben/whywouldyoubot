@@ -13,13 +13,14 @@ import { handleEvent } from "./handleEvent";
 enableMapSet();
 
 export type UIState = {
-  openMenu: null | "inventory" | "settings" | "character";
+  activeMenu: null | "inventory" | "settings" | "character" | "bots";
   animations: Map<string, "walk" | "idle" | "combat">;
 };
 
 export type Actions = {
   handleEvent: (event: string | null) => void;
   startWalking: () => void;
+  setActiveMenu: (menu: UIState["activeMenu"]) => void;
 };
 
 export type State = ClientState & UIState & Actions;
@@ -33,7 +34,7 @@ export const createGameStore = (
 ) => {
   return createStore(
     immer<State>((set) => ({
-      openMenu: null,
+      activeMenu: null,
       me: player.id,
       ground: tiles,
       players: new Map(players.map((p) => [p.id, p])),
@@ -47,6 +48,11 @@ export const createGameStore = (
         set((state) => {
           const id = characterId || state.me;
           state.animations.set(id, "walk");
+        });
+      },
+      setActiveMenu: (menu: UIState["activeMenu"]) => {
+        set((state) => {
+          state.activeMenu = menu;
         });
       },
       handleEvent: (event: string | null) => {
