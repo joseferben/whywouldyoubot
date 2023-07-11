@@ -2,29 +2,15 @@ import { create as createStore } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { enableMapSet } from "immer";
 import type {
-  DroppedItem,
-  Item,
-  Npc,
   Player,
   ServerEvent,
-  PotentialAction,
+  WorldMapTile,
+  ClientState,
 } from "@wwyb/core";
-import type { WorldMapTile } from "./engine/WorldMapService";
 import { createContext, useContext } from "react";
 import { handleEvent } from "./handleEvent";
 
 enableMapSet();
-
-export type ClientState = {
-  // playerId of current player
-  me: string;
-  actions: PotentialAction[];
-  ground: WorldMapTile[];
-  npcs: Npc[];
-  inventory: Item[];
-  droppedItems: DroppedItem[];
-  players: Map<string, Player>;
-};
 
 export type UIState = {
   openMenu: null | "inventory" | "settings" | "character";

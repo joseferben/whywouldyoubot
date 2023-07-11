@@ -2,15 +2,6 @@ import * as npcKinds from "./npc";
 import * as itemKinds from "./item";
 import * as resourceKinds from "./resource";
 
-export type Entity = {
-  id: string;
-};
-
-export type SpatialEntity = Entity & {
-  x: number;
-  y: number;
-};
-
 export type Player = {
   id: string;
   userId: string;
