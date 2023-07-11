@@ -5,3 +5,5 @@ type Walk = {
 };
 
 export type Action = Walk;
+
+export type PotentialAction = Walk;

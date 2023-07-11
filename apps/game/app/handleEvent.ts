@@ -1,24 +1,13 @@
 import type { ServerEvent } from "@wwyb/core";
-import type { Actions, State } from "./store";
-import type { Draft } from "immer";
+import type { State } from "./store";
 
-export function handleEvent(
-  state: Draft<State & Actions>,
-  event: ServerEvent
-): Draft<State & Actions> {
+export function handleEvent(state: State, event: ServerEvent) {
   if (event.tag === "playerStepped") {
-    const player = state.players.getById(event.playerId);
     if (!event.lastStep) {
-      state.characterAnimations.insert({
-        id: event.playerId,
-        animation: "walk",
-      });
+      state.animations.set(event.playerId, "walk");
     } else {
-      state.characterAnimations.deleteById(player.id);
+      state.animations.delete(event.playerId);
     }
-    player.x = event.x;
-    player.y = event.y;
-    state.players.update(player);
   } else {
     console.error("unknown event", event);
   }
