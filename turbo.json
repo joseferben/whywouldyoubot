@@ -13,11 +13,6 @@
     "REDIS_CONNECTION_STRING"
   ],
   "pipeline": {
-    "start": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true
-    },
     "test": {
       "dependsOn": ["^build"],
       "cache": false,
