@@ -1,8 +1,15 @@
+import { immerable } from "immer";
+
 export class FieldIndex {
+  [immerable] = true;
+
   index: Map<string, Map<string, Set<string>>> = new Map();
 
   constructor(readonly fields: string[]) {
-    fields.forEach((field) => this.index.set(field, new Map()));
+    fields.forEach((field) => {
+      if (field === "id") console.log("id doesn't need an index");
+      this.index.set(field, new Map());
+    });
   }
 
   private updateIndex(entity: any) {

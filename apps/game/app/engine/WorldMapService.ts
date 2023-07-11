@@ -207,8 +207,8 @@ export class WorldMapService {
       // TODO extract players view distance
       player.x - this.playerVisibility,
       player.y - this.playerVisibility,
-      this.playerVisibility * 2,
-      this.playerVisibility * 2
+      player.x + this.playerVisibility,
+      player.y + this.playerVisibility
     );
   }
 

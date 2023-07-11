@@ -9,6 +9,7 @@ import { EventSource } from "~/components/eventSource/EventSource";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const player = await container.authService.ensurePlayer(request);
+  container.onlineService.ensureOnline(player);
   const players = container.playerService.findAroundPlayer(player);
   const tiles = container.mapService.findTilesByPlayer(player);
   const goldAmount = container.inventoryService.findGoldAmount(player);
@@ -20,10 +21,8 @@ export const loader = async ({ request }: LoaderArgs) => {
   });
 };
 
-type Props = Awaited<ReturnType<Awaited<ReturnType<typeof loader>>["json"]>>;
-
-function Game(initialData: Props) {
-  const { tiles, players, player } = initialData;
+export default function Game() {
+  const { tiles, players, player } = useLoaderData<typeof loader>();
   const store = createGameStore(player, players, tiles);
 
   return (
@@ -37,9 +36,4 @@ function Game(initialData: Props) {
       </div>
     </StoreContext.Provider>
   );
-}
-
-export default function Loader() {
-  const initialData = useLoaderData<typeof loader>();
-  return <Game {...initialData} />;
 }

@@ -123,6 +123,7 @@ function build() {
     sessionService,
     clientEventService,
     authService,
+    onlineService,
     // npcService,
     // equipmentService,
     // avatarService,

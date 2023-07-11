@@ -1,9 +1,13 @@
 import { create as createStore } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { enableMapSet } from "immer";
 import type { Player, ServerEvent } from "@wwyb/core";
 import type { WorldMapTile } from "./engine/WorldMapService";
 import { createContext, useContext } from "react";
-import { handleEvent } from "./events";
+import { handleEvent } from "./handleEvent";
 import { EntityDB } from "@wwyb/entitydb";
+
+enableMapSet();
 
 // client state
 // - menuOpen: null | "inventory" | "equipment" | "combat"
@@ -15,22 +19,25 @@ import { EntityDB } from "@wwyb/entitydb";
 // - playerEquipment (specific to current player)
 // - playerCombatStats (includes buffs)
 
+type CharacterAnimation = {
+  id: string;
+  animation: "walk" | "idle" | "combat";
+};
+
 export type State = {
   // me
-  player: Player;
-  playerWalking: boolean;
+  me: string;
   openMenu: null | "inventory" | "settings" | "character";
   // world
   tiles: EntityDB<WorldMapTile>;
   players: EntityDB<Player>;
+  characterAnimations: EntityDB<CharacterAnimation>;
+};
+
+export type Actions = {
   handleEvent: (event: string | null) => void;
   startWalking: () => void;
 };
-
-export type SetFunction = (
-  partial: State | Partial<State> | ((state: State) => State | Partial<State>),
-  replace?: boolean | undefined
-) => void;
 
 type GameStore = ReturnType<typeof createGameStore>;
 
@@ -39,25 +46,35 @@ export const createGameStore = (
   players: Player[],
   tiles: WorldMapTile[]
 ) => {
-  return createStore<State>()((set) => ({
-    openMenu: null,
-    player,
-    // we could solve animation with zustand subscriptions
-    playerWalking: false,
-    tiles: new EntityDB<WorldMapTile>({ spatial: true }).fromArray(tiles),
-    players: new EntityDB<Player>({ fields: ["id"] }).fromArray(players),
-    startWalking: () => set({ playerWalking: true }),
-    handleEvent: (event: string | null) => {
-      if (!event) return;
-      try {
-        const parsed = JSON.parse(event) as ServerEvent;
-        handleEvent(set, parsed);
-      } catch (e) {
-        console.error("invalid event received", e);
-        return;
-      }
-    },
-  }));
+  return createStore(
+    immer<State & Actions>((set) => ({
+      openMenu: null,
+      me: player.id,
+      tiles: new EntityDB<WorldMapTile>({ spatial: true }).fromArray(tiles),
+      players: new EntityDB<Player>().fromArray(players),
+      // players & npc animations
+      characterAnimations: new EntityDB<CharacterAnimation>({}),
+      startWalking: (characterId?: string) => {
+        set((state) => {
+          const id = characterId || state.me;
+          state.characterAnimations.insert({
+            id,
+            animation: "walk",
+          });
+        });
+      },
+      handleEvent: (event: string | null) => {
+        if (!event) return;
+        try {
+          const parsed = JSON.parse(event) as ServerEvent;
+          set((state) => handleEvent(state, parsed));
+        } catch (e) {
+          console.error("invalid event received", e);
+          return;
+        }
+      },
+    }))
+  );
 };
 
 export const StoreContext = createContext<GameStore | null>(null);

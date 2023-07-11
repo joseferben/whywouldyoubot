@@ -6,12 +6,14 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup ./src/index.ts --format cjs --dts",
+    "test": "vitest",
     "dev": "npm run build -- --watch",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
     "@wwyb/core": "*",
+    "immer": "^10.0.2",
     "nanoid": "^4.0.2",
     "tiny-invariant": "^1.3.1"
   },
@@ -22,7 +24,8 @@
   ],
   "devDependencies": {
     "@wwyb/tsconfig": "*",
-    "tsup": "^6.6.2"
+    "tsup": "^6.6.2",
+    "vitest": "^0.33.0"
   },
   "engines": {
     "node": ">=14"

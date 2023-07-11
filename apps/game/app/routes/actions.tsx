@@ -5,6 +5,7 @@ import { container } from "~/container.server";
 export const action: ActionFunction = async ({ request }) => {
   const { x, y, tag } = (await request.json()) as Action;
   const player = await container.authService.ensurePlayer(request);
+  container.onlineService.ensureOnline(player);
 
   if (
     tag === "walk" &&

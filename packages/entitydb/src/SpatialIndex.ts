@@ -1,4 +1,8 @@
+import { immerable } from "immer";
+
 export class SpatialIndex {
+  [immerable] = true;
+
   index: { [x: number]: { [y: number]: Set<string> } };
   maxX: number = 0;
   maxY: number = 0;
@@ -11,15 +15,12 @@ export class SpatialIndex {
     return this.index[x]?.[y] || [];
   }
 
-  findByRectangle(
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ): string[] {
+  findByRectangle(x1: number, y1: number, x2: number, y2: number): string[] {
     const ids: string[] = [];
-    for (let i = x; i < x + width; i++) {
-      for (let j = y; j < y + height; j++) {
+    const width = x2 - x1;
+    const height = y2 - y1;
+    for (let i = x1; i <= x1 + width; i++) {
+      for (let j = y1; j <= y1 + height; j++) {
         ids.push(...this.findByPosition(i, j));
       }
     }

@@ -29,7 +29,7 @@ function PlayerTile({ player }: { player: Player }) {
           width: tileRenderedSize + 1,
           height: tileRenderedSize + 1,
         }}
-        src={`/avatars/3.png`}
+        src={`/assets/avatars/3.png`}
       ></img>
     </div>
   );
@@ -111,11 +111,10 @@ function PlayersLayer() {
 
 function PlayerLayer() {
   const store = useGameStore();
-  const [x, y, playerWalking] = useStore(store, (state) => [
-    state.player.x,
-    state.player.y,
-    state.playerWalking,
-  ]);
+  const { x, y } = useStore(store, (state) => state.players.getById(state.me));
+  const ca = useStore(store, (state) =>
+    state.characterAnimations.findById(state.me)
+  );
 
   const left = tileRenderedSize * x;
   const top = tileRenderedSize * y;
@@ -124,7 +123,7 @@ function PlayerLayer() {
     <div
       style={{ top, left, height: tileRenderedSize, width: tileRenderedSize }}
       className={`absolute z-50 transition-all duration-500 ${
-        playerWalking ? "animate-wiggle" : ""
+        ca?.animation === "walk" ? "animate-wiggle" : ""
       }`}
     >
       <Avatar />
@@ -146,7 +145,7 @@ function NPCLayer() {
 
 export function DOMRenderer() {
   const store = useGameStore();
-  const [x, y] = useStore(store, (state) => [state.player.x, state.player.y]);
+  const { x, y } = useStore(store, (state) => state.players.getById(state.me));
 
   const translateX = -tileRenderedSize * x - tileRenderedSize / 2;
   const translateY = -tileRenderedSize * y - tileRenderedSize / 2;

@@ -26,6 +26,7 @@ beforeEach(async () => {
     jsonStore: jsonDB,
     persistenceNamespace: "foo",
     fields: ["name", "x"],
+    spatial: true,
   });
 });
 
@@ -92,7 +93,27 @@ describe("EntityDB", () => {
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveProperty("name", "first");
   });
-  it.only("migrate", () => {
+  it("find by rectangle", () => {
+    db.create({
+      name: "first",
+      x: 1,
+      y: 3,
+      inCombat: false,
+    });
+    db.create({
+      name: "second",
+      x: 2,
+      y: 3,
+    });
+    db.create({
+      name: "third",
+      x: 3,
+      y: 3,
+    });
+    const found = db.findByRectangle(1, 3, 2, 3);
+    expect(found).toHaveLength(2);
+  });
+  it("migrate", () => {
     const s = new Database(":memory:");
     s.pragma("journal_mode = WAL");
     s.pragma("synchronous = off");

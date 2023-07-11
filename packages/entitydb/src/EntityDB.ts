@@ -7,6 +7,7 @@ import { Migrator } from "./Migrator";
 import { Persistor } from "./Persistor";
 import type { JSONStore } from "./JSONStore";
 import { Evictor } from "./Evictor";
+import { immerable } from "immer";
 
 export type Opts<Entity> = {
   fields?: string[];
@@ -22,6 +23,8 @@ export type Opts<Entity> = {
 export class EntityDB<
   E extends { id: string; v?: number; x?: number; y?: number }
 > {
+  [immerable] = true;
+
   entities!: Map<string, E>;
   persistor!: Persistor;
   fieldIndex!: FieldIndex;
@@ -59,6 +62,7 @@ export class EntityDB<
   }
 
   private handleExpire(entity: E) {
+    console.log("evicting", entity.id);
     this.delete(entity);
     this.opts.evictorListener?.(entity);
   }
@@ -104,7 +108,7 @@ export class EntityDB<
     return toInsert;
   }
 
-  insert(entity: E) {
+  insert(entity: E, opts?: { ttlMs?: number }) {
     if (this.migrator && this.migrator.needsMigration(entity)) {
       this.migrator.migrate(entity);
     }
@@ -112,6 +116,9 @@ export class EntityDB<
     this.fieldIndex?.update(entity);
     this.spatialIndex?.update(entity);
     this.persistor?.addChanged(entity);
+    if (opts?.ttlMs) {
+      this.evictor.expire(entity, opts.ttlMs);
+    }
   }
 
   update(entity: E) {
@@ -131,6 +138,13 @@ export class EntityDB<
     this.persistor?.addChanged(entity);
   }
 
+  deleteById(id: string) {
+    const entity = this.entities.get(id);
+    if (entity) {
+      this.delete(entity);
+    }
+  }
+
   findAll(limit?: number): E[] {
     const result: E[] = [];
     for (const entity of this.entities.values()) {
@@ -144,6 +158,12 @@ export class EntityDB<
 
   findById(id: string): E | null {
     return this.entities.get(id) ?? null;
+  }
+
+  getById(id: string): E {
+    const entity = this.findById(id);
+    invariant(entity != null, `Entity with id ${id} not found`);
+    return entity;
   }
 
   findByIds(ids: Iterable<string>): E[] {
@@ -212,11 +232,11 @@ export class EntityDB<
     return result[0] ?? null;
   }
 
-  findByRectangle(x: number, y: number, width: number, height: number): E[] {
+  findByRectangle(x1: number, y1: number, x2: number, y2: number): E[] {
     if (!this.spatialIndex)
       throw new Error("SpatialIndex needed for findByRectangle");
 
-    const ids = this.spatialIndex.findByRectangle(x, y, width, height);
+    const ids = this.spatialIndex.findByRectangle(x1, y1, x2, y2);
     const result: E[] = [];
     for (const id of ids) {
       const entity = this.entities.get(id);

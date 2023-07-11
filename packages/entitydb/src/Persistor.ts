@@ -1,9 +1,12 @@
 import invariant from "tiny-invariant";
 import type { JSONStore } from "./JSONStore";
+import { immerable } from "immer";
 
 const usedNamespaces = new Set<string>();
 
 export class Persistor {
+  [immerable] = true;
+
   defaultOpts = {
     persistIntervalMs: 1000,
     persistAfterChangeCount: process.env.NODE_ENV === "production" ? 10 : 0,
