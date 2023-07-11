@@ -41,7 +41,10 @@ export class WorldMapService {
     const hashSum = crypto.createHash("md5");
     hashSum.update(tmxFile);
     const hash = hashSum.digest("base64url");
-    this.jsonFilePath = `${this.mapPath}/map.${hash}.json`;
+    this.jsonFilePath =
+      process.env.NODE_ENV === "production"
+        ? `${this.mapPath}/map.json`
+        : `${this.mapPath}/map.${hash}.json`;
     if (!foundInCache) {
       this.loadMap();
     }
@@ -166,10 +169,17 @@ export class WorldMapService {
     }
   }
 
-  export() {
-    execSync(
-      `tiled --export-map json ${this.tmxFilePath} ${this.jsonFilePath}`
-    );
+  static export(tmxFilePath: string, jsonFilePath: string) {
+    const env = Object.create(process.env);
+    if (process.env.NODE_ENV === "production") {
+      // no screen in production
+      env.QT_QPA_PLATFORM = "offscreen";
+    }
+    execSync("tiled --version", { env });
+    execSync(`tiled --export-formats`, { env });
+    const now = new Date();
+    execSync(`tiled --export-map json ${tmxFilePath} ${jsonFilePath}`, { env });
+    console.log("exported after", new Date().getTime() - now.getTime(), "ms");
   }
 
   loadMap() {
@@ -185,7 +195,10 @@ export class WorldMapService {
         .readdirSync(this.mapPath)
         .filter((file) => file.endsWith(".json"));
       jsonFiles.forEach((file) => fs.rmSync(`${this.mapPath}/${file}`));
-      this.export();
+      if (process.env.NODE_ENV !== "production") {
+        // in production we export during build process
+        WorldMapService.export(this.tmxFilePath, this.jsonFilePath);
+      }
       return this.loadTiledMap(
         JSON.parse(fs.readFileSync(this.jsonFilePath, "utf8"))
       );

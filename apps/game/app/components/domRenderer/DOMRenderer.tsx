@@ -1,9 +1,11 @@
 import { useStore } from "zustand";
-import { tileRenderedSize } from "~/config";
+import { config } from "~/config";
 import { useGameStore } from "~/store";
 import { Avatar } from "../avatar/Avatar";
 import type { Player, Action, WorldMapTile } from "@wwyb/core";
 import invariant from "tiny-invariant";
+
+const tileRenderedSize = config.tileRenderedSize;
 
 function PlayerTile({ player }: { player: Player }) {
   const left = tileRenderedSize * player.x;
