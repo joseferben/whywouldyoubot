@@ -2,6 +2,8 @@ import * as npcKinds from "./npc";
 import * as itemKinds from "./item";
 import * as resourceKinds from "./resource";
 
+import Filter from "bad-words";
+
 export type Player = {
   id: string;
   userId: string;
@@ -235,4 +237,21 @@ export function getItemKinds(): { [name: string]: ItemKindOpts } {
 export function getItemKind(name: string): ItemKindOpts | null {
   // @ts-ignore
   return itemKinds[name];
+}
+
+export function validateName(name: string): string | null {
+  if (name.length < 3) {
+    return "Name must be at least 3 characters long";
+  }
+
+  if (name.length > 20) {
+    return "Name must be at most 20 characters long";
+  }
+
+  const filter = new Filter();
+  if (filter.isProfane(name)) {
+    return "Use a different name";
+  }
+
+  return null;
 }

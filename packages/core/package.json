@@ -16,10 +16,14 @@
     "/build"
   ],
   "devDependencies": {
+    "@types/bad-words": "^3.0.1",
     "@wwyb/tsconfig": "*",
     "tsup": "^6.6.2"
   },
   "engines": {
     "node": ">=14"
+  },
+  "dependencies": {
+    "bad-words": "^3.0.4"
   }
 }

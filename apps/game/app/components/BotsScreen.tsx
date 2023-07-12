@@ -1,18 +1,7 @@
+import { validateName } from "@wwyb/core";
 import { useState } from "react";
 import { useStore } from "zustand";
 import { useGameStore } from "~/store";
-
-function validateBotName(name: string): string | null {
-  if (name.length < 3) {
-    return "Name must be at least 3 characters long";
-  }
-
-  if (name.length > 20) {
-    return "Name must be at most 20 characters long";
-  }
-
-  return null;
-}
 
 export function BotsScreen() {
   const store = useGameStore();
@@ -26,7 +15,7 @@ export function BotsScreen() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
-    setError(validateBotName(name));
+    setError(validateName(name));
     setBotName(name);
   };
 
