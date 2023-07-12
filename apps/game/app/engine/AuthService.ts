@@ -67,7 +67,7 @@ export class AuthService {
 
   async ensurePlayer(request: Request): Promise<Player> {
     const user = await this.auth.isAuthenticated(request, {
-      failureRedirect: "/",
+      failureRedirect: "/login",
     });
     const player = this.playerService.findByUserId(user.id);
     if (!player) {

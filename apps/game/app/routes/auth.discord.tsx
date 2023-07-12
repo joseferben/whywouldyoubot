@@ -4,8 +4,8 @@ import { container } from "~/container.server";
 
 export const action: ActionFunction = async ({ request }) => {
   return container.authService.auth.authenticate("discord", request, {
-    successRedirect: "/game",
-    failureRedirect: "/",
+    successRedirect: "/",
+    failureRedirect: "/login",
   });
 };
 

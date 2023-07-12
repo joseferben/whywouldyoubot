@@ -3,7 +3,7 @@ import { container } from "~/container.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
   return container.authService.auth.authenticate("discord", request, {
-    successRedirect: "/game",
-    failureRedirect: "/",
+    successRedirect: "/",
+    failureRedirect: "/login",
   });
 };

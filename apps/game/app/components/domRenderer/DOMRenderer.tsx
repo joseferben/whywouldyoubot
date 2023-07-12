@@ -1,7 +1,6 @@
 import { useStore } from "zustand";
 import { config } from "~/config";
 import { useGameStore } from "~/store";
-import { Avatar } from "../avatar/Avatar";
 import type { Player, Action, WorldMapTile } from "@wwyb/core";
 import invariant from "tiny-invariant";
 
