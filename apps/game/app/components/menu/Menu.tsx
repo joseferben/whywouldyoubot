@@ -47,34 +47,20 @@ function Screen() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeMenu !== null) return;
+
       switch (e.key) {
         case "1":
-          if (activeMenu === "inventory") {
-            setActiveMenu(null);
-          } else {
-            setActiveMenu("inventory");
-          }
+          setActiveMenu("inventory");
           break;
         case "2":
-          if (activeMenu === "character") {
-            setActiveMenu(null);
-          } else {
-            setActiveMenu("character");
-          }
+          setActiveMenu("character");
           break;
         case "3":
-          if (activeMenu === "bots") {
-            setActiveMenu(null);
-          } else {
-            setActiveMenu("bots");
-          }
+          setActiveMenu("bots");
           break;
         case "4":
-          if (activeMenu === "settings") {
-            setActiveMenu(null);
-          } else {
-            setActiveMenu("settings");
-          }
+          setActiveMenu("settings");
           break;
         default:
           break;
@@ -126,25 +112,41 @@ function Navigation() {
     <ul className="menu rounded-box space-y-1 bg-base-200 text-base shadow-lg">
       <li>
         <button onClick={() => setActiveMenu("inventory")}>
-          <img className="h-5 w-5" src="/assets/ui/inventory.png" />
+          <img
+            className="h-6 w-6"
+            src="/assets/ui/inventory.png"
+            style={{ imageRendering: "pixelated", userSelect: "none" }}
+          />
           Inventory
         </button>
       </li>
       <li>
         <button onClick={() => setActiveMenu("character")}>
-          <img className="h-5 w-5" src="/assets/ui/character.png" />
+          <img
+            className="h-6 w-6"
+            src="/assets/ui/character.png"
+            style={{ imageRendering: "pixelated", userSelect: "none" }}
+          />
           Character
         </button>
       </li>
       <li>
         <button onClick={() => setActiveMenu("bots")}>
-          <img className="h-5 w-5" src="/assets/ui/bots.png" />
+          <img
+            className="h-6 w-6"
+            src="/assets/ui/bots.png"
+            style={{ imageRendering: "pixelated", userSelect: "none" }}
+          />
           Bots
         </button>
       </li>
       <li>
         <button onClick={() => setActiveMenu("settings")}>
-          <img className="h-5 w-5" src="/assets/ui/settings.png" />
+          <img
+            className="h-6 w-6"
+            src="/assets/ui/settings.png"
+            style={{ imageRendering: "pixelated", userSelect: "none" }}
+          />
           Settings
         </button>
       </li>

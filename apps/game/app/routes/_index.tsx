@@ -13,17 +13,19 @@ export const loader = async ({ request }: LoaderArgs) => {
   const players = container.playerService.findAroundPlayer(player);
   const tiles = container.mapService.findTilesByPlayer(player);
   const goldAmount = container.inventoryService.findGoldAmount(player);
+  const bots = container.botService.findByPlayer(player);
   return json({
     goldAmount,
     tiles,
     players,
     player,
+    bots,
   });
 };
 
 export default function Game() {
-  const { tiles, players, player } = useLoaderData<typeof loader>();
-  const store = createGameStore(player, players, tiles);
+  const { tiles, players, player, bots } = useLoaderData<typeof loader>();
+  const store = createGameStore(player, players, tiles, bots);
 
   return (
     <StoreContext.Provider value={store}>

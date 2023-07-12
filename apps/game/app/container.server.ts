@@ -11,6 +11,7 @@ import { ServerEventService } from "./engine/ServerEventService";
 import { AuthService } from "./engine/AuthService";
 import { JSONStore } from "@wwyb/entitydb";
 import { configServer as config } from "./configServer";
+import { BotService } from "./engine/BotService";
 
 function build() {
   const s = new Database(config.dbFilePath);
@@ -32,6 +33,7 @@ function build() {
     config.playerVisibility,
     config.spawnPosition
   );
+  const botService = new BotService(jsonStore, playerService);
   const sessionService = new SessionService(
     playerService,
     config.sessionSecret,
@@ -96,6 +98,7 @@ function build() {
     inventoryService,
     // spawnService,
     // combatService,
+    botService,
   };
 }
 

@@ -48,7 +48,7 @@ function MapTile({ tile }: { tile: WorldMapTile }) {
   function handleClick() {
     startWalking();
     if (!tile.obstacle) {
-      fetch("/actions", {
+      fetch("/api/actions", {
         method: "POST",
         body: JSON.stringify({
           tag: "walk",

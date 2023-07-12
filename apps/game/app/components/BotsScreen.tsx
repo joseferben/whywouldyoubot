@@ -7,6 +7,7 @@ export function BotsScreen() {
   const store = useGameStore();
   const [botName, setBotName] = useState("");
   const [error, setError] = useState<null | string>(null);
+  const [loading, setLoading] = useState(false);
 
   const [bots, createBot] = useStore(store, (state) => [
     state.bots,
@@ -19,9 +20,13 @@ export function BotsScreen() {
     setBotName(name);
   };
 
-  const handleBotCreation = () => {
+  const handleBotCreation = async () => {
     if (!error) {
-      createBot(botName);
+      setLoading(true);
+      await createBot(botName);
+      setLoading(false);
+      setBotName("");
+      setError(null);
     }
   };
 
@@ -39,13 +44,22 @@ export function BotsScreen() {
         <button
           onClick={handleBotCreation}
           disabled={!!error}
-          className="btn-primary join-item btn rounded-r-full"
+          className={`btn-primary join-item btn rounded-r-full ${
+            loading ? "loading loading-spinner" : ""
+          }`}
         >
           Create bot
         </button>
       </div>
       <small className="text-error">{error}</small>
       <div className="divider"></div>
+      {bots.length === 0 ? (
+        <div className="text-center text-sm text-gray-500">
+          You don't have any bots yet 🤖
+        </div>
+      ) : (
+        bots.map((bot) => <div key={bot.id}>{bot.name}</div>)
+      )}
     </div>
   );
 }

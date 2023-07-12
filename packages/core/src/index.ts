@@ -255,3 +255,11 @@ export function validateName(name: string): string | null {
 
   return null;
 }
+
+export type Bot = {
+  id: string;
+  ownerId: string;
+  playerId: string;
+  apiKey: string;
+  name: string;
+};

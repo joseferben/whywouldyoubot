@@ -6,6 +6,7 @@ import type {
   ServerEvent,
   WorldMapTile,
   ClientState,
+  Bot,
 } from "@wwyb/core";
 import { createContext, useContext } from "react";
 import { handleEvent } from "./handleEvent";
@@ -17,25 +18,32 @@ export type UIState = {
   animations: Map<string, "walk" | "idle" | "combat">;
 };
 
-export type Actions = {
-  handleEvent: (event: string | null) => void;
-  startWalking: () => void;
-  setActiveMenu: (menu: UIState["activeMenu"]) => void;
+export type HumanClientState = {
+  bots: Bot[];
 };
 
-export type State = ClientState & UIState & Actions;
+export type Actions = {
+  handleEvent(event: string | null): void;
+  startWalking(): void;
+  setActiveMenu(menu: UIState["activeMenu"]): void;
+  createBot(name: string): Promise<Bot | string>;
+};
+
+export type State = ClientState & UIState & HumanClientState & Actions;
 
 type GameStore = ReturnType<typeof createGameStore>;
 
 export const createGameStore = (
   player: Player,
   players: Player[],
-  tiles: WorldMapTile[]
+  tiles: WorldMapTile[],
+  bots: Bot[]
 ) => {
   return createStore(
     immer<State>((set) => ({
       activeMenu: null,
       me: player.id,
+      bots: bots,
       ground: tiles,
       players: new Map(players.map((p) => [p.id, p])),
       actions: [],
@@ -54,6 +62,16 @@ export const createGameStore = (
         set((state) => {
           state.activeMenu = menu;
         });
+      },
+      createBot: async (name: string) => {
+        const created: Bot = await fetch("/api/bots/create/", {
+          method: "post",
+          body: JSON.stringify({ name: name }),
+        }).then((res) => res.json());
+        set((state) => {
+          state.bots.push(created);
+        });
+        return created;
       },
       handleEvent: (event: string | null) => {
         if (!event) return;
