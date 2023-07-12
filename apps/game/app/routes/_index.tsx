@@ -30,9 +30,7 @@ export default function Game() {
       <EventSource />
       <div className="h-full overflow-hidden">
         <DOMRenderer />
-        <div className="fixed bottom-5 right-5">
-          <Menu />
-        </div>
+        <Menu />
       </div>
     </StoreContext.Provider>
   );
