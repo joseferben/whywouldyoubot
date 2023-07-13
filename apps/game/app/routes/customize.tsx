@@ -193,7 +193,7 @@ export default function SetAvatar() {
               Don't worry, you can change your look later in the game.
             </small>
           </div>
-          <div className="relative h-32 w-32">
+          <div className="relative aspect-square h-32 w-32">
             <PlayerImage {...{ hair, head, eyes }} />
           </div>
         </div>

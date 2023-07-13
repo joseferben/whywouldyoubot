@@ -11,6 +11,7 @@ export const config = {
   // the client sees n tiles in each direction
   playerVisibility: 20,
   mapPath: "map",
+  assetsPath: "public/assets",
   // how long to wait before logging out idle users
   idleLogoutMs: 1000 * 60 * 5,
   userSessionKey: "user",

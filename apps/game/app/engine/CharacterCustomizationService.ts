@@ -4,7 +4,10 @@ import fs from "fs";
 import path from "path";
 
 export class CharacterCustomizationService {
-  constructor(readonly playserService: PlayerService) {}
+  constructor(
+    readonly playserService: PlayerService,
+    readonly assetsPath: string
+  ) {}
 
   findCustomization(player: Player): {
     head: number;
@@ -34,7 +37,7 @@ export class CharacterCustomizationService {
 
   private async findImages(regex: RegExp): Promise<number[]> {
     return new Promise((resolve, reject) => {
-      const dir = path.join(process.cwd(), "./public/assets/avatars");
+      const dir = path.join(process.cwd(), `${this.assetsPath}/avatars`);
 
       fs.readdir(dir, (err, files) => {
         if (err) {

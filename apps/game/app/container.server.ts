@@ -36,7 +36,8 @@ function build() {
     config.spawnPosition
   );
   const characterCustomizationService = new CharacterCustomizationService(
-    playerService
+    playerService,
+    config.assetsPath
   );
   const sessionService = new SessionService(
     playerService,
