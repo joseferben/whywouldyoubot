@@ -1,5 +1,5 @@
 import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
 import { StoreContext, createGameStore } from "~/store";
@@ -10,6 +10,8 @@ import { EventSource } from "~/components/EventSource";
 export const loader = async ({ request }: LoaderArgs) => {
   const player = await container.authService.ensurePlayer(request);
   container.onlineService.ensureOnline(player);
+  if (!container.characterCustomizationService.wasCustomized(player))
+    return redirect("/customize");
   const players = container.playerService.findAroundPlayer(player);
   const tiles = container.mapService.findTilesByPlayer(player);
   const goldAmount = container.inventoryService.findGoldAmount(player);

@@ -24,6 +24,14 @@ export class CharacterCustomizationService {
     this.playserService.db.update(player);
   }
 
+  wasCustomized(player: Player): boolean {
+    return (
+      player.avatarHead !== null &&
+      player.avatarEyes !== null &&
+      player.avatarHair !== null
+    );
+  }
+
   private async findImages(regex: RegExp): Promise<number[]> {
     return new Promise((resolve, reject) => {
       const dir = path.join(process.cwd(), "./public/assets/avatars");
