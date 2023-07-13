@@ -3,13 +3,18 @@ import { useStore } from "zustand";
 import { useGameStore } from "~/store";
 import { BotsScreen } from "~/components/BotsScreen";
 import { useEffect } from "react";
+import { PlayerImage } from "./PlayerImage";
 
 function InventoryScreen() {
   return <div>Inventory</div>;
 }
 
 function CharacterScreen() {
-  return <div>Character</div>;
+  return (
+    <a href="/customize" className="btn-secondary btn">
+      Customize
+    </a>
+  );
 }
 
 function SettingsScreen() {
@@ -76,7 +81,7 @@ function Screen() {
 
   return (
     activeMenu && (
-      <div className="rounded-box fixed bottom-2 right-2 z-50 ml-2 h-[600px] w-full bg-base-200 px-4 py-3 shadow-lg sm:ml-5 sm:w-96 md:bottom-5 md:right-5">
+      <div className="fixed bottom-0 right-0 z-50 ml-2 h-[600px] w-full bg-base-200 px-4 py-3 shadow-lg sm:rounded-box sm:bottom-5 sm:right-5 sm:ml-5 sm:w-96">
         <div className="flex flex-row justify-between">
           <div>
             <h1 className="text-xl font-semibold">{title}</h1>
@@ -106,7 +111,10 @@ function Screen() {
 
 function Navigation() {
   const store = useGameStore();
-  const [setActiveMenu] = useStore(store, (state) => [state.setActiveMenu]);
+  const [player, setActiveMenu] = useStore(store, (state) => [
+    state.players.get(state.me),
+    state.setActiveMenu,
+  ]);
 
   return (
     <ul className="menu rounded-box space-y-1 bg-base-200 text-base shadow-lg">
@@ -122,11 +130,13 @@ function Navigation() {
       </li>
       <li>
         <button onClick={() => setActiveMenu("character")}>
-          <img
-            className="h-6 w-6"
-            src="/assets/ui/character.png"
-            style={{ imageRendering: "pixelated", userSelect: "none" }}
-          />
+          <div className="-m-2 h-10 w-10">
+            <PlayerImage
+              eyes={player?.avatarEyes}
+              hair={player?.avatarHair}
+              head={player?.avatarHead}
+            />
+          </div>
           Character
         </button>
       </li>

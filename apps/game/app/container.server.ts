@@ -12,6 +12,7 @@ import { AuthService } from "./engine/AuthService";
 import { JSONStore } from "@wwyb/entitydb";
 import { configServer as config } from "./configServer";
 import { BotService } from "./engine/BotService";
+import { CharacterCustomizationService } from "./engine/CharacterCustomizationService";
 
 function build() {
   const s = new Database(config.dbFilePath);
@@ -26,6 +27,7 @@ function build() {
   );
 
   const onlineService = new OnlineService(config.idleLogoutMs);
+  const botService = new BotService(jsonStore);
   const playerService = new PlayerService(
     jsonStore,
     worldMapService,
@@ -33,7 +35,9 @@ function build() {
     config.playerVisibility,
     config.spawnPosition
   );
-  const botService = new BotService(jsonStore, playerService);
+  const characterCustomizationService = new CharacterCustomizationService(
+    playerService
+  );
   const sessionService = new SessionService(
     playerService,
     config.sessionSecret,
@@ -99,6 +103,7 @@ function build() {
     // spawnService,
     // combatService,
     botService,
+    characterCustomizationService,
   };
 }
 

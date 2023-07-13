@@ -10,6 +10,7 @@ import type {
 } from "@wwyb/core";
 import { createContext, useContext } from "react";
 import { handleEvent } from "./handleEvent";
+import { client } from "@wwyb/sdk";
 
 enableMapSet();
 
@@ -25,8 +26,10 @@ export type HumanClientState = {
 export type Actions = {
   handleEvent(event: string | null): void;
   startWalking(): void;
+  walkTo(x: number, y: number): Promise<void | string>;
   setActiveMenu(menu: UIState["activeMenu"]): void;
   createBot(name: string): Promise<Bot | string>;
+  deleteBot(id: string): Promise<void>;
 };
 
 export type State = ClientState & UIState & HumanClientState & Actions;
@@ -64,14 +67,22 @@ export const createGameStore = (
         });
       },
       createBot: async (name: string) => {
-        const created: Bot = await fetch("/api/bots/create/", {
-          method: "post",
-          body: JSON.stringify({ name: name }),
-        }).then((res) => res.json());
+        const created = await client.createBot(name);
+        if (typeof created === "string") return created;
         set((state) => {
           state.bots.push(created);
         });
         return created;
+      },
+      deleteBot: async (id: string) => {
+        await client.deleteBot(id);
+        set((state) => {
+          state.bots = state.bots.filter((b) => b.id !== id);
+        });
+      },
+      walkTo: async (x: number, y: number) => {
+        const result = await client.walkTo(x, y);
+        if (typeof result === "string") return result;
       },
       handleEvent: (event: string | null) => {
         if (!event) return;

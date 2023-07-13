@@ -1,3 +1,1 @@
-export function bot() {
-  return "bot";
-}
+export { client } from "./client";

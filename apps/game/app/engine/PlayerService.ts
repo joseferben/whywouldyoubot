@@ -153,9 +153,9 @@ export class PlayerService {
       torso: null,
       legs: null,
       feet: null,
-      avatarHead: 0,
-      avatarEyes: 0,
-      avatarHair: 0,
+      avatarHead: null,
+      avatarEyes: null,
+      avatarHair: null,
     };
     const player = this.db.create(tocreate);
     this.onlineService.ensureOnline(player);

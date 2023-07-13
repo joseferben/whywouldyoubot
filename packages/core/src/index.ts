@@ -4,6 +4,8 @@ import * as resourceKinds from "./resource";
 
 import Filter from "bad-words";
 
+// TODO think about splitting up core type
+// client player needs to know a bit more than core though
 export type Player = {
   id: string;
   userId: string;
@@ -12,20 +14,21 @@ export type Player = {
   y: number;
   xp: number;
   currentHealth: number;
-  // combat skills
+
+  // CombatSkillService
   health: number;
   attack: number;
   intelligence: number;
   defense: number;
-  // trade skills,
 
+  // TradeSkillService
   hunting: number;
   trading: number;
   cooking: number;
   farming: number;
   fishing: number;
-  // slots
 
+  // EquipmentService
   leftHand: string | null;
   neck: string | null;
   head: string | null;
@@ -33,11 +36,18 @@ export type Player = {
   torso: string | null;
   legs: string | null;
   feet: string | null;
-  // avatar
 
-  avatarHead: number;
-  avatarEyes: number;
-  avatarHair: number;
+  // avatar
+  // CharacterCustimizationService
+  avatarHead: number | null;
+  avatarEyes: number | null;
+  avatarHair: number | null;
+};
+
+export type CharacterCustomization = {
+  head: number;
+  eyes: number;
+  hair: number;
 };
 
 export type Item = {
@@ -221,6 +231,7 @@ export function getResourceKind(name: string): ResourceKind | null {
 }
 
 export function getNpcKinds(): NpcKinds {
+  // @ts-ignore
   return npcKinds;
 }
 

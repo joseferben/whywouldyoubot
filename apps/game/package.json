@@ -31,6 +31,7 @@
     "@remix-run/serve": "^1.17.1",
     "@wwyb/core": "*",
     "@wwyb/entitydb": "*",
+    "@wwyb/sdk": "*",
     "bcrypt": "^5.1.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^8.4.0",

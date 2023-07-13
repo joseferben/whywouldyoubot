@@ -1,8 +1,9 @@
 import { useStore } from "zustand";
 import { config } from "~/config";
 import { useGameStore } from "~/store";
-import type { Player, Action, WorldMapTile } from "@wwyb/core";
+import type { Player, WorldMapTile } from "@wwyb/core";
 import invariant from "tiny-invariant";
+import { PlayerImage } from "./PlayerImage";
 
 const tileRenderedSize = config.tileRenderedSize;
 
@@ -25,37 +26,26 @@ function PlayerTile({ player }: { player: Player }) {
         animation === "walk" ? "animate-wiggle" : ""
       }`}
     >
-      <img
-        alt=""
-        draggable={false}
-        style={{
-          userSelect: "none",
-          imageRendering: "pixelated",
-          zIndex: 50,
-          width: tileRenderedSize + 1,
-          height: tileRenderedSize + 1,
-        }}
-        src={`/assets/avatars/3.png`}
-      ></img>
+      <PlayerImage
+        head={player.avatarHead}
+        eyes={player.avatarEyes}
+        hair={player.avatarHair}
+      />
     </div>
   );
 }
 
 function MapTile({ tile }: { tile: WorldMapTile }) {
   const store = useGameStore();
-  const [startWalking] = useStore(store, (state) => [state.startWalking]);
+  const [startWalking, walkTo] = useStore(store, (state) => [
+    state.startWalking,
+    state.walkTo,
+  ]);
 
   function handleClick() {
-    startWalking();
     if (!tile.obstacle) {
-      fetch("/api/actions", {
-        method: "POST",
-        body: JSON.stringify({
-          tag: "walk",
-          x: tile.x,
-          y: tile.y,
-        } as Action),
-      });
+      startWalking();
+      walkTo(tile.x, tile.y);
     }
   }
 

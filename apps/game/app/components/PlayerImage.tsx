@@ -1,6 +1,12 @@
-export function Avatar() {
+export type Props = {
+  head: number | undefined | null;
+  eyes: number | undefined | null;
+  hair: number | undefined | null;
+};
+
+export function PlayerImage(props: Props) {
   return (
-    <div className="absolute z-50 h-full w-full">
+    <div className="relative z-50 h-full w-full">
       <img
         className="absolute z-30 h-full w-full"
         alt="eyes"
@@ -8,9 +14,9 @@ export function Avatar() {
           userSelect: "none",
           imageRendering: "pixelated",
         }}
-        height="96"
-        width="96"
-        src={`/assets/avatars/hair_0.png`}
+        height="16"
+        width="16"
+        src={`/assets/avatars/hair_${props.hair || 0}.png`}
       />
       <img
         className="absolute z-20 h-full w-full"
@@ -19,9 +25,9 @@ export function Avatar() {
           userSelect: "none",
           imageRendering: "pixelated",
         }}
-        height="96"
-        width="96"
-        src={`/assets/avatars/eyes_0.png`}
+        height="16"
+        width="16"
+        src={`/assets/avatars/eyes_${props.eyes || 0}.png`}
       />
       <img
         className="absolute z-10 h-full w-full"
@@ -30,9 +36,9 @@ export function Avatar() {
           userSelect: "none",
           imageRendering: "pixelated",
         }}
-        height="96"
-        width="96"
-        src={`/assets/avatars/head_0.png`}
+        height="16"
+        width="16"
+        src={`/assets/avatars/head_${props.head || 0}.png`}
       />
     </div>
   );

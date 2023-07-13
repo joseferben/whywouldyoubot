@@ -5,8 +5,8 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "tsup ./src/index.ts --format cjs --dts",
-    "dev": "npm run build -- --watch --ignore-watch .turbo",
+    "build": "tsup src/index.ts --format cjs --dts",
+    "dev": "tsc --watch --outDir dist",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "format": "prettier --write ."
   },

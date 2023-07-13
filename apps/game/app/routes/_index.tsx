@@ -3,9 +3,9 @@ import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
 import { StoreContext, createGameStore } from "~/store";
-import { DOMRenderer } from "~/components/domRenderer/DOMRenderer";
-import { Menu } from "~/components/menu/Menu";
-import { EventSource } from "~/components/eventSource/EventSource";
+import { DOMRenderer } from "~/components/DOMRenderer";
+import { Menu } from "~/components/Menu";
+import { EventSource } from "~/components/EventSource";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const player = await container.authService.ensurePlayer(request);
