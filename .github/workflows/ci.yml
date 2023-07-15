@@ -37,6 +37,8 @@ jobs:
         run: npm run typecheck
       - name: Lint
         run: npm run lint
+      - name: Install tiled
+        run: sudo apt-get install -y tiled libxcb-xinerama0
       - name: Test
         run: npm run test
         env:
