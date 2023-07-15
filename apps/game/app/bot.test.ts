@@ -3,40 +3,10 @@ import { Bot, catchRemixResponse } from "@wwyb/sdk";
 import { describe, it } from "vitest";
 import { action } from "~/routes/api.walk";
 import { RemixTestClient } from "~/test/RemixTestClient";
-import type { Container } from "./container.server";
-import { container } from "./container.server";
-import invariant from "tiny-invariant";
+import { container } from "~/container.server";
 import type { ClientState } from "@wwyb/core";
-
-/**
- * Reset the state of the container for tests.
- */
-function cleanContainer(container: Container) {
-  if (process.env.NODE_ENV === "production")
-    throw new Error("Don't clean in production");
-  // no need to clean MapService since it's mostly static
-  container.playerService.db.entities = new Map();
-  container.itemService.db.entities = new Map();
-  container.clientEventService.db.entities = new Map();
-  container.onlineService.db.entities = new Map();
-  container.botService.db.entities = new Map();
-  // container.npcService.db.close();
-  // container.equipmentService.db.close();
-  // container.avatarService.db.close();
-  // container.combatStatsService.db.close();
-  // container.inventoryService.db.close();
-  // container.spawnService.db.close();
-  // container.combatService.db.close();
-}
-
-function testBot(): Bot {
-  const player = container.playerService.create("player", "someUserId");
-  invariant(typeof player === "object", player as string);
-  const maybeBot = container.botService.create("name", player);
-  invariant(typeof maybeBot === "object", maybeBot as string);
-  const testClient = new RemixTestClient({ apiKey: maybeBot.apiKey });
-  return new Bot(testClient);
-}
+import { cleanContainer } from "~/test/cleanContainer";
+import { testBot } from "~/test/testBot";
 
 beforeEach(() => {
   cleanContainer(container);
@@ -71,5 +41,6 @@ describe("bot", () => {
       clientState = state;
     });
     expect(clientState).toBeDefined();
+    expect(clientState?.players).toHaveLength(2);
   });
 });
