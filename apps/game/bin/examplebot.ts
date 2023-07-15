@@ -9,8 +9,8 @@ const bot = new Bot({
 
 bot.act(async (state) => {
   const { x, y } = state.me;
-  const xRandom = Math.random() > 0.5 ? 1 : -1;
-  const yRandom = Math.random() > 0.5 ? 1 : -1;
+  const xRandom = Math.random() > 0.5 ? 2 : -2;
+  const yRandom = Math.random() > 0.5 ? 2 : -2;
   const target = { x: x + xRandom, y: y + yRandom };
   console.log("walking to", target);
   return bot.walkTo(target);

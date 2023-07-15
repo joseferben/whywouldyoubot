@@ -25,34 +25,44 @@ function BotImage() {
 
 function PlayerTile({ player }: { player: Player }) {
   const store = useGameStore();
-  const animation = useStore(store, (state) =>
-    state.animations.get(state.me.id)
-  );
+  const animation = useStore(store, (state) => state.animations.get(player.id));
 
   const left = tileRenderedSize * player.x;
   const top = tileRenderedSize * player.y;
 
   return (
-    <div
-      style={{
-        top,
-        left,
-        width: tileRenderedSize + 1,
-        height: tileRenderedSize + 1,
-      }}
-      className={`absolute z-50 transition-all duration-500 ${
-        animation === "walk" ? "animate-wiggle" : ""
-      }`}
-    >
-      {player.userId ? (
-        <PlayerImage
-          head={player.avatarHead}
-          eyes={player.avatarEyes}
-          hair={player.avatarHair}
-        />
-      ) : (
-        <BotImage />
-      )}
+    <div>
+      <div
+        style={{
+          top: top - 24,
+          left,
+          width: tileRenderedSize + 1,
+        }}
+        className="absolute z-50 text-center text-xl text-white transition-all duration-500"
+      >
+        <span>{player.username}</span>
+      </div>
+      <div
+        style={{
+          top,
+          left,
+          width: tileRenderedSize + 1,
+          height: tileRenderedSize + 1,
+        }}
+        className={`absolute z-50 transition-all duration-500 ${
+          animation === "walk" ? "animate-wiggle" : ""
+        }`}
+      >
+        {player.userId ? (
+          <PlayerImage
+            head={player.avatarHead}
+            eyes={player.avatarEyes}
+            hair={player.avatarHair}
+          />
+        ) : (
+          <BotImage />
+        )}
+      </div>
     </div>
   );
 }

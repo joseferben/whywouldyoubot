@@ -58,6 +58,7 @@ export const createGameStore = (
       startWalking: (characterId?: string) => {
         set((state) => {
           const id = characterId || state.me.id;
+          console.log("start walking", id);
           state.animations.set(id, "walk");
         });
       },
