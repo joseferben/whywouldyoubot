@@ -24,7 +24,7 @@ beforeEach(async () => {
   const jsonDB = new JSONStore(s);
   db = new EntityDB<Foo>({
     jsonStore: jsonDB,
-    persistenceNamespace: "foo",
+    namespace: "foo",
     fields: ["name", "x"],
     spatial: true,
   });

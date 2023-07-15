@@ -276,6 +276,7 @@ export class EntityDB<
   close() {
     this.persistor?.close();
     this.entities = new Map();
+    usedNamespaces.delete(this.opts.namespace);
   }
 
   /**
