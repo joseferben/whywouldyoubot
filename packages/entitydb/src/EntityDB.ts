@@ -7,7 +7,6 @@ import { Migrator } from "./Migrator";
 import { Persistor } from "./Persistor";
 import type { JSONStore } from "./JSONStore";
 import { Evictor } from "./Evictor";
-import { immerable } from "immer";
 
 export type Opts<Entity> = {
   fields?: string[];
@@ -23,8 +22,6 @@ export type Opts<Entity> = {
 export class EntityDB<
   E extends { id: string; v?: number; x?: number; y?: number }
 > {
-  [immerable] = true;
-
   entities!: Map<string, E>;
   persistor!: Persistor;
   fieldIndex!: FieldIndex;

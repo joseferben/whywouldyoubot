@@ -203,10 +203,9 @@ export type ClientState = {
   players: Map<string, Player>;
 };
 
-export type SerializedClientState = Omit<
-  Omit<Partial<ClientState>, "me">,
-  "players"
-> & { players: Player[] };
+export type SerializedClientState = Omit<Partial<ClientState>, "players"> & {
+  players: Player[];
+};
 
 export type GameEvent = PlayerStepped | PlayerAttacked;
 

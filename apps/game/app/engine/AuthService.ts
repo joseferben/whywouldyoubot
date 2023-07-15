@@ -1,9 +1,10 @@
-import { Authenticator } from "remix-auth";
+import { Authenticator, Strategy } from "remix-auth";
 import type { DiscordProfile, PartialDiscordGuild } from "remix-auth-discord";
 import { DiscordStrategy } from "remix-auth-discord";
 import type { SessionService } from "./SessionService";
 import type { Player } from "@wwyb/core";
 import type { PlayerService } from "./PlayerService";
+import type { BotService } from "./BotService";
 
 export interface DiscordUser {
   id: DiscordProfile["id"];
@@ -16,19 +17,37 @@ export interface DiscordUser {
   refreshToken: string;
 }
 
+export interface VerifyOptions {
+  apiKey: string;
+}
+
+class ApiTokenStrategy extends Strategy<Player, VerifyOptions> {
+  name = "api-token";
+  async authenticate(request: Request): Promise<Player> {
+    const apiKey = request.headers.get("X-API-Key");
+    if (!apiKey) {
+      throw new Error("API key is missing");
+    }
+    return this.verify({ apiKey });
+  }
+}
+
+// Supports Discord and API key authentication.
 export class AuthService {
-  readonly auth: Authenticator<DiscordUser>;
-  readonly discordStrategy: DiscordStrategy<DiscordUser>;
+  readonly discord: Authenticator<DiscordUser>;
+  readonly apiToken: Authenticator<Player>;
   constructor(
     readonly sessionService: SessionService,
     readonly playerService: PlayerService,
+    readonly botService: BotService,
     readonly discordClientId: string,
     readonly discordClientSecret: string,
     readonly discordCallbackUrl: string
   ) {
-    this.auth = new Authenticator<DiscordUser>(sessionService.sessionStorage);
-
-    this.discordStrategy = new DiscordStrategy(
+    this.discord = new Authenticator<DiscordUser>(
+      sessionService.sessionStorage
+    );
+    const discordStrategy = new DiscordStrategy(
       {
         clientID: this.discordClientId,
         clientSecret: this.discordClientSecret,
@@ -58,21 +77,40 @@ export class AuthService {
         };
       }
     );
-    this.auth.use(this.discordStrategy);
-  }
+    this.discord.use(discordStrategy);
 
-  async authenticate(request: Request): Promise<DiscordUser> {
-    return this.auth.authenticate("discord", request);
-  }
-
-  async ensurePlayer(request: Request): Promise<Player> {
-    const user = await this.auth.isAuthenticated(request, {
-      failureRedirect: "/login",
+    this.apiToken = new Authenticator<Player>(sessionService.sessionStorage);
+    const apiTokenStrategy = new ApiTokenStrategy(async ({ apiKey }) => {
+      const bot = this.botService.db.findOneBy("apiKey", apiKey);
+      if (!bot) throw new Error("Invalid API key");
+      const player = this.playerService.findByUserId(bot.ownerId);
+      if (!player) throw new Error("Invalid API key");
+      return player;
     });
-    const player = this.playerService.findByUserId(user.id);
-    if (!player) {
-      return this.playerService.create(user.id, user.displayName);
+    this.apiToken.use(apiTokenStrategy);
+  }
+
+  /**
+   * Make sure the request is authenticated, either by a human player using Discord
+   * or a bot using an API key.
+   */
+  async ensurePlayer(request: Request): Promise<Player> {
+    if (request.headers.get("X-API-Key")) {
+      return this.apiToken.isAuthenticated(request, {
+        failureRedirect: "/login",
+      });
+    } else {
+      const discordUser = await this.discord.isAuthenticated(request, {
+        failureRedirect: "/login",
+      });
+      const player = this.playerService.findByUserId(discordUser.id);
+      if (!player) {
+        return this.playerService.create(
+          discordUser.id,
+          discordUser.displayName
+        );
+      }
+      return player;
     }
-    return player;
   }
 }

@@ -21,12 +21,19 @@ export function BotsScreen() {
     createBot.submit();
   }
 
+  function handleEnterButton(event: React.KeyboardEvent) {
+    if (event.key === "Enter") {
+      createBot.submit();
+    }
+  }
+
   return (
     <div>
       <div className="join">
         <input
           value={createBot.value || ""}
           onChange={handleInputChange}
+          onKeyDown={handleEnterButton}
           className={`input-bordered input join-item ${
             createBot?.error ? "input-error" : ""
           }`}

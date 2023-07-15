@@ -6,7 +6,11 @@ import { useEffect } from "react";
 import { PlayerImage } from "./PlayerImage";
 
 function InventoryScreen() {
-  return <div>Inventory</div>;
+  return (
+    <div className="text-center text-sm text-gray-500">
+      You don't have items yet.
+    </div>
+  );
 }
 
 function CharacterScreen() {
