@@ -208,7 +208,7 @@ export type SerializedClientState = Omit<
   "me"
 > & {
   me: Player;
-  players: Player[];
+  players?: Player[];
 };
 
 export type GameEvent = PlayerStepped | PlayerAttacked;

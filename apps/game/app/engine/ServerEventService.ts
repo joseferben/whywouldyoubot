@@ -39,6 +39,7 @@ export class ServerEventService {
 
   playerStepped(player: Player, x: number, y: number, lastStep: boolean) {
     const state: SerializedClientState = {
+      me: player,
       players: this.playerService.findAroundPlayer(player),
     };
     this.sendToAll({

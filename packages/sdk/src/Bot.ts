@@ -1,5 +1,9 @@
 import { Client } from "./Client";
-import type { ClientState, ServerEvent } from "@wwyb/core";
+import type {
+  ClientState,
+  SerializedClientState,
+  ServerEvent,
+} from "@wwyb/core";
 
 export type Opts = {
   apiKey: string;
@@ -35,8 +39,8 @@ export class Bot {
     }, 1000);
   }
 
-  private async _tick() {
-    const state = await this.client.fetchState();
+  async _tick(providedState?: SerializedClientState) {
+    const state = providedState || (await this.client.fetchState());
     const clientState = {
       me: state.me,
       actions: state.actions || [],
@@ -44,7 +48,9 @@ export class Bot {
       npcs: state.npcs || [],
       inventory: state.inventory || [],
       droppedItems: state.droppedItems || [],
-      players: new Map(state.players.map((p) => [p.id, p])),
+      players: state.players
+        ? new Map(state.players.map((p) => [p.id, p]))
+        : new Map(),
     };
     await this.cb?.(clientState);
   }
