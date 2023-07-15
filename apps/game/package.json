@@ -15,7 +15,8 @@
     "typecheck": "tsc",
     "validate": "run-p \"test -- --run\" lint typecheck",
     "repl": "tsx bin/repl.ts",
-    "exportmap": "tsx bin/exportmap.ts"
+    "exportmap": "tsx bin/exportmap.ts",
+    "examplebot": "tsx bin/examplebot.ts"
   },
   "prettier": {},
   "eslintIgnore": [

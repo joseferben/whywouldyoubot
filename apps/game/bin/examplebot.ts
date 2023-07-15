@@ -11,5 +11,7 @@ bot.act(async (state) => {
   const { x, y } = state.me;
   const xRandom = Math.random() > 0.5 ? 1 : -1;
   const yRandom = Math.random() > 0.5 ? 1 : -1;
-  return bot.walkTo({ x: x + xRandom, y: y + yRandom });
+  const target = { x: x + xRandom, y: y + yRandom };
+  console.log("walking to", target);
+  return bot.walkTo(target);
 });

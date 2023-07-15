@@ -43,7 +43,7 @@ export class Client {
 
   async fetchState(): Promise<SerializedClientState> {
     return respToJson<SerializedClientState>(
-      await this.fetch(`${this?.opts?.baseUrl || ""}/api/state/`, {
+      await this.fetch("/api/state/", {
         headers: this.withHeaders(),
         method: "get",
       })
@@ -52,7 +52,7 @@ export class Client {
 
   async createBot(name: string): Promise<Bot | string> {
     return respToJson<Bot>(
-      await this.fetch(`${this?.opts?.baseUrl || ""}/api/bots/create/`, {
+      await this.fetch("/api/bots/create/", {
         headers: this.withHeaders(),
         method: "post",
         body: JSON.stringify({ name: name }),
@@ -61,7 +61,7 @@ export class Client {
   }
 
   async deleteBot(id: string): Promise<void> {
-    await this.fetch(`${this?.opts?.baseUrl || ""}/api/bots/delete/`, {
+    await this.fetch("/api/bots/delete/", {
       headers: this.withHeaders(),
       method: "post",
       body: JSON.stringify({ id: id }),
@@ -70,7 +70,7 @@ export class Client {
 
   async walkTo(position: { x: number; y: number }): Promise<null | string> {
     return respToJson(
-      await this.fetch(`${this?.opts?.baseUrl || ""}/api/walk/`, {
+      await this.fetch("/api/walk/", {
         headers: this.withHeaders(),
         method: "post",
         body: JSON.stringify({ x: position.x, y: position.y }),
