@@ -39,3 +39,8 @@ jobs:
         run: npm run lint
       - name: Test
         run: npm run test
+        env:
+          SESSION_SECRET: "123"
+          DISCORD_CLIENT_ID: "123"
+          DISCORD_CLIENT_SECRET: "123"
+          DISCORD_CALLBACK_URL: "http://"
