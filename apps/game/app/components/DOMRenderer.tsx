@@ -37,8 +37,9 @@ function PlayerTile({ player }: { player: Player }) {
           top: top - 24,
           left,
           width: tileRenderedSize + 1,
+          zIndex: 55,
         }}
-        className="absolute z-50 text-center text-xl text-white transition-all duration-500"
+        className="absolute text-center text-xl text-white transition-all duration-500"
       >
         <span>{player.username}</span>
       </div>
