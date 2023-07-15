@@ -46,3 +46,4 @@ jobs:
           DISCORD_CLIENT_ID: "123"
           DISCORD_CLIENT_SECRET: "123"
           DISCORD_CALLBACK_URL: "http://"
+          TILED_OFFSCREEN: "True"

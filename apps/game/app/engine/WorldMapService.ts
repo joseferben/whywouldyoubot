@@ -171,7 +171,7 @@ export class WorldMapService {
 
   static export(tmxFilePath: string, jsonFilePath: string) {
     const env = Object.create(process.env);
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production" || process.env.TILED_OFFSCREEN) {
       // no screen in production
       env.QT_QPA_PLATFORM = "offscreen";
     }
