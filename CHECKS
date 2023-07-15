@@ -1,5 +1,5 @@
 WAIT=3
-TIMEOUT=30
+TIMEOUT=3
 ATTEMPTS=5
 
 /healthcheck
