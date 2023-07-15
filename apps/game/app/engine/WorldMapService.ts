@@ -194,7 +194,11 @@ export class WorldMapService {
       const jsonFiles = fs
         .readdirSync(this.mapPath)
         .filter((file) => file.endsWith(".json"));
-      jsonFiles.forEach((file) => fs.rmSync(`${this.mapPath}/${file}`));
+      jsonFiles.forEach((file) => {
+        if (file !== "map.json") {
+          fs.rmSync(`${this.mapPath}/${file}`);
+        }
+      });
       if (process.env.NODE_ENV !== "production") {
         // in production we export during build process
         WorldMapService.export(this.tmxFilePath, this.jsonFilePath);
