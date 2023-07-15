@@ -180,6 +180,22 @@ export class EntityDB<
     return result;
   }
 
+  /**
+   * Like findByIds but throws if any of the ids are not found
+   */
+  getByIds(ids: Iterable<string>): E[] {
+    const result: E[] = [];
+    for (const id of ids) {
+      const entity = this.findById(id);
+      if (!entity)
+        throw new Error(
+          `Entity with id ${id} not found, field index is out of sync`
+        );
+      result.push(entity);
+    }
+    return result;
+  }
+
   findBy(key: keyof E, value: E[typeof key]): E[] {
     if (!this.fieldIndex)
       throw new Error("Field index needed for findByFilter");
@@ -188,7 +204,7 @@ export class EntityDB<
       return entity ? [entity] : [];
     }
     const ids = Array.from(this.fieldIndex.findBy(key as string, value));
-    return this.findByIds(ids);
+    return this.getByIds(ids);
   }
 
   findOneBy(key: keyof E, value: E[typeof key]): E | null {
@@ -221,7 +237,7 @@ export class EntityDB<
     const result: E[] = [];
     for (const id of ids) {
       const entity = this.entities.get(id);
-      invariant(entity, `Entity ${id} not found`);
+      invariant(entity, `Entity ${id} not found, spatial index is out of sync`);
       result.push(entity);
     }
     return result;
@@ -243,7 +259,7 @@ export class EntityDB<
     const result: E[] = [];
     for (const id of ids) {
       const entity = this.entities.get(id);
-      invariant(entity, `Entity ${id} not found`);
+      invariant(entity, `Entity ${id} not found, spatial index is out of sync`);
       result.push(entity);
     }
     return result;
@@ -263,12 +279,16 @@ export class EntityDB<
   }
 
   /**
-   * Reset the state of the store. This is only used for testing.
+   * Empties the store. This is only used for testing.
    */
   clean() {
-    if (process.env.NODE_ENV === "production") return;
+    if (process.env.NODE_ENV === "production") {
+      console.warn("clean() should only be used for testing");
+      return;
+    }
     this.entities = new Map();
     this.spatialIndex?.clean();
     this.fieldIndex?.clean();
+    this.persistor?.clean();
   }
 }

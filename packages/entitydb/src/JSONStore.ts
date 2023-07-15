@@ -4,6 +4,7 @@ export interface JSONStore {
   delete(id: string): void;
   set(id: string, json: string, namespace?: string): void;
   all(namespace?: string): string[];
+  deleteAll(namespace: string): void;
 }
 
 export class JSONStore {
@@ -80,5 +81,11 @@ export class JSONStore {
     return (this.selectStmt.all({ namespace }) as { data: string }[]).map(
       (row) => JSON.parse(row.data)
     );
+  }
+
+  deleteAll(namespace?: string) {
+    this.db.prepare("DELETE FROM entities WHERE namespace = @namespace").run({
+      namespace,
+    });
   }
 }

@@ -85,4 +85,9 @@ export class Persistor {
     this.persistChanged();
     this.jsonDB.db.close();
   }
+
+  clean() {
+    if (process.env.NODE_ENV === "production") return;
+    this.jsonDB.deleteAll(this.namespace);
+  }
 }
