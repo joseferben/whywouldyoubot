@@ -27,7 +27,7 @@ export class WalkService {
   ) {
     [this.db] = initOnce(
       this.constructor.name,
-      () => new EntityDB<Walk>({ fields: ["playerId"] })
+      () => new EntityDB<Walk>({ fields: ["playerId"], namespace: "wal" })
     );
     const [obstacleGrid] = initOnce(
       `${this.constructor.name}.obstacleGrid`,

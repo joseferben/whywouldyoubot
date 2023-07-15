@@ -23,7 +23,11 @@ export class ServerEventService {
   constructor(readonly playerService: PlayerService) {
     [this.db] = initOnce(
       this.constructor.name,
-      () => new EntityDB<PlayerEmitter>({ fields: ["playerId"] })
+      () =>
+        new EntityDB<PlayerEmitter>({
+          fields: ["playerId"],
+          namespace: "pem",
+        })
     );
   }
 

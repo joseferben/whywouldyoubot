@@ -16,5 +16,6 @@ module.exports = {
   rules: {
     "testing-library/await-async-query": "off",
     "no-useless-constructor": "off",
+    "testing-library/no-unnecessary-act": "off",
   },
 };

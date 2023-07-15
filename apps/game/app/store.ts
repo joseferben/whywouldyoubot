@@ -45,7 +45,7 @@ export const createGameStore = (
   return createStore(
     immer<State>((set) => ({
       activeMenu: null,
-      me: player.id,
+      me: player,
       bots: bots,
       ground: tiles,
       players: new Map(players.map((p) => [p.id, p])),
@@ -57,7 +57,7 @@ export const createGameStore = (
       characterAnimations: new Map(),
       startWalking: (characterId?: string) => {
         set((state) => {
-          const id = characterId || state.me;
+          const id = characterId || state.me.id;
           state.animations.set(id, "walk");
         });
       },
@@ -81,7 +81,7 @@ export const createGameStore = (
         });
       },
       walkTo: async (x: number, y: number) => {
-        const result = await client.walkTo(x, y);
+        const result = await client.walkTo({ x, y });
         if (typeof result === "string") return result;
       },
       handleEvent: (event: string | null) => {

@@ -9,15 +9,16 @@ export class BotService {
   db!: EntityDB<Bot>;
   constructor(
     readonly jsonStore: JSONStore,
-    readonly playerService: PlayerService
+    readonly playerService: PlayerService,
+    readonly maxBotsPerPlayer: number
   ) {
     [this.db] = initOnce(
       this.constructor.name,
       () =>
         new EntityDB<Bot>({
+          namespace: "bot",
           fields: ["ownerId", "playerId", "name", "apiKey"],
           jsonStore,
-          persistenceNamespace: "bot",
         })
     );
   }
@@ -26,6 +27,9 @@ export class BotService {
     const nameValidation = validateName(botName);
     if (nameValidation) return nameValidation;
     if (this.db.findBy("name", botName).length > 0) return "Name already taken";
+    if (this.db.findBy("ownerId", owner.id).length >= this.maxBotsPerPlayer) {
+      return "You have too many bots";
+    }
 
     const player = this.playerService.create(botName);
     if (typeof player === "string") return player;

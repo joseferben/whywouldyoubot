@@ -6,6 +6,7 @@ import type { Player } from "@wwyb/core";
 import type { PlayerService } from "./PlayerService";
 import type { BotService } from "./BotService";
 import { redirect } from "@remix-run/node";
+import invariant from "tiny-invariant";
 
 export interface DiscordUser {
   id: DiscordProfile["id"];
@@ -18,23 +19,7 @@ export interface DiscordUser {
   refreshToken: string;
 }
 
-export interface VerifyOptions {
-  apiKey: string;
-}
-
-// class ApiTokenStrategy extends Strategy<Player, VerifyOptions> {
-//   name = "api-token";
-//   async authenticate(request: Request): Promise<Player> {
-//     console.log("authenticating api token");
-//     const apiKey = request.headers.get("X-API-Key");
-//     if (!apiKey) {
-//       throw new Error("API key is missing");
-//     }
-//     return this.verify({ apiKey });
-//   }
-// }
-
-// Supports Discord and API key authentication.
+// Supports Discord authentication.
 export class AuthService {
   readonly discord: Authenticator<DiscordUser>;
   constructor(
@@ -90,8 +75,9 @@ export class AuthService {
     if (apiKey) {
       const bot = this.botService.db.findOneBy("apiKey", apiKey);
       if (!bot) throw redirect("Invalid API key");
-      const player = this.playerService.db.findById(bot.ownerId);
+      const player = this.playerService.db.findById(bot.playerId);
       if (!player) throw new Error("Invalid API key");
+      invariant(player.userId === null, "Bot player should not have a user ID");
       return player;
     } else {
       const discordUser = await this.discord.isAuthenticated(request, {
@@ -99,10 +85,12 @@ export class AuthService {
       });
       const player = this.playerService.findByUserId(discordUser.id);
       if (!player) {
-        return this.playerService.create(
-          discordUser.id,
-          discordUser.displayName
+        const created = this.playerService.create(
+          discordUser.displayName,
+          discordUser.id
         );
+        if (typeof created === "string") throw new Error(created);
+        return created;
       }
       return player;
     }

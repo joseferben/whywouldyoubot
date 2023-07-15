@@ -1,8 +1,4 @@
-import { immerable } from "immer";
-
 export class FieldIndex {
-  [immerable] = true;
-
   index: Map<string, Map<string, Set<string>>> = new Map();
 
   constructor(readonly fields: string[]) {
@@ -73,5 +69,14 @@ export class FieldIndex {
       }
     }
     return ids ?? [];
+  }
+
+  clean() {
+    if (process.env.NODE_ENV === "production") return;
+    this.index = new Map();
+    this.fields.forEach((field) => {
+      if (field === "id") console.log("id doesn't need an index");
+      this.index.set(field, new Map());
+    });
   }
 }

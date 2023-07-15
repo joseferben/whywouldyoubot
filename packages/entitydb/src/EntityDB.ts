@@ -9,15 +9,17 @@ import type { JSONStore } from "./JSONStore";
 import { Evictor } from "./Evictor";
 
 export type Opts<Entity> = {
+  namespace: string;
   fields?: string[];
   spatial?: boolean;
   jsonStore?: JSONStore;
-  persistenceNamespace?: string;
   persistenceIntervalMs?: number;
   persistenceAfterChangeCount?: number;
   migrations?: Migrations;
   evictorListener?: (entity: Entity) => void;
 };
+
+const usedNamespaces = new Set<string>();
 
 export class EntityDB<
   E extends { id: string; v?: number; x?: number; y?: number }
@@ -29,18 +31,22 @@ export class EntityDB<
   migrator!: Migrator;
   evictor!: Evictor<E>;
 
-  constructor(readonly opts: Opts<E> = {}) {
+  constructor(readonly opts: Opts<E>) {
     this.entities = new Map();
-    if (opts.jsonStore && opts.persistenceNamespace) {
+    if (opts.namespace === "") {
+      throw new Error("EntityDB namespace cannot be empty");
+    }
+    if (usedNamespaces.has(opts.namespace)) {
+      throw new Error(`EntityDB namespace ${opts.namespace} already in use`);
+    }
+    usedNamespaces.add(opts.namespace);
+
+    if (opts.jsonStore) {
       this.persistor = new Persistor(
         opts.jsonStore,
-        opts.persistenceNamespace,
+        opts.namespace,
         opts.persistenceIntervalMs,
         opts.persistenceAfterChangeCount
-      );
-    } else if (opts.jsonStore && !opts.persistenceNamespace) {
-      throw new Error(
-        "persistenceNamespace must be provided if using jsonStore"
       );
     }
     if (opts.fields) {
@@ -59,7 +65,7 @@ export class EntityDB<
   }
 
   private handleExpire(entity: E) {
-    console.log("evicting", entity.id);
+    console.log("expire", entity.id);
     this.delete(entity);
     this.opts.evictorListener?.(entity);
   }
@@ -95,7 +101,7 @@ export class EntityDB<
   }
 
   create(entity: Omit<Omit<E, "id">, "v">, opts?: { ttlMs?: number }): E {
-    const id = nanoid();
+    const id = `${this.opts.namespace}_${nanoid()}`;
     const v = this.migrator?.migratorTargetVersion || 0;
     const toInsert = { id, v, ...entity } as E;
     this.insert(toInsert);
@@ -254,5 +260,15 @@ export class EntityDB<
   close() {
     this.persistor?.close();
     this.entities = new Map();
+  }
+
+  /**
+   * Reset the state of the store. This is only used for testing.
+   */
+  clean() {
+    if (process.env.NODE_ENV === "production") return;
+    this.entities = new Map();
+    this.spatialIndex?.clean();
+    this.fieldIndex?.clean();
   }
 }

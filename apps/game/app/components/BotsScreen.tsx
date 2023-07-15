@@ -1,5 +1,6 @@
 import type { Bot } from "@wwyb/core";
 import { useStore } from "zustand";
+import { config } from "~/config";
 import { useAction } from "~/hooks/useAction";
 import { useGameStore } from "~/store";
 
@@ -41,7 +42,9 @@ export function BotsScreen() {
         />
         <button
           onClick={handleBotCreation}
-          disabled={!!createBot?.error}
+          disabled={
+            !!createBot?.error || bots.length >= config.maxBotsPerPlayer
+          }
           className={`btn-primary join-item btn rounded-r-full ${
             createBot.submitting ? "loading loading-spinner" : ""
           }`}

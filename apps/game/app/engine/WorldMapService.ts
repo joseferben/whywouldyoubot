@@ -32,7 +32,7 @@ export class WorldMapService {
   ) {
     const [db, foundInCache] = initOnce(
       this.constructor.name,
-      () => new EntityDB<WorldMapTile>({ spatial: true })
+      () => new EntityDB<WorldMapTile>({ spatial: true, namespace: "wmp" })
     );
     this.db = db;
     this.mapPath = mapPath;

@@ -8,7 +8,7 @@ import type { ClientState } from "@wwyb/core";
 import { cleanContainer } from "~/test/cleanContainer";
 import { testBot } from "~/test/testBot";
 
-beforeEach(() => {
+afterEach(() => {
   cleanContainer(container);
 });
 
@@ -31,16 +31,24 @@ describe("bot", () => {
   it("create with invalid api key", async () => {
     const testClient = new RemixTestClient({ apiKey: "invalid" });
     const bot = new Bot(testClient);
-    await expect(() => bot.onTick(async (state) => {})).rejects.toThrow();
+    await expect(() => bot.act(async (state) => {})).rejects.toThrow();
   });
 
   it("get state", async () => {
     let clientState: ClientState | undefined;
     const bot = testBot();
-    await bot.onTick(async (state) => {
+    await bot.act(async (state) => {
       clientState = state;
     });
     expect(clientState).toBeDefined();
     expect(clientState?.players).toHaveLength(2);
+  });
+
+  it("walk to", async () => {
+    const bot = testBot();
+    await bot.act(async (state) => {
+      const { x, y } = state.me;
+      return bot.walkTo({ x: x, y: y + 1 });
+    });
   });
 });

@@ -116,7 +116,7 @@ function Screen() {
 function Navigation() {
   const store = useGameStore();
   const [player, setActiveMenu] = useStore(store, (state) => [
-    state.players.get(state.me),
+    state.players.get(state.me.id),
     state.setActiveMenu,
   ]);
 

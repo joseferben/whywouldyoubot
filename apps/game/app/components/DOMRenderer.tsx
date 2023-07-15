@@ -7,9 +7,27 @@ import { PlayerImage } from "./PlayerImage";
 
 const tileRenderedSize = config.tileRenderedSize;
 
+function BotImage() {
+  return (
+    <img
+      className="z-30 h-full w-full"
+      alt="eyes"
+      style={{
+        userSelect: "none",
+        imageRendering: "pixelated",
+      }}
+      height="16"
+      width="16"
+      src={`/assets/ui/bots.png`}
+    />
+  );
+}
+
 function PlayerTile({ player }: { player: Player }) {
   const store = useGameStore();
-  const animation = useStore(store, (state) => state.animations.get(state.me));
+  const animation = useStore(store, (state) =>
+    state.animations.get(state.me.id)
+  );
 
   const left = tileRenderedSize * player.x;
   const top = tileRenderedSize * player.y;
@@ -26,11 +44,15 @@ function PlayerTile({ player }: { player: Player }) {
         animation === "walk" ? "animate-wiggle" : ""
       }`}
     >
-      <PlayerImage
-        head={player.avatarHead}
-        eyes={player.avatarEyes}
-        hair={player.avatarHair}
-      />
+      {player.userId ? (
+        <PlayerImage
+          head={player.avatarHead}
+          eyes={player.avatarEyes}
+          hair={player.avatarHair}
+        />
+      ) : (
+        <BotImage />
+      )}
     </div>
   );
 }
@@ -115,7 +137,7 @@ function NPCLayer() {
 
 export function DOMRenderer() {
   const store = useGameStore();
-  const player = useStore(store, (state) => state.players.get(state.me));
+  const player = useStore(store, (state) => state.players.get(state.me.id));
 
   invariant(player, "Player not found");
 

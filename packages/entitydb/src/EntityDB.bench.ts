@@ -23,7 +23,7 @@ describe("EntityDB", () => {
     db = new EntityDB<Foo>({
       fields: ["name", "x"],
       jsonStore: jsonDB,
-      persistenceNamespace: "foo",
+      namespace: "foo",
       persistenceIntervalMs: 100,
     });
   }

@@ -194,7 +194,7 @@ export type WorldMapTile = {
 
 export type ClientState = {
   // playerId of current player
-  me: string;
+  me: Player;
   actions: PotentialAction[];
   ground: WorldMapTile[];
   npcs: Npc[];
@@ -203,7 +203,11 @@ export type ClientState = {
   players: Map<string, Player>;
 };
 
-export type SerializedClientState = Omit<Partial<ClientState>, "players"> & {
+export type SerializedClientState = Omit<
+  Omit<Partial<ClientState>, "players">,
+  "me"
+> & {
+  me: Player;
   players: Player[];
 };
 

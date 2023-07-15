@@ -1,8 +1,4 @@
-import { immerable } from "immer";
-
 export class SpatialIndex {
-  [immerable] = true;
-
   index: { [x: number]: { [y: number]: Set<string> } };
   maxX: number = 0;
   maxY: number = 0;
@@ -71,5 +67,12 @@ export class SpatialIndex {
     if (this.index[x]?.[y]?.has(id)) {
       this.index[x][y]?.delete(id);
     }
+  }
+
+  clean() {
+    if (process.env.NODE_ENV === "production") return;
+    this.index = {};
+    this.maxX = 0;
+    this.maxY = 0;
   }
 }

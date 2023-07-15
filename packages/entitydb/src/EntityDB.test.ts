@@ -133,7 +133,7 @@ describe("EntityDB", () => {
     const testDb = new EntityDB<Foo>({
       migrations,
       jsonStore: jsonDB,
-      persistenceNamespace: "fob",
+      namespace: "fob",
     });
 
     const migrated = testDb.findById("123");

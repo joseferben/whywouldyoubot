@@ -1,8 +1,6 @@
 import invariant from "tiny-invariant";
 import type { JSONStore } from "./JSONStore";
 
-const usedNamespaces = new Set<string>();
-
 export class Persistor {
   defaultOpts = {
     persistIntervalMs: 1000,
@@ -17,16 +15,7 @@ export class Persistor {
     readonly namespace: string,
     readonly persistIntervalMs?: number,
     readonly persistAfterChangeCount?: number
-  ) {
-    if (usedNamespaces.has(namespace)) {
-      throw new Error(`Persistor namespace ${namespace} already in use`);
-    }
-    usedNamespaces.add(namespace);
-  }
-
-  static namespaces() {
-    return usedNamespaces;
-  }
+  ) {}
 
   setEntities(entities: Map<string, { v?: number; id: string }>) {
     this.entities = entities;
@@ -94,7 +83,6 @@ export class Persistor {
     console.log("shutdown gracefully, persisting entities", this.namespace);
     this.timer && clearInterval(this.timer);
     this.persistChanged();
-    usedNamespaces.delete(this.namespace);
     this.jsonDB.db.close();
   }
 }

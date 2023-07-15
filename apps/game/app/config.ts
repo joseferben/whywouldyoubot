@@ -16,4 +16,5 @@ export const config = {
   idleLogoutMs: 1000 * 60 * 5,
   userSessionKey: "user",
   items: getItemKinds(),
+  maxBotsPerPlayer: 3,
 };

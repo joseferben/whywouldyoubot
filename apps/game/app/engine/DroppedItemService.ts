@@ -6,6 +6,7 @@ export class DroppedItemService {
   db!: EntityDB<DroppedItem>;
   constructor(readonly itemKinds: { [name: string]: ItemKindOpts }) {
     this.db = new EntityDB<DroppedItem>({
+      namespace: "dit",
       spatial: true,
     });
   }

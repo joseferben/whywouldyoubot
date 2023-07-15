@@ -37,7 +37,11 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
     config.playerVisibility,
     config.spawnPosition
   );
-  const botService = new BotService(jsonStore, playerService);
+  const botService = new BotService(
+    jsonStore,
+    playerService,
+    config.maxBotsPerPlayer
+  );
   const characterCustomizationService = new CharacterCustomizationService(
     playerService,
     config.assetsPath

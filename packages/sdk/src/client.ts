@@ -1,6 +1,7 @@
-import type { Bot, ClientState } from "@wwyb/core";
+import type { Bot, SerializedClientState } from "@wwyb/core";
 
-async function respToJson<T = void>(resp: Response): Promise<T> {
+async function respToJson<T>(resp: Response): Promise<T> {
+  // TODO unpack {error: null} or {error: "error messagr"}
   if (resp.status === 200 || resp.status === 400) {
     return resp.json();
   }
@@ -40,8 +41,8 @@ export class Client {
     });
   }
 
-  async fetchState(): Promise<ClientState> {
-    return respToJson<ClientState>(
+  async fetchState(): Promise<SerializedClientState> {
+    return respToJson<SerializedClientState>(
       await this.fetch(`${this?.opts?.baseUrl || ""}/api/state/`, {
         headers: this.withHeaders(),
         method: "get",
@@ -67,12 +68,12 @@ export class Client {
     });
   }
 
-  async walkTo(x: number, y: number): Promise<void | string> {
+  async walkTo(position: { x: number; y: number }): Promise<null | string> {
     return respToJson(
       await this.fetch(`${this?.opts?.baseUrl || ""}/api/walk/`, {
         headers: this.withHeaders(),
         method: "post",
-        body: JSON.stringify({ x: x, y: y }),
+        body: JSON.stringify({ x: position.x, y: position.y }),
       })
     );
   }

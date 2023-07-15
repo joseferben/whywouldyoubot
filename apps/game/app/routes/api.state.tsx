@@ -9,7 +9,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   const players = container.playerService.findAroundPlayer(player);
   const ground = container.mapService.findTilesByPlayer(player);
   return json({
-    me: player.id,
+    me: player,
     droppedItems: [],
     inventory: [],
     npcs: [],

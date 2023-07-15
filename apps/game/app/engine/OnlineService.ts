@@ -16,6 +16,7 @@ export class OnlineService {
       this.constructor.name,
       () =>
         new EntityDB<PlayerOnline>({
+          namespace: "onp",
           fields: ["playerId"],
           evictorListener: (p) => this.setOffline(p),
         })
@@ -27,7 +28,7 @@ export class OnlineService {
   }
 
   ensureOnline(player: Player) {
-    console.debug(`ensure player is online: ${player.username}`);
+    console.debug(`player is online: ${player.username}`);
     const now = Date.now();
     const found = this.db.findOneBy("playerId", player.id);
     if (!found) {
@@ -44,13 +45,15 @@ export class OnlineService {
     }
   }
 
-  /** Return true if player is online. */
+  /**
+   * Return true if player is online.
+   */
   isOnline(p: Player): boolean {
-    return this.db.findOneBy("playerId", p.id) !== null;
+    return this.db.findBy("playerId", p.id).length > 0;
   }
 
   private setOffline(p: PlayerOnline) {
     console.log("logging out player", p.playerId);
-    // TODO logout player
+    this.db.deleteById(p.playerId);
   }
 }

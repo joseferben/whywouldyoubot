@@ -13,7 +13,7 @@ export class ItemService {
   ) {
     [this.db] = initOnce(
       this.constructor.name,
-      () => new EntityDB<Item>({ jsonStore, persistenceNamespace: "items" })
+      () => new EntityDB<Item>({ jsonStore, namespace: "items" })
     );
   }
 
