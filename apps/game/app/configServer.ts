@@ -12,8 +12,9 @@ if (!process.env.DISCORD_CALLBACK_URL)
 dotenvConfig();
 
 console.log("NODE_ENV", process.env.NODE_ENV);
+console.log("DB_FILE_PATH", process.env.DB_FILE_PATH);
 
-export const configServer = {
+const configServer = {
   ...config,
   dbFilePath: process.env.DB_FILE_PATH || "db.sqlite3",
   redisConnectionString: process.env.REDIS_CONNECTION_STRING,
@@ -22,3 +23,7 @@ export const configServer = {
   discordClientSecret: process.env.DISCORD_CLIENT_SECRET,
   discordCallbackUrl: process.env.DISCORD_CALLBACK_URL,
 };
+
+export type ConfigServer = typeof configServer;
+
+export { configServer };

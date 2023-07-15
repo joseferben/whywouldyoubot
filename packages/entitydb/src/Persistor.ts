@@ -1,12 +1,9 @@
 import invariant from "tiny-invariant";
 import type { JSONStore } from "./JSONStore";
-import { immerable } from "immer";
 
 const usedNamespaces = new Set<string>();
 
 export class Persistor {
-  [immerable] = true;
-
   defaultOpts = {
     persistIntervalMs: 1000,
     persistAfterChangeCount: process.env.NODE_ENV === "production" ? 10 : 0,
@@ -25,6 +22,10 @@ export class Persistor {
       throw new Error(`Persistor namespace ${namespace} already in use`);
     }
     usedNamespaces.add(namespace);
+  }
+
+  static namespaces() {
+    return usedNamespaces;
   }
 
   setEntities(entities: Map<string, { v?: number; id: string }>) {

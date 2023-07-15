@@ -95,8 +95,9 @@ export function initOnce<E>(k: string, init: () => E): [E, boolean] {
   if (process.env.NODE_ENV === "production") {
     return [init(), false];
   } else {
+    if (process.env.BYPASS_CACHE) return [init(), false];
     // @ts-ignore
-    if (!global[globalKey] && !process.env.BYPASS_CACHE) {
+    if (!global[globalKey]) {
       // @ts-ignore
       global[globalKey] = init();
       // @ts-ignore

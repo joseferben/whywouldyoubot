@@ -129,9 +129,12 @@ export class PlayerService {
     return players.filter((player) => this.onlineService.isOnline(player));
   }
 
-  create(userId: string, username: string): Player {
+  create(username: string, userId?: string): Player | string {
+    if (this.db.findBy("username", username).length > 0)
+      return "Name already taken";
     const tocreate = {
-      userId: userId,
+      // if userId is null, it's a bot
+      userId: userId ?? null,
       username: username,
       x: this.spawn.x,
       y: this.spawn.y,
@@ -159,10 +162,6 @@ export class PlayerService {
     };
     const player = this.db.create(tocreate);
     this.onlineService.ensureOnline(player);
-    // this.messageService.postEventGlobal(
-    //   `${player.username} was just born into this world`,
-    //   true
-    // );
     return player;
   }
 

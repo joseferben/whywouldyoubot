@@ -1,10 +1,11 @@
-import { Authenticator, Strategy } from "remix-auth";
+import { Authenticator } from "remix-auth";
 import type { DiscordProfile, PartialDiscordGuild } from "remix-auth-discord";
 import { DiscordStrategy } from "remix-auth-discord";
 import type { SessionService } from "./SessionService";
 import type { Player } from "@wwyb/core";
 import type { PlayerService } from "./PlayerService";
 import type { BotService } from "./BotService";
+import { redirect } from "@remix-run/node";
 
 export interface DiscordUser {
   id: DiscordProfile["id"];
@@ -21,21 +22,21 @@ export interface VerifyOptions {
   apiKey: string;
 }
 
-class ApiTokenStrategy extends Strategy<Player, VerifyOptions> {
-  name = "api-token";
-  async authenticate(request: Request): Promise<Player> {
-    const apiKey = request.headers.get("X-API-Key");
-    if (!apiKey) {
-      throw new Error("API key is missing");
-    }
-    return this.verify({ apiKey });
-  }
-}
+// class ApiTokenStrategy extends Strategy<Player, VerifyOptions> {
+//   name = "api-token";
+//   async authenticate(request: Request): Promise<Player> {
+//     console.log("authenticating api token");
+//     const apiKey = request.headers.get("X-API-Key");
+//     if (!apiKey) {
+//       throw new Error("API key is missing");
+//     }
+//     return this.verify({ apiKey });
+//   }
+// }
 
 // Supports Discord and API key authentication.
 export class AuthService {
   readonly discord: Authenticator<DiscordUser>;
-  readonly apiToken: Authenticator<Player>;
   constructor(
     readonly sessionService: SessionService,
     readonly playerService: PlayerService,
@@ -78,16 +79,6 @@ export class AuthService {
       }
     );
     this.discord.use(discordStrategy);
-
-    this.apiToken = new Authenticator<Player>(sessionService.sessionStorage);
-    const apiTokenStrategy = new ApiTokenStrategy(async ({ apiKey }) => {
-      const bot = this.botService.db.findOneBy("apiKey", apiKey);
-      if (!bot) throw new Error("Invalid API key");
-      const player = this.playerService.findByUserId(bot.ownerId);
-      if (!player) throw new Error("Invalid API key");
-      return player;
-    });
-    this.apiToken.use(apiTokenStrategy);
   }
 
   /**
@@ -95,10 +86,13 @@ export class AuthService {
    * or a bot using an API key.
    */
   async ensurePlayer(request: Request): Promise<Player> {
-    if (request.headers.get("X-API-Key")) {
-      return this.apiToken.isAuthenticated(request, {
-        failureRedirect: "/login",
-      });
+    const apiKey = request.headers.get("X-API-Key");
+    if (apiKey) {
+      const bot = this.botService.db.findOneBy("apiKey", apiKey);
+      if (!bot) throw redirect("Invalid API key");
+      const player = this.playerService.db.findById(bot.ownerId);
+      if (!player) throw new Error("Invalid API key");
+      return player;
     } else {
       const discordUser = await this.discord.isAuthenticated(request, {
         failureRedirect: "/login",

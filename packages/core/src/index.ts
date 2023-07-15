@@ -8,7 +8,7 @@ import Filter from "bad-words";
 // client player needs to know a bit more than core though
 export type Player = {
   id: string;
-  userId: string;
+  userId: string | null;
   username: string;
   x: number;
   y: number;

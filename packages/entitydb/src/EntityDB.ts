@@ -253,5 +253,6 @@ export class EntityDB<
 
   close() {
     this.persistor?.close();
+    this.entities = new Map();
   }
 }

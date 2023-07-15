@@ -1,22 +1,23 @@
 import { Client } from "./Client";
-import type { ServerEvent } from "@wwyb/core";
-
-type BotState = {};
+import type { ClientState } from "@wwyb/core";
 
 export type Opts = {
   apiKey: string;
-  baseUrl: string;
 };
 
 export class Bot {
   initialized: boolean;
   client: Client;
+  cb: ((state: ClientState) => Promise<void>) | undefined;
 
-  constructor(readonly opts: Opts | Client) {
-    if (opts instanceof Client) {
-      this.client = opts;
+  constructor(client: Client | { baseUrl: string; apiKey: string }) {
+    if (client instanceof Client) {
+      this.client = client;
     } else {
-      this.client = new Client(opts);
+      this.client = new Client({
+        apiKey: client.apiKey,
+        baseUrl: client.baseUrl,
+      });
     }
     this.initialized = false;
   }
@@ -25,15 +26,23 @@ export class Bot {
     if (this.initialized) {
       return;
     }
-    await this.client.fetchState();
     this.initialized = true;
+    await this._tick();
+    setInterval(async () => {
+      await this._tick().catch((e) => {
+        console.error(e);
+      });
+    }, 1000);
   }
 
-  async onTick(cb: (state: BotState) => Promise<void>) {
-    await this.ensureInitialized();
+  private async _tick() {
+    console.log("_tick", this.client.opts?.apiKey);
+    const state = await this.client.fetchState();
+    await this.cb?.(state);
   }
 
-  async onEvent(cb: (state: BotState, event: ServerEvent) => Promise<void>) {
+  async onTick(cb: (state: ClientState) => Promise<void>) {
+    this.cb = cb;
     await this.ensureInitialized();
   }
 }

@@ -1,5 +1,4 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import type { ActionFunction, LoaderArgs } from "@remix-run/node";
 import { container } from "~/container.server";
 
 export const action: ActionFunction = async ({ request }) => {
@@ -9,4 +8,8 @@ export const action: ActionFunction = async ({ request }) => {
   });
 };
 
-export let loader: LoaderFunction = () => redirect("/");
+export async function loader({ request }: LoaderArgs) {
+  return await container.authService.discord.isAuthenticated(request, {
+    successRedirect: "/",
+  });
+}

@@ -4,15 +4,16 @@ async function respToJson<T = void>(resp: Response): Promise<T> {
   if (resp.status === 200 || resp.status === 400) {
     return resp.json();
   }
-  const error = await resp.text();
   throw new Error(
-    `request failed ${error} ${resp.status} ${JSON.stringify(resp.headers)}}`
+    `request failed with response ${resp.status} ${Array.from(
+      resp.headers.values()
+    )}}`
   );
 }
 
 export type Opts = {
-  apiKey: string;
-  baseUrl: string;
+  apiKey?: string;
+  baseUrl?: string;
 };
 
 export class Client {

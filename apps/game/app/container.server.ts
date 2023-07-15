@@ -10,15 +10,18 @@ import { InventoryService } from "./engine/InventoryService";
 import { ServerEventService } from "./engine/ServerEventService";
 import { AuthService } from "./engine/AuthService";
 import { JSONStore } from "@wwyb/entitydb";
-import { configServer as config } from "./configServer";
+import type { ConfigServer } from "./configServer";
+import { configServer } from "./configServer";
 import { BotService } from "./engine/BotService";
 import { CharacterCustomizationService } from "./engine/CharacterCustomizationService";
 
-function build() {
-  const s = new Database(config.dbFilePath);
-  s.pragma("journal_mode = WAL");
-  s.pragma("synchronous = off");
-  const jsonStore = new JSONStore(s);
+export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
+  const config = { ...configServer, ...providedConfig };
+
+  const db = new Database(config.dbFilePath);
+  db.pragma("journal_mode = WAL");
+  db.pragma("synchronous = off");
+  const jsonStore = new JSONStore(db);
 
   const worldMapService = new WorldMapService(
     config.obstacleLayerName,
@@ -27,7 +30,6 @@ function build() {
   );
 
   const onlineService = new OnlineService(config.idleLogoutMs);
-  const botService = new BotService(jsonStore);
   const playerService = new PlayerService(
     jsonStore,
     worldMapService,
@@ -35,6 +37,7 @@ function build() {
     config.playerVisibility,
     config.spawnPosition
   );
+  const botService = new BotService(jsonStore, playerService);
   const characterCustomizationService = new CharacterCustomizationService(
     playerService,
     config.assetsPath
@@ -47,6 +50,7 @@ function build() {
   const authService = new AuthService(
     sessionService,
     playerService,
+    botService,
     config.discordClientId,
     config.discordClientSecret,
     config.discordCallbackUrl
@@ -87,6 +91,7 @@ function build() {
 
   return {
     config,
+    db,
     playerService,
     mapService: worldMapService,
     walkService,
@@ -108,4 +113,6 @@ function build() {
   };
 }
 
-export const container = build();
+export const container = buildContainer();
+
+export type Container = ReturnType<typeof buildContainer>;
