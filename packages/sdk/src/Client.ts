@@ -1,16 +1,5 @@
+import { responseToJson } from "@wwyb/core";
 import type { Bot, SerializedClientState } from "@wwyb/core";
-
-async function respToJson<T>(resp: Response): Promise<T> {
-  // TODO unpack {error: null} or {error: "error messagr"}
-  if (resp.status === 200 || resp.status === 400) {
-    return resp.json();
-  }
-  throw new Error(
-    `request failed with response ${resp.status} ${Array.from(
-      resp.headers.values()
-    )}}`
-  );
-}
 
 export type Opts = {
   apiKey?: string;
@@ -41,8 +30,8 @@ export class Client {
     });
   }
 
-  async fetchState(): Promise<SerializedClientState> {
-    return respToJson<SerializedClientState>(
+  async fetchState(): Promise<SerializedClientState | string> {
+    return responseToJson<SerializedClientState>(
       await this.fetch("/api/state/", {
         headers: this.withHeaders(),
         method: "get",
@@ -51,7 +40,7 @@ export class Client {
   }
 
   async createBot(name: string): Promise<Bot | string> {
-    return respToJson<Bot>(
+    return responseToJson<Bot>(
       await this.fetch("/api/bots/create/", {
         headers: this.withHeaders(),
         method: "post",
@@ -60,16 +49,18 @@ export class Client {
     );
   }
 
-  async deleteBot(id: string): Promise<void> {
-    await this.fetch("/api/bots/delete/", {
-      headers: this.withHeaders(),
-      method: "post",
-      body: JSON.stringify({ id: id }),
-    });
+  async deleteBot(id: string): Promise<null | string> {
+    return responseToJson<null>(
+      await this.fetch("/api/bots/delete/", {
+        headers: this.withHeaders(),
+        method: "post",
+        body: JSON.stringify({ id: id }),
+      })
+    );
   }
 
   async walkTo(position: { x: number; y: number }): Promise<null | string> {
-    return respToJson(
+    return responseToJson<null>(
       await this.fetch("/api/walk/", {
         headers: this.withHeaders(),
         method: "post",

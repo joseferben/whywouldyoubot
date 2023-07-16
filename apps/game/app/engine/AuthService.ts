@@ -5,7 +5,6 @@ import type { SessionService } from "./SessionService";
 import type { Player } from "@wwyb/core";
 import type { PlayerService } from "./PlayerService";
 import type { BotService } from "./BotService";
-import { redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 
 export interface DiscordUser {
@@ -74,9 +73,9 @@ export class AuthService {
     const apiKey = request.headers.get("X-API-Key");
     if (apiKey) {
       const bot = this.botService.db.findOneBy("apiKey", apiKey);
-      if (!bot) throw redirect("Invalid API key");
+      if (!bot) throw new Response("Invalid API key", { status: 401 });
       const player = this.playerService.db.findById(bot.playerId);
-      if (!player) throw new Error("Invalid API key");
+      if (!player) throw new Response("Invalid API key", { status: 401 });
       invariant(player.userId === null, "Bot player should not have a user ID");
       return player;
     } else {

@@ -44,6 +44,9 @@ export class Bot {
 
   async _tick(providedState?: SerializedClientState) {
     const state = providedState || (await this.client.fetchState());
+    if (typeof state === "string") {
+      return console.error(state);
+    }
     const clientState = {
       me: state.me,
       actions: state.actions || [],
@@ -55,6 +58,7 @@ export class Bot {
         ? new Map(state.players.map((p) => [p.id, p]))
         : new Map(),
     };
+    console.log("tick");
     await this.cb?.(clientState);
   }
 
@@ -69,6 +73,7 @@ export class Bot {
    * complete.
    */
   async walkTo(position: { x: number; y: number }) {
+    console.log("walkTo (%d, %d)", position.x, position.y);
     await this.client.walkTo(position);
   }
 }

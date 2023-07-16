@@ -18,7 +18,7 @@ function BotImage() {
       }}
       height="16"
       width="16"
-      src={`/assets/ui/bots.png`}
+      src={`/assets/npcs/bot.png`}
     />
   );
 }

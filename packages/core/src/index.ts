@@ -280,3 +280,54 @@ export type Bot = {
   apiKey: string;
   name: string;
 };
+
+export function respond(data: any): Response {
+  if (typeof data === "object") {
+    return new Response(JSON.stringify(data), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } else if (typeof data === "string") {
+    return new Response(JSON.stringify({ error: data }), {
+      status: 400,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } else if (data === null || data === undefined) {
+    return new Response(JSON.stringify(null), {
+      status: 200,
+    });
+  } else {
+    throw new Error(`Invalid response data: ${data}`);
+  }
+}
+
+export async function responseToJson<T>(resp: Response): Promise<T | string> {
+  if (resp.status === 200) {
+    try {
+      const data = await resp.json();
+      return data;
+    } catch (e) {
+      throw new Error(`failed to parse response as json ${e}`);
+    }
+  } else if (resp.status === 400) {
+    try {
+      const json = await resp.json();
+      if (json.error) {
+        return json.error;
+      } else {
+        throw new Error(`request had status 400 but not error ${json}}`);
+      }
+    } catch (e) {
+      throw new Error(`request failed with response ${resp.status} ${e}}`);
+    }
+  } else if (resp.status === 401) {
+    throw new Error(
+      "Invalid API key provided, make sure you copy paste it correctly."
+    );
+  } else {
+    throw new Error(`unexpected response status ${resp.status} received`);
+  }
+}

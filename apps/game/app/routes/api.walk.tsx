@@ -1,4 +1,5 @@
-import { json, type ActionFunction } from "@remix-run/node";
+import { type ActionFunction } from "@remix-run/node";
+import { respond } from "@wwyb/core";
 import { container } from "~/container.server";
 
 export const action: ActionFunction = async ({ request }) => {
@@ -13,9 +14,7 @@ export const action: ActionFunction = async ({ request }) => {
     y === undefined ||
     !container.walkService.canWalk(player, x, y)
   )
-    return "Can't walk there";
+    return respond("Can't walk there");
 
-  container.walkService.startWalk(player, x, y);
-
-  return json({ success: true });
+  return respond(container.walkService.startWalk(player, x, y));
 };

@@ -107,7 +107,3 @@ export function initOnce<E>(k: string, init: () => E): [E, boolean] {
     return [global[globalKey], true];
   }
 }
-
-export function toResponse(data: any) {
-  return data ? new Response(JSON.stringify(data)) : null;
-}
