@@ -38,6 +38,7 @@ function PlayerTile({ player }: { player: Player }) {
           left,
           width: tileRenderedSize + 1,
           zIndex: 55,
+          userSelect: "none",
         }}
         className="absolute text-center text-xl text-white transition-all duration-500"
       >

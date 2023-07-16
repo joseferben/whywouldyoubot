@@ -7,6 +7,7 @@ import type {
 
 export type Opts = {
   apiKey: string;
+  baseUrl?: string;
 };
 
 export class Bot {
@@ -14,7 +15,7 @@ export class Bot {
   client: Client;
   cb: ((state: ClientState) => Promise<void>) | undefined;
 
-  constructor(client: Client | { baseUrl: string; apiKey: string }) {
+  constructor(client: Client | Opts) {
     if (client instanceof Client) {
       this.client = client;
     } else {

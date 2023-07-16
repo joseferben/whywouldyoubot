@@ -3,8 +3,10 @@ import type { JSONStore } from "./JSONStore";
 
 export class Persistor {
   defaultOpts = {
+    // persist every second
     persistIntervalMs: 1000,
-    persistAfterChangeCount: process.env.NODE_ENV === "production" ? 10 : 0,
+    // persist every change by default
+    persistAfterChangeCount: 0,
   };
   changed: Set<string> = new Set();
   timer: NodeJS.Timer | undefined;

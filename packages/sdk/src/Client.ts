@@ -17,6 +17,8 @@ export type Opts = {
   baseUrl?: string;
 };
 
+const defaultBaseUrl = "https://game.whywouldyoubot.gg";
+
 export class Client {
   constructor(readonly opts?: Opts) {}
 
@@ -34,7 +36,7 @@ export class Client {
       headers?: { [key: string]: string };
     }
   ): Promise<Response> {
-    return fetch(`${this?.opts?.baseUrl || ""}${path}`, {
+    return fetch(`${this?.opts?.baseUrl || defaultBaseUrl}${path}`, {
       headers: this.withHeaders(opts?.headers),
       method: opts?.method,
       body: opts?.body,
