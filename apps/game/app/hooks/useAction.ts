@@ -29,11 +29,16 @@ export function useAction<I, O = void>(
     }
   }
 
+  function setValue(value: I) {
+    set(value);
+    setError(null);
+  }
+
   return {
     submit: hookHandler,
     error: error,
     submitting: submitting,
     value,
-    set,
+    set: setValue,
   };
 }

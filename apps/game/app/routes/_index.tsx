@@ -15,7 +15,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   const players = container.playerService.findAroundPlayer(player);
   const tiles = container.mapService.findTilesByPlayer(player);
   const goldAmount = container.inventoryService.findGoldAmount(player);
-  const bots = container.botService.findByPlayer(player);
+  const bots = container.botService.findByOwner(player);
   return json({
     goldAmount,
     tiles,

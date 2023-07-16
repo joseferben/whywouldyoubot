@@ -41,11 +41,11 @@ export class BotService {
     });
   }
 
-  findByPlayer(player: Player): Bot[] {
-    return this.db.findBy("playerId", player.id);
+  findByOwner(player: Player): Bot[] {
+    return this.db.findBy("ownerId", player.id);
   }
 
   isBot(player: Player): boolean {
-    return this.findByPlayer(player).length > 0;
+    return this.findByOwner(player).length > 0;
   }
 }

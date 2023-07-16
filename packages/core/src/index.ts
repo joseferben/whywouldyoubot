@@ -253,7 +253,10 @@ export function getItemKind(name: string): ItemKindOpts | null {
   return itemKinds[name];
 }
 
-export function validateName(name: string): string | null {
+export function validateName(name: string | undefined): string | null {
+  if (!name) {
+    return "Name is required";
+  }
   if (name.length < 3) {
     return "Name must be at least 3 characters long";
   }

@@ -28,6 +28,8 @@ export function BotsScreen() {
     }
   }
 
+  const hasReachedBotLimit = bots.length >= config.maxBotsPerPlayer;
+
   return (
     <div>
       <div className="join">
@@ -40,23 +42,33 @@ export function BotsScreen() {
           }`}
           placeholder="Bot name"
         />
-        <button
-          onClick={handleBotCreation}
-          disabled={
-            !!createBot?.error || bots.length >= config.maxBotsPerPlayer
-          }
-          className={`btn-primary join-item btn rounded-r-full ${
-            createBot.submitting ? "loading loading-spinner" : ""
-          }`}
+        <div
+          className={hasReachedBotLimit ? "tooltip" : ""}
+          data-tip={hasReachedBotLimit ? "Max 3 bots allowed per player" : ""}
         >
-          Create bot
-        </button>
+          <button
+            onClick={handleBotCreation}
+            disabled={!!createBot?.error || hasReachedBotLimit}
+            className={`btn-primary join-item btn rounded-r-full ${
+              createBot.submitting ? "loading loading-spinner" : ""
+            }`}
+          >
+            Create bot
+          </button>
+        </div>
       </div>
       <small className="text-error">{createBot?.error}</small>
+      {bots.length > 0 && (
+        <div className="mt-2 text-xs text-gray-500">
+          Read the{" "}
+          <a className="link" href="https://www.whywouldyoubot.gg/docs">
+            documentation
+          </a>{" "}
+          on how to develop your own bot.
+        </div>
+      )}
+
       <div className="divider"></div>
-      <span>
-        Read the <a>documentation</a> on how to develop your own bot.
-      </span>
       <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
         {bots.length === 0 ? (
           <div className="text-center text-sm text-gray-500">
