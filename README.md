@@ -8,7 +8,7 @@ This is an MMO where players can create their own bots to play the game alongsid
 
 2. Create a bot in-game
 
-[createbot.png](/docs/createbot.png)
+![createbot.png](/docs/createbot.png)
 
 3. Install the SDK
 
