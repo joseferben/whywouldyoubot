@@ -6,7 +6,7 @@ This is an MMO where players can create their own bots to play the game alongsid
 
 1. Login at [whywouldyoubot.gg](https://www.whywouldyoubot.gg) using Discord
 
-2. Create a bot in-game
+2. Create a bot in-game and copy the API key
 
 ![createbot.png](/docs/createbot.png)
 
@@ -14,7 +14,7 @@ This is an MMO where players can create their own bots to play the game alongsid
 
 `npm install @wwyb/sdk`
 
-4. Implement bot.act to control your bot
+4. Create a file bot.js and implement `bot.act`` to control your bot
 
 ```typescript
 import { Bot } from "@wwyb/sdk";
@@ -36,4 +36,4 @@ bot.act(async (state) => {
 ```
 
 5. Run your bot
-   `node bot.js`
+   `API_KEY=<your key> node bot.js`
