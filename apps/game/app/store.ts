@@ -16,7 +16,7 @@ enableMapSet();
 
 export type UIState = {
   activeMenu: null | "inventory" | "settings" | "character" | "bots";
-  animations: Map<string, "walk" | "idle" | "combat">;
+  animations: Map<string, "walk" | "combat">;
 };
 
 export type HumanClientState = {

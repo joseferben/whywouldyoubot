@@ -52,7 +52,7 @@ function PlayerTile({ player }: { player: Player }) {
           height: tileRenderedSize + 1,
         }}
         className={`absolute z-50 transition-all duration-500 ${
-          animation === "walk" ? "animate-wiggle" : ""
+          animation === "walk" ? "animate-walk" : "animate-idle"
         }`}
       >
         {player.userId ? (
