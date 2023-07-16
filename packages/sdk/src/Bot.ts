@@ -10,18 +10,20 @@ export type Opts = {
   baseUrl?: string;
 };
 
+const defaultBaseUrl = "https://game.whywouldyoubot.gg";
+
 export class Bot {
   initialized: boolean;
   client: Client;
   cb: ((state: ClientState) => Promise<void>) | undefined;
 
-  constructor(client: Client | Opts) {
-    if (client instanceof Client) {
-      this.client = client;
+  constructor(clientOrOpts: Client | Opts) {
+    if (clientOrOpts instanceof Client) {
+      this.client = clientOrOpts;
     } else {
       this.client = new Client({
-        apiKey: client.apiKey,
-        baseUrl: client.baseUrl,
+        apiKey: clientOrOpts.apiKey,
+        baseUrl: clientOrOpts.baseUrl || defaultBaseUrl,
       });
     }
     this.initialized = false;

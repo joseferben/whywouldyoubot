@@ -54,6 +54,9 @@ export function BotsScreen() {
       </div>
       <small className="text-error">{createBot?.error}</small>
       <div className="divider"></div>
+      <span>
+        Read the <a>documentation</a> on how to develop your own bot.
+      </span>
       <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
         {bots.length === 0 ? (
           <div className="text-center text-sm text-gray-500">
