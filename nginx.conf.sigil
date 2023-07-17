@@ -85,6 +85,7 @@ server {
   keepalive_timeout   70;
 
   location    / {
+    limit_req zone=one burst=20 nodelay;
 
     gzip on;
     gzip_min_length  1100;
