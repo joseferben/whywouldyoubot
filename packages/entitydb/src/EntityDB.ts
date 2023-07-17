@@ -83,13 +83,7 @@ export class EntityDB<
 
   private installShutdownHandlers() {
     if (typeof process === "undefined") return;
-    process.on("SIGINT", () => {
-      this.close();
-    });
     process.on("SIGTERM", () => {
-      this.close();
-    });
-    process.on("exit", () => {
       this.close();
     });
   }
@@ -278,9 +272,11 @@ export class EntityDB<
     this.evictor?.expire(entity, ttlMs);
   }
 
+  /**
+   * Clean up resources and close the store.
+   */
   close() {
     this.persistor?.close();
-    this.entities = new Map();
     usedNamespaces.delete(this.opts.namespace);
   }
 
