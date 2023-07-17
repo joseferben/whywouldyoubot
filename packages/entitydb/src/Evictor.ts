@@ -1,5 +1,5 @@
 export class Evictor<E extends { id: string }> {
-  readonly entities = new Map<
+  readonly expiring = new Map<
     string,
     { timer: NodeJS.Timer; entity: E; ttlMs: number }
   >();
@@ -7,10 +7,10 @@ export class Evictor<E extends { id: string }> {
   constructor(readonly listener: (e: E) => void) {}
 
   expire(entity: E, ttlMs?: number) {
-    const found = this.entities.get(entity.id);
+    const found = this.expiring.get(entity.id);
     if (found) {
       clearTimeout(found.timer);
-      this.entities.set(entity.id, {
+      this.expiring.set(entity.id, {
         timer: setTimeout(
           () => {
             this.listener(entity);
@@ -23,7 +23,7 @@ export class Evictor<E extends { id: string }> {
     } else {
       if (ttlMs === undefined)
         throw new Error("ttlMs must be provided if entity not found");
-      this.entities.set(entity.id, {
+      this.expiring.set(entity.id, {
         timer: setTimeout(() => {
           this.listener(entity);
         }, ttlMs),

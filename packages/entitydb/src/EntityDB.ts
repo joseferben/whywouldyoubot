@@ -23,12 +23,12 @@ const usedNamespaces = new Set<string>();
 export class EntityDB<
   E extends { id: string; v?: number; x?: number; y?: number }
 > {
-  entities!: Map<string, E>;
-  persistor!: Persistor;
-  fieldIndex!: FieldIndex;
-  spatialIndex!: SpatialIndex;
-  migrator!: Migrator;
-  evictor!: Evictor<E>;
+  private entities!: Map<string, E>;
+  private persistor!: Persistor;
+  private fieldIndex!: FieldIndex;
+  private spatialIndex!: SpatialIndex;
+  private migrator!: Migrator;
+  private evictor!: Evictor<E>;
 
   constructor(readonly opts: Opts<E>) {
     this.entities = new Map();
@@ -57,14 +57,14 @@ export class EntityDB<
     if (opts.migrations) {
       this.migrator = new Migrator(opts.migrations);
     }
-    this.evictor = new Evictor<E>(this.handleExpire.bind(this));
+    this.evictor = new Evictor<E>(this.handleExpiration.bind(this));
     this.persistor?.setEntities(this.entities);
     this.persistor?.loadEntities(this.loadEntity.bind(this));
     this.installShutdownHandlers();
   }
 
-  private handleExpire(entity: E) {
-    console.log("expire", entity.id);
+  private handleExpiration(entity: E) {
+    console.log("handle expiration", entity.id);
     this.delete(entity);
     this.opts.evictorListener?.(entity);
   }
@@ -104,6 +104,16 @@ export class EntityDB<
     return toInsert;
   }
 
+  getMaxX() {
+    if (!this.spatialIndex) throw new Error("SpatialIndex needed for getMaxX");
+    return this.spatialIndex?.maxX;
+  }
+
+  getMaxY() {
+    if (!this.spatialIndex) throw new Error("SpatialIndex needed for getMaxY");
+    return this.spatialIndex?.maxY;
+  }
+
   insert(entity: E, opts?: { ttlMs?: number }) {
     if (this.migrator && this.migrator.needsMigration(entity)) {
       this.migrator.migrate(entity);
@@ -128,6 +138,7 @@ export class EntityDB<
   }
 
   delete(entity: E) {
+    console.log("delete", entity.id);
     this.entities.delete(entity.id);
     this.fieldIndex?.delete(entity);
     this.spatialIndex?.delete(entity);

@@ -6,9 +6,19 @@ import type { JSONStore } from "@wwyb/entitydb";
 import { EntityDB } from "@wwyb/entitydb";
 import Filter from "bad-words";
 
+function isAscii(str: string) {
+  return /[\p{ASCII}]+/u.test(str);
+}
+
 export function validateName(name: string | undefined): string | null {
   if (!name) {
     return "Name is required";
+  }
+  if (typeof name !== "string") {
+    return "Name must be a string";
+  }
+  if (!isAscii(name)) {
+    return "Name must be ascii";
   }
   if (name.length < 3) {
     return "Name must be at least 3 characters long";

@@ -24,6 +24,7 @@ export class SpatialIndex {
   }
 
   update(entity: { id: string; x?: number; y?: number }): void {
+    // x? and y? needed for EntityDB
     if (entity.x === undefined || entity.y === undefined) {
       throw new Error("Can not use spatial index without x or y");
     }
@@ -32,6 +33,7 @@ export class SpatialIndex {
   }
 
   insert(entity: { id: string; x?: number; y?: number }): void {
+    // x? and y? needed for EntityDB
     if (entity.x === undefined || entity.y === undefined) {
       throw new Error("Can not use spatial index without x or y");
     }
@@ -60,12 +62,15 @@ export class SpatialIndex {
   }
 
   delete(entity: { id: string; x?: number; y?: number }): void {
+    // x? and y? needed for EntityDB
     if (entity.x === undefined || entity.y === undefined) {
       throw new Error("Can not use spatial index without x or y");
     }
     const { id, x, y } = entity;
     if (this.index[x]?.[y]?.has(id)) {
       this.index[x][y]?.delete(id);
+    } else {
+      console.warn(`Entity ${id} not found in spatial index, won't delete`);
     }
   }
 

@@ -18,7 +18,6 @@ export class OnlineService {
         new EntityDB<PlayerOnline>({
           namespace: "onp",
           fields: ["playerId"],
-          evictorListener: (p) => this.setOfflineById(p.playerId),
         })
     );
   }

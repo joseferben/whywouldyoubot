@@ -44,9 +44,9 @@ export class WalkService {
    * Return a 2d array where 0 is walkable and 1 is not walkable.
    */
   calculateObstacleGrid(): number[][] {
-    const grid: number[][] = Array(this.worldMapService.db.spatialIndex?.maxY)
+    const grid: number[][] = Array(this.worldMapService.db.getMaxY())
       .fill(undefined)
-      .map(() => Array(this.worldMapService.db.spatialIndex?.maxX).fill(0));
+      .map(() => Array(this.worldMapService.db.getMaxX()).fill(0));
     for (const tile of this.worldMapService.db.findAll()) {
       if (tile.obstacle) {
         grid[tile.y][tile.x] = 1;

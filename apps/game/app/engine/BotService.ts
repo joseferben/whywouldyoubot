@@ -33,12 +33,12 @@ export class BotService {
       return "You have too many bots";
     }
 
-    const player = this.playerService.create(botName);
-    if (typeof player === "string") return player;
+    const playerOrError = this.playerService.create(botName);
+    if (typeof playerOrError === "string") return playerOrError;
     return this.db.create({
       name: botName,
       ownerId: owner.id,
-      playerId: player.id,
+      playerId: playerOrError.id,
       apiKey: customAlphabet("abcdefghijklmnopqrstuvwxyz1234567890")(),
     });
   }
