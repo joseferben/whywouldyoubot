@@ -4,6 +4,27 @@ import type { OnlineService } from "./OnlineService";
 import { initOnce } from "~/utils";
 import type { JSONStore } from "@wwyb/entitydb";
 import { EntityDB } from "@wwyb/entitydb";
+import Filter from "bad-words";
+
+export function validateName(name: string | undefined): string | null {
+  if (!name) {
+    return "Name is required";
+  }
+  if (name.length < 3) {
+    return "Name must be at least 3 characters long";
+  }
+
+  if (name.length > 20) {
+    return "Name must be at most 20 characters long";
+  }
+
+  const filter = new Filter();
+  if (filter.isProfane(name)) {
+    return "Use a different name";
+  }
+
+  return null;
+}
 
 export class PlayerService {
   db!: EntityDB<Player>;

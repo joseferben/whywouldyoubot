@@ -1,6 +1,15 @@
 {
   "name": "@wwyb/core",
-  "private": true,
+  "version": "0.0.0",
+  "author": {
+    "name": "Josef Erben",
+    "email": "josef@erben.systems"
+  },
+  "license": "MIT",
+  "homepage": "https://www.whywouldyoubot.gg",
+  "bugs": {
+    "url": "https://github.com/joseferben/whywouldyoubot"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
@@ -16,14 +25,10 @@
     "/build"
   ],
   "devDependencies": {
-    "@types/bad-words": "^3.0.1",
     "@wwyb/tsconfig": "*",
     "tsup": "^6.6.2"
   },
   "engines": {
     "node": ">=14"
-  },
-  "dependencies": {
-    "bad-words": "^3.0.4"
   }
 }

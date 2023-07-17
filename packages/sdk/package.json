@@ -1,6 +1,15 @@
 {
   "name": "@wwyb/sdk",
-  "private": true,
+  "version": "0.0.0",
+  "author": {
+    "name": "Josef Erben",
+    "email": "josef@erben.systems"
+  },
+  "license": "MIT",
+  "homepage": "https://www.whywouldyoubot.gg",
+  "bugs": {
+    "url": "https://github.com/joseferben/whywouldyoubot"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
@@ -11,7 +20,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@wwyb/core": "*"
+    "@wwyb/core": "0.0.0"
   },
   "prettier": {},
   "eslintIgnore": [

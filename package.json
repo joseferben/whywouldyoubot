@@ -12,7 +12,8 @@
     "typecheck": "turbo typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "test": "turbo test",
-    "start": "npm start --prefix apps/game"
+    "start": "npm start --prefix apps/game",
+    "publish-packages": "turbo run build lint typecheck test && changeset version && changeset publish"
   },
   "devDependencies": {
     "@turbo/gen": "^1.9.7",
@@ -25,6 +26,7 @@
   },
   "packageManager": "npm@8.12.2",
   "dependencies": {
+    "@changesets/cli": "^2.26.2",
     "eslint-config-turbo": "^1.10.7"
   },
   "engines": {
