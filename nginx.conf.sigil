@@ -1,10 +1,10 @@
+limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
+
 {{ range $port_map := .PROXY_PORT_MAP | split " " }}
 {{ $port_map_list := $port_map | split ":" }}
 {{ $scheme := index $port_map_list 0 }}
 {{ $listen_port := index $port_map_list 1 }}
 {{ $upstream_port := index $port_map_list 2 }}
-
-limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
 
 {{ if eq $scheme "http" }}
 server {
