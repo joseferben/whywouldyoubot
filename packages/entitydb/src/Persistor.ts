@@ -31,7 +31,8 @@ export class Persistor {
       v?: number;
     }[];
     for (const json of jsons) {
-      if (json.id !== undefined) throw new Error("Entity must have an id");
+      if (json.id === null || json.id === undefined)
+        throw new Error("Entity must have an id");
       if (json.v === undefined) {
         json.v = 0;
       }
