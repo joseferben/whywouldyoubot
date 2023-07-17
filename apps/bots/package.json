@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "tsx": "^3.12.7",
-    "@wwyb/sdk": "0.0.2"
+    "@wwyb/sdk": "0.0.3"
   },
   "license": "MIT"
 }

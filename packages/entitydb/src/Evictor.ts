@@ -13,7 +13,7 @@ export class Evictor<E extends { id: string }> {
       this.entities.set(entity.id, {
         timer: setTimeout(
           () => {
-            this.listener?.(entity);
+            this.listener(entity);
           },
           !ttlMs ? found.ttlMs : ttlMs
         ),
@@ -25,7 +25,7 @@ export class Evictor<E extends { id: string }> {
         throw new Error("ttlMs must be provided if entity not found");
       this.entities.set(entity.id, {
         timer: setTimeout(() => {
-          this.listener?.(entity);
+          this.listener(entity);
         }, ttlMs),
         entity,
         ttlMs: ttlMs,

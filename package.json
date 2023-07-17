@@ -13,7 +13,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "test": "turbo test",
     "start": "npm start --prefix apps/game",
-    "publish-packages": "CI=true turbo run build lint typecheck test --concurrency 13 && changeset version && changeset publish"
+    "publish-packages": "CI=true turbo run build lint typecheck test --concurrency 15 && changeset version && changeset publish"
   },
   "devDependencies": {
     "@turbo/gen": "^1.9.7",

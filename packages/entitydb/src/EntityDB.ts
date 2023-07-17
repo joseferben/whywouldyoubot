@@ -186,10 +186,7 @@ export class EntityDB<
     const result: E[] = [];
     for (const id of ids) {
       const entity = this.findById(id);
-      if (!entity)
-        throw new Error(
-          `Entity with id ${id} not found, field index is out of sync`
-        );
+      if (!entity) throw new Error(`Entity with id ${id} not found`);
       result.push(entity);
     }
     return result;
@@ -203,7 +200,14 @@ export class EntityDB<
       return entity ? [entity] : [];
     }
     const ids = Array.from(this.fieldIndex.findBy(key as string, value));
-    return this.getByIds(ids);
+    try {
+      return this.getByIds(ids);
+    } catch (e) {
+      console.error(e);
+      throw new Error(
+        `Error finding by ${key as string}, field index might be out of sync`
+      );
+    }
   }
 
   findOneBy(key: keyof E, value: E[typeof key]): E | null {

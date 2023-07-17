@@ -1,6 +1,6 @@
 {
   "name": "@wwyb/core",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": {
     "name": "Josef Erben",
     "email": "josef@erben.systems"
@@ -12,6 +12,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",

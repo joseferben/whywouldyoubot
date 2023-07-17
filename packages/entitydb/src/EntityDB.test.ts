@@ -59,7 +59,7 @@ describe("EntityDB", () => {
     const updated = db.findById(created.id);
     expect(updated).toHaveProperty("name", "updated");
   });
-  it("find by position after delte", () => {
+  it("find by position after delete", () => {
     const created = db.create({
       name: "first",
       x: 1,
@@ -68,6 +68,17 @@ describe("EntityDB", () => {
     });
     db.deleteById(created.id);
     const found = db.findByPosition(1, 3);
+    expect(found).toHaveLength(0);
+  });
+  it("find by rectangle after delete", () => {
+    const created = db.create({
+      name: "first",
+      x: 1,
+      y: 3,
+      inCombat: false,
+    });
+    db.delete(created);
+    const found = db.findByRectangle(0, 0, 2, 4);
     expect(found).toHaveLength(0);
   });
   it("find by field", () => {
