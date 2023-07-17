@@ -4,7 +4,6 @@ if (!process.env.API_KEY) throw new Error("API_KEY not set");
 
 const bot = new Bot({
   apiKey: process.env.API_KEY,
-  baseUrl: "http://localhost:3000",
 });
 
 bot.act(async (state) => {
