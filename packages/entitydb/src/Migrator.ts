@@ -1,12 +1,8 @@
-import { immerable } from "immer";
-
 export type Migrations = {
   [fromVersion: number]: (entity: any) => any;
 };
 
 export class Migrator {
-  [immerable] = true;
-
   readonly migratorTargetVersion: number;
 
   constructor(readonly migrations: Migrations) {

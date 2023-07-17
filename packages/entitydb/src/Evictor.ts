@@ -1,5 +1,3 @@
-import invariant from "tiny-invariant";
-
 export class Evictor<E extends { id: string }> {
   readonly entities = new Map<
     string,
@@ -23,10 +21,8 @@ export class Evictor<E extends { id: string }> {
         ttlMs: found.ttlMs,
       });
     } else {
-      invariant(
-        ttlMs !== undefined,
-        "ttlMs must be provided if entity not found"
-      );
+      if (ttlMs === undefined)
+        throw new Error("ttlMs must be provided if entity not found");
       this.entities.set(entity.id, {
         timer: setTimeout(() => {
           this.listener?.(entity);

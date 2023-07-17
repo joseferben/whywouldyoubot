@@ -1,5 +1,4 @@
 import { nanoid } from "nanoid";
-import invariant from "tiny-invariant";
 import { SpatialIndex } from "./SpatialIndex";
 import { FieldIndex } from "./FieldIndex";
 import type { Migrations } from "./Migrator";
@@ -165,7 +164,7 @@ export class EntityDB<
 
   getById(id: string): E {
     const entity = this.findById(id);
-    invariant(entity != null, `Entity with id ${id} not found`);
+    if (!entity) throw new Error(`Entity with id ${id} not found`);
     return entity;
   }
 
@@ -237,7 +236,8 @@ export class EntityDB<
     const result: E[] = [];
     for (const id of ids) {
       const entity = this.entities.get(id);
-      invariant(entity, `Entity ${id} not found, spatial index is out of sync`);
+      if (!entity)
+        throw new Error(`Entity ${id} not found, spatial index is out of sync`);
       result.push(entity);
     }
     return result;
@@ -259,7 +259,8 @@ export class EntityDB<
     const result: E[] = [];
     for (const id of ids) {
       const entity = this.entities.get(id);
-      invariant(entity, `Entity ${id} not found, spatial index is out of sync`);
+      if (!entity)
+        throw new Error(`Entity ${id} not found, spatial index is out of sync`);
       result.push(entity);
     }
     return result;

@@ -1,4 +1,3 @@
-import invariant from "tiny-invariant";
 import type { JSONStore } from "./JSONStore";
 
 export class Persistor {
@@ -32,7 +31,7 @@ export class Persistor {
       v?: number;
     }[];
     for (const json of jsons) {
-      invariant(json.id !== undefined, "Entity must have an id");
+      if (json.id !== undefined) throw new Error("Entity must have an id");
       if (json.v === undefined) {
         json.v = 0;
       }
