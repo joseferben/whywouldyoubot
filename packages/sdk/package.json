@@ -1,6 +1,6 @@
 {
   "name": "@wwyb/sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "Josef Erben",
     "email": "josef@erben.systems"
@@ -20,7 +20,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@wwyb/core": "0.0.1"
+    "@wwyb/core": "0.0.2"
   },
   "prettier": {},
   "eslintIgnore": [
