@@ -5,7 +5,6 @@ import type { SessionService } from "./SessionService";
 import type { Player } from "@wwyb/core";
 import type { PlayerService } from "./PlayerService";
 import type { BotService } from "./BotService";
-import invariant from "tiny-invariant";
 
 export interface DiscordUser {
   id: DiscordProfile["id"];
@@ -76,7 +75,8 @@ export class AuthService {
       if (!bot) throw new Response("Invalid API key", { status: 401 });
       const player = this.playerService.db.findById(bot.playerId);
       if (!player) throw new Response("Invalid API key", { status: 401 });
-      invariant(player.userId === null, "Bot player should not have a user ID");
+      if (player.userId !== null)
+        throw new Error("Bot player should not have a user ID");
       return player;
     } else {
       const discordUser = await this.discord.isAuthenticated(request, {

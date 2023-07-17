@@ -2,7 +2,6 @@ import { useStore } from "zustand";
 import { config } from "~/config";
 import { useGameStore } from "~/store";
 import type { Player, WorldMapTile } from "@wwyb/core";
-import invariant from "tiny-invariant";
 import { PlayerImage } from "./PlayerImage";
 
 const tileRenderedSize = config.tileRenderedSize;
@@ -151,7 +150,10 @@ export function DOMRenderer() {
   const store = useGameStore();
   const player = useStore(store, (state) => state.players.get(state.me.id));
 
-  invariant(player, "Player not found");
+  if (!player) {
+    console.error("Player not found");
+    return null;
+  }
 
   const translateX = -tileRenderedSize * player.x - tileRenderedSize / 2;
   const translateY = -tileRenderedSize * player.y - tileRenderedSize / 2;

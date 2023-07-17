@@ -2,7 +2,6 @@ import type { ActionArgs, LoaderArgs, V2_MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
-import invariant from "tiny-invariant";
 import { PlayerImage } from "~/components/PlayerImage";
 import { container } from "~/container.server";
 
@@ -30,11 +29,14 @@ export const action = async ({ request }: ActionArgs) => {
   const head = formData.get("head");
   const hair = formData.get("hair");
 
-  invariant(
-    typeof eyes === "string" &&
+  if (
+    !(
+      typeof eyes === "string" &&
       typeof head === "string" &&
       typeof hair === "string"
-  );
+    )
+  )
+    throw new Error("Invalid form data");
 
   container.characterCustomizationService.setCustomization(player, {
     eyes: parseInt(eyes),
