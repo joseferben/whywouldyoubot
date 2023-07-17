@@ -59,6 +59,17 @@ describe("EntityDB", () => {
     const updated = db.findById(created.id);
     expect(updated).toHaveProperty("name", "updated");
   });
+  it("find by position after delte", () => {
+    const created = db.create({
+      name: "first",
+      x: 1,
+      y: 3,
+      inCombat: false,
+    });
+    db.deleteById(created.id);
+    const found = db.findByPosition(1, 3);
+    expect(found).toHaveLength(0);
+  });
   it("find by field", () => {
     db.create({
       name: "first",
