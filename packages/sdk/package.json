@@ -1,6 +1,6 @@
 {
   "name": "@wwyb/sdk",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": {
     "name": "Josef Erben",
     "email": "josef@erben.systems"
@@ -14,13 +14,13 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --format cjs --dts",
+    "build": "tsup",
     "dev": "tsc --watch --outDir dist",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@wwyb/core": "0.0.0"
+    "@wwyb/core": "0.0.1"
   },
   "prettier": {},
   "eslintIgnore": [

@@ -1,9 +1,9 @@
 import { EntityDB } from "@wwyb/entitydb";
 import type { JSONStore } from "@wwyb/entitydb";
 import { initOnce } from "~/utils";
-import { validateName, type Bot, type Player } from "@wwyb/core";
+import { type Bot, type Player } from "@wwyb/core";
 import { customAlphabet } from "nanoid";
-import type { PlayerService } from "./PlayerService";
+import { validateName, type PlayerService } from "./PlayerService";
 
 export class BotService {
   db!: EntityDB<Bot>;

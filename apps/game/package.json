@@ -1,6 +1,5 @@
 {
   "name": "game",
-  "version": "0.0.0",
   "private": true,
   "sideEffects": false,
   "scripts": {
@@ -30,9 +29,9 @@
     "@remix-run/node": "^1.17.1",
     "@remix-run/react": "^1.17.1",
     "@remix-run/serve": "^1.17.1",
-    "@wwyb/core": "*",
-    "@wwyb/entitydb": "*",
-    "@wwyb/sdk": "*",
+    "@wwyb/core": "0.0.1",
+    "@wwyb/entitydb": "0.0.1",
+    "@wwyb/sdk": "0.0.1",
     "better-sqlite3": "^8.4.0",
     "dotenv": "^16.3.1",
     "easystarjs": "^0.4.4",
