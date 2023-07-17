@@ -4,12 +4,14 @@ import { initOnce } from "~/utils";
 import { type Bot, type Player } from "@wwyb/core";
 import { customAlphabet } from "nanoid";
 import { validateName, type PlayerService } from "./PlayerService";
+import type { OnlineService } from "./OnlineService";
 
 export class BotService {
   db!: EntityDB<Bot>;
   constructor(
     readonly jsonStore: JSONStore,
     readonly playerService: PlayerService,
+    readonly onlineService: OnlineService,
     readonly maxBotsPerPlayer: number
   ) {
     [this.db] = initOnce(
@@ -47,5 +49,15 @@ export class BotService {
 
   isBot(player: Player): boolean {
     return this.findByOwner(player).length > 0;
+  }
+
+  deleteById(botId: string) {
+    const bot = this.db.findById(botId);
+    if (bot) {
+      const playerId = bot.playerId;
+      this.db.deleteById(bot.id);
+      this.onlineService.setOfflineById(playerId);
+      this.playerService.db.deleteById(playerId);
+    }
   }
 }

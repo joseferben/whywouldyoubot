@@ -1,0 +1,12 @@
+{
+  "name": "bots",
+  "private": true,
+  "scripts": {
+    "walker": "tsx randomWalker.ts"
+  },
+  "dependencies": {
+    "tsx": "^3.12.7",
+    "@wwyb/sdk": "0.0.2"
+  },
+  "license": "MIT"
+}

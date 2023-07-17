@@ -13,7 +13,7 @@ export const config = {
   mapPath: "map",
   assetsPath: "public/assets",
   // how long to wait before logging out idle users
-  idleLogoutMs: 1000 * 60 * 5,
+  idleLogoutMs: 1000 * 60,
   userSessionKey: "user",
   items: getItemKinds(),
   maxBotsPerPlayer: 3,

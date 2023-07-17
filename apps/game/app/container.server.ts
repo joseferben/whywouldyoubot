@@ -40,6 +40,7 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
   const botService = new BotService(
     jsonStore,
     playerService,
+    onlineService,
     config.maxBotsPerPlayer
   );
   const characterCustomizationService = new CharacterCustomizationService(

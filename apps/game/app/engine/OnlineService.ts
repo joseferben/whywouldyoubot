@@ -18,7 +18,7 @@ export class OnlineService {
         new EntityDB<PlayerOnline>({
           namespace: "onp",
           fields: ["playerId"],
-          evictorListener: (p) => this.setOffline(p),
+          evictorListener: (p) => this.setOfflineById(p.playerId),
         })
     );
   }
@@ -52,8 +52,11 @@ export class OnlineService {
     return this.db.findBy("playerId", p.id).length > 0;
   }
 
-  private setOffline(p: PlayerOnline) {
-    console.log("logging out player", p.playerId);
-    this.db.deleteById(p.playerId);
+  setOfflineById(playerId: string) {
+    console.log("logging out player", playerId);
+    const playerOnline = this.db.findOneBy("playerId", playerId);
+    if (playerOnline) {
+      this.db.delete(playerOnline);
+    }
   }
 }
