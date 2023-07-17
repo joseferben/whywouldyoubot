@@ -20,7 +20,7 @@ server {
   }
 {{ else }}
   location    / {
-    limit_req zone=one burst=20 nodelay;
+    limit_req zone=one burst=20;
 
     gzip on;
     gzip_min_length  1100;
@@ -85,7 +85,7 @@ server {
   keepalive_timeout   70;
 
   location    / {
-    limit_req zone=one burst=20 nodelay;
+    limit_req zone=one burst=20;
 
     gzip on;
     gzip_min_length  1100;
