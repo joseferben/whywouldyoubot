@@ -39,3 +39,5 @@ export default function Game() {
     </StoreContext.Provider>
   );
 }
+
+export const shouldRevalidate = () => false;
