@@ -54,10 +54,9 @@ export class BotService {
   deleteById(botId: string) {
     const bot = this.db.findById(botId);
     if (bot) {
-      const playerId = bot.playerId;
       this.db.deleteById(bot.id);
-      this.onlineService.setOfflineById(playerId);
-      this.playerService.db.deleteById(playerId);
+      this.onlineService.setOfflineById(bot.playerId);
+      this.playerService.db.deleteById(bot.playerId);
     }
   }
 }

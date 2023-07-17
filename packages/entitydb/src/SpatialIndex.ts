@@ -1,10 +1,12 @@
 export class SpatialIndex {
   index: { [x: number]: { [y: number]: Set<string> } };
+  entities: Map<string, { x: number; y: number }>;
   maxX: number = 0;
   maxY: number = 0;
 
   constructor() {
     this.index = {};
+    this.entities = new Map();
   }
 
   findByPosition(x: number, y: number): Iterable<string> {
@@ -28,7 +30,7 @@ export class SpatialIndex {
     if (entity.x === undefined || entity.y === undefined) {
       throw new Error("Can not use spatial index without x or y");
     }
-    this.delete(entity);
+    this.delete(entity.id);
     this.insert(entity);
   }
 
@@ -44,6 +46,7 @@ export class SpatialIndex {
       this.maxY = entity.y;
     }
     const { id, x, y } = entity;
+    this.entities.set(id, { x, y });
     this.index[x] = this.index[x] || {};
     this.index[x][y] = this.index[x][y] || new Set();
     this.index[x][y].add(id);
@@ -61,17 +64,16 @@ export class SpatialIndex {
     }
   }
 
-  delete(entity: { id: string; x?: number; y?: number }): void {
-    // x? and y? needed for EntityDB
-    if (entity.x === undefined || entity.y === undefined) {
-      throw new Error("Can not use spatial index without x or y");
+  delete(id: string): void {
+    console.log("delete from spatial index", id);
+    const position = this.entities.get(id);
+    if (!position) {
+      console.log(`${id} not found in spatial index`);
+      return;
     }
-    const { id, x, y } = entity;
-    if (this.index[x]?.[y]?.has(id)) {
-      this.index[x][y]?.delete(id);
-    } else {
-      console.warn(`Entity ${id} not found in spatial index, won't delete`);
-    }
+    const { x, y } = position;
+    this.index[x][y].delete(id);
+    this.entities.delete(id);
   }
 
   clean() {

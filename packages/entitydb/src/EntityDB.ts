@@ -25,7 +25,7 @@ export class EntityDB<
 > {
   private entities!: Map<string, E>;
   private persistor!: Persistor;
-  private fieldIndex!: FieldIndex;
+  private fieldIndex!: FieldIndex<E>;
   private spatialIndex!: SpatialIndex;
   private migrator!: Migrator;
   private evictor!: Evictor<E>;
@@ -119,8 +119,8 @@ export class EntityDB<
       this.migrator.migrate(entity);
     }
     this.entities.set(entity.id, entity);
-    this.fieldIndex?.update(entity);
-    this.spatialIndex?.update(entity);
+    this.fieldIndex?.insert(entity);
+    this.spatialIndex?.insert(entity);
     this.persistor?.addChanged(entity);
     if (opts?.ttlMs) {
       this.evictor.expire(entity, opts.ttlMs);
@@ -141,7 +141,7 @@ export class EntityDB<
     console.log("delete", entity.id);
     this.entities.delete(entity.id);
     this.fieldIndex?.delete(entity);
-    this.spatialIndex?.delete(entity);
+    this.spatialIndex?.delete(entity.id);
     this.persistor?.addChanged(entity);
   }
 

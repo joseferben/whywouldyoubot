@@ -1,4 +1,4 @@
-export class FieldIndex {
+export class FieldIndex<E extends { id: string; [key: string]: any }> {
   index: Map<string, Map<string, Set<string>>> = new Map();
 
   constructor(readonly fields: string[]) {
@@ -8,7 +8,7 @@ export class FieldIndex {
     });
   }
 
-  private updateIndex(entity: any) {
+  private updateIndex(entity: E) {
     for (const [key, value] of this.index.entries()) {
       const index = value.get(String(entity[key])) || new Set();
       index.add(entity.id);
@@ -16,7 +16,7 @@ export class FieldIndex {
     }
   }
 
-  private deleteIndex(entity: any) {
+  private deleteIndex(entity: E) {
     for (const [key, value] of this.index.entries()) {
       const index = value.get(String(entity[key])) || new Set();
       index.delete(entity.id);
@@ -24,15 +24,15 @@ export class FieldIndex {
     }
   }
 
-  insert(entity: any) {
+  insert(entity: E) {
     this.updateIndex(entity);
   }
 
-  update(entity: any) {
+  update(entity: E) {
     this.updateIndex(entity);
   }
 
-  delete(entity: any) {
+  delete(entity: E) {
     this.deleteIndex(entity);
   }
 

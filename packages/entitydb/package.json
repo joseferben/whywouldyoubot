@@ -1,6 +1,6 @@
 {
   "name": "@wwyb/entitydb",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": {
     "name": "Josef Erben",
     "email": "josef@erben.systems"
@@ -24,7 +24,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@wwyb/core": "0.0.3",
+    "@wwyb/core": "0.0.4",
     "nanoid": "^4.0.2"
   },
   "prettier": {},

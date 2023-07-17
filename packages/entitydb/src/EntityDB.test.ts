@@ -66,6 +66,17 @@ describe("EntityDB", () => {
       y: 3,
       inCombat: false,
     });
+    db.delete(created);
+    const found = db.findByPosition(1, 3);
+    expect(found).toHaveLength(0);
+  });
+  it("find by position after deleteById", () => {
+    const created = db.create({
+      name: "first",
+      x: 1,
+      y: 3,
+      inCombat: false,
+    });
     db.deleteById(created.id);
     const found = db.findByPosition(1, 3);
     expect(found).toHaveLength(0);
