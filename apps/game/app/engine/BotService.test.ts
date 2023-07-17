@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe("BotService", () => {
-  it.only("create, delete and find bot", async () => {
+  it("create, delete and find bot", async () => {
     const owner = container.playerService.create("foo", "userid");
     invariant(typeof owner === "object", "owner not found");
     const bot = container.botService.create("botname", owner);
