@@ -56,6 +56,9 @@ export class EmojiService {
   showEmoji(player: Player, emojiId: number) {
     console.debug(`player ${player.username} shows emoji ${emojiId}`);
     const found = this.db.findOneBy("playerId", player.id);
+    if (found && found.emoji.id !== emojiId) {
+      this.db.delete(found);
+    }
     const emoji = this.getEmojiByNumber(emojiId);
     if (!found) {
       this.db.create(
