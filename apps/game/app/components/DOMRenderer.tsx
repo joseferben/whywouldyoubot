@@ -2,7 +2,8 @@ import { useStore } from "zustand";
 import { config } from "~/config";
 import { useGameStore } from "~/store";
 import type { Player, WorldMapTile } from "@wwyb/core";
-import { PlayerImage } from "./PlayerImage";
+import { PlayerImage } from "~/components/PlayerImage";
+import { ContextMenu, ContextMenuItem } from "~/components/ContextMenu";
 
 const tileRenderedSize = config.tileRenderedSize;
 
@@ -191,6 +192,13 @@ export function DOMRenderer() {
           transform: `translate(${translateX}px, ${translateY}px)`,
         }}
       >
+        <ContextMenu>
+          <ContextMenuItem label="Walk" onClick={() => console.log("Back")} />
+          <ContextMenuItem label="Forward" />
+          <ContextMenuItem label="Reload" disabled />
+          <ContextMenuItem label="Save As..." />
+          <ContextMenuItem label="Print" />
+        </ContextMenu>
         <ActionLayer />
         <PlayersLayer />
         <DroppedItemsLayer />
