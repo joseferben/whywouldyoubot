@@ -30,20 +30,9 @@ export const loader = async ({ request }: LoaderArgs) => {
 
 export default function Game() {
   const loaderData = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
-  const { tiles, players, player, bots, availableEmojis } =
-    fetcher?.data || loaderData;
+  const { tiles, players, player, bots, availableEmojis } = loaderData;
 
   const store = createGameStore(player, players, tiles, bots, availableEmojis);
-
-  useEffect(() => {
-    function onFocus() {
-      console.log("onFocus()");
-      fetcher.load(".");
-    }
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, [fetcher]);
 
   return (
     <StoreContext.Provider value={store}>
