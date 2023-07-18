@@ -17,7 +17,8 @@ export const config = {
   assetsRoutePath: "/assets",
   // how long to wait before logging out idle users
   idleLogoutMs: 1000 * 60,
-  emojiDuration: 1000 * 5,
+  // how long to show an emoji for
+  emojiDuration: 1000 * 2,
   userSessionKey: "user",
   items: getItemKinds(),
   maxBotsPerPlayer: 3,

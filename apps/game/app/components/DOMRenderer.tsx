@@ -59,17 +59,25 @@ function PlayerTile({ player }: { player: Player }) {
       >
         {player.userId ? (
           shownEmoji?.emoji?.path ? (
-            <img
-              className="z-50"
-              alt="eyes"
+            <div
+              className="flex items-center justify-center"
               style={{
-                userSelect: "none",
-                imageRendering: "pixelated",
                 width: tileRenderedSize + 1,
                 height: tileRenderedSize + 1,
               }}
-              src={shownEmoji.emoji.path}
-            />
+            >
+              <img
+                className="z-50"
+                alt="eyes"
+                style={{
+                  userSelect: "none",
+                  imageRendering: "pixelated",
+                  width: 50,
+                  height: 50,
+                }}
+                src={shownEmoji.emoji.path}
+              />
+            </div>
           ) : (
             <PlayerImage
               head={player.avatarHead}
