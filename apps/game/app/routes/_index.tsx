@@ -1,12 +1,11 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { container } from "~/container.server";
 import { StoreContext, createGameStore } from "~/store";
 import { DOMRenderer } from "~/components/DOMRenderer";
 import { Menu } from "~/components/Menu";
 import { EventSource } from "~/components/EventSource";
-import { useEffect } from "react";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const player = await container.authService.ensurePlayer(request);

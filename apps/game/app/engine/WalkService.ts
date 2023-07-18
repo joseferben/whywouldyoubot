@@ -90,7 +90,14 @@ export class WalkService {
     this.playerService.db.update(player);
     this.db.update(walk);
     const lastStep = walk.path.length === 0;
-    this.serverEventService.playerStepped(player, player.x, player.y, lastStep);
+    const ground = this.worldMapService.findTilesByPlayer(player);
+    this.serverEventService.playerStepped(
+      player,
+      player.x,
+      player.y,
+      lastStep,
+      ground
+    );
   }
 
   startWalk(player: Player, x: number, y: number) {

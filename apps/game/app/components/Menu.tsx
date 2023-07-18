@@ -94,8 +94,10 @@ function Screen() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeMenu !== null && e.key === "Escape") {
+        return setActiveMenu(null);
+      }
       if (activeMenu !== null) return;
-
       switch (e.key) {
         case "1":
           setActiveMenu("inventory");
@@ -107,10 +109,10 @@ function Screen() {
           setActiveMenu("bots");
           break;
         case "4":
-          setActiveMenu("settings");
+          setActiveMenu("emoji");
           break;
         case "5":
-          setActiveMenu("emoji");
+          setActiveMenu("settings");
           break;
         default:
           break;

@@ -36,37 +36,13 @@ function PlayerTile({ player }: { player: Player }) {
     <div>
       <div
         style={{
-          top: top - 64,
-          left,
-          width: tileRenderedSize + 1,
-          zIndex: 50,
-          userSelect: "none",
-        }}
-        className={`absolute flex justify-center transition-all duration-500 ${
-          shownEmoji?.emoji?.path ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        {shownEmoji?.emoji?.path && (
-          <img
-            className="z-50 h-16 w-16"
-            alt="eyes"
-            style={{
-              userSelect: "none",
-              imageRendering: "pixelated",
-            }}
-            src={shownEmoji.emoji.path}
-          />
-        )}
-      </div>
-      <div
-        style={{
-          top: top - 16,
+          top: top - 8,
           left,
           width: tileRenderedSize + 1,
           zIndex: 55,
           userSelect: "none",
         }}
-        className="absolute text-center text-xl text-white transition-all duration-500"
+        className="absolute text-center text-base text-white transition-all duration-500"
       >
         <span>{player.username}</span>
       </div>
@@ -82,11 +58,25 @@ function PlayerTile({ player }: { player: Player }) {
         }`}
       >
         {player.userId ? (
-          <PlayerImage
-            head={player.avatarHead}
-            eyes={player.avatarEyes}
-            hair={player.avatarHair}
-          />
+          shownEmoji?.emoji?.path ? (
+            <img
+              className="z-50"
+              alt="eyes"
+              style={{
+                userSelect: "none",
+                imageRendering: "pixelated",
+                width: tileRenderedSize + 1,
+                height: tileRenderedSize + 1,
+              }}
+              src={shownEmoji.emoji.path}
+            />
+          ) : (
+            <PlayerImage
+              head={player.avatarHead}
+              eyes={player.avatarEyes}
+              hair={player.avatarHair}
+            />
+          )
         ) : (
           <BotImage />
         )}
