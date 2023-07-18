@@ -89,7 +89,7 @@ function Screen() {
     title = "Settings";
   } else if (activeMenu === "emoji") {
     screen = <EmojiScreen />;
-    title = "Emoji";
+    title = "Emote";
   }
 
   useEffect(() => {
@@ -199,10 +199,10 @@ function Navigation() {
         <button onClick={() => setActiveMenu("emoji")}>
           <img
             className="h-6 w-6"
-            src="/assets/ui/chat.png"
+            src="/assets/emojis/1.png"
             style={{ imageRendering: "pixelated", userSelect: "none" }}
           />
-          Emoji
+          Emote
         </button>
       </li>
       <li>

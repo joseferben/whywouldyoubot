@@ -7,5 +7,5 @@ export const action: ActionFunction = async ({ request }) => {
   const action = (await request.json()) as { emoji: Emoji };
   const player = await container.authService.ensurePlayer(request);
   container.onlineService.ensureOnline(player);
-  return respond(container.emojiService.showEmoji(player, action.emoji.id));
+  return respond(container.emojiService.showEmoji(player, action.emoji));
 };

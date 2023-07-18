@@ -53,14 +53,23 @@ export class EmojiService {
     );
   }
 
-  showEmoji(player: Player, emojiId: number) {
-    console.debug(`player ${player.username} shows emoji ${emojiId}`);
+  showEmoji(player: Player, emoji: Emoji) {
+    console.debug(`player ${player.username} shows emoji ${emoji.id}`);
     const found = this.db.findOneBy("playerId", player.id);
-    if (found && found.emoji.id !== emojiId) {
-      this.db.delete(found);
-    }
-    const emoji = this.getEmojiByNumber(emojiId);
-    if (!found) {
+    if (found) {
+      if (found.emoji.id !== emoji.id) {
+        this.db.delete(found);
+        this.db.create(
+          {
+            playerId: player.id,
+            emoji,
+          },
+          { ttlMs: this.emojiDuration }
+        );
+      } else {
+        this.db.expire(found, this.emojiDuration);
+      }
+    } else {
       this.db.create(
         {
           playerId: player.id,
@@ -68,9 +77,6 @@ export class EmojiService {
         },
         { ttlMs: this.emojiDuration }
       );
-    } else {
-      // resetting the counter
-      this.db.expire(found, this.emojiDuration);
     }
     this.serverEventService.playerShownEmoji(
       player,
