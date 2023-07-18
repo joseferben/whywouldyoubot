@@ -14,6 +14,7 @@ import type { ConfigServer } from "./configServer";
 import { configServer } from "./configServer";
 import { BotService } from "./engine/BotService";
 import { CharacterCustomizationService } from "./engine/CharacterCustomizationService";
+import { EmojiService } from "./engine/EmojiService";
 
 export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
   const config = { ...configServer, ...providedConfig };
@@ -21,7 +22,10 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
   const db = new Database(config.dbFilePath);
   db.pragma("journal_mode = WAL");
   db.pragma("synchronous = off");
+
   const jsonStore = new JSONStore(db);
+
+  const onlineService = new OnlineService(config.idleLogoutMs);
 
   const worldMapService = new WorldMapService(
     config.obstacleLayerName,
@@ -29,7 +33,6 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
     config.mapPath
   );
 
-  const onlineService = new OnlineService(config.idleLogoutMs);
   const playerService = new PlayerService(
     jsonStore,
     worldMapService,
@@ -45,7 +48,7 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
   );
   const characterCustomizationService = new CharacterCustomizationService(
     playerService,
-    config.assetsPath
+    config.assetsDirPath
   );
   const sessionService = new SessionService(
     playerService,
@@ -61,10 +64,18 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
     config.discordCallbackUrl
   );
 
-  const clientEventService = new ServerEventService(playerService);
+  const serverSentService = new ServerEventService(playerService);
+
+  const emojiService = new EmojiService(
+    config.assetsDirPath,
+    config.assetsRoutePath,
+    config.emojiDuration,
+    serverSentService,
+    playerService
+  );
 
   const walkService = new WalkService(
-    clientEventService,
+    serverSentService,
     worldMapService,
     playerService,
     onlineService
@@ -103,7 +114,7 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
     itemService,
     droppedItemService,
     sessionService,
-    clientEventService,
+    serverSentService,
     authService,
     onlineService,
     // npcService,
@@ -115,6 +126,7 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
     // combatService,
     botService,
     characterCustomizationService,
+    emojiService,
   };
 }
 

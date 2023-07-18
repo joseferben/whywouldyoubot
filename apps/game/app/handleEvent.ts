@@ -20,6 +20,14 @@ function setState(state: State, se: ServerEvent) {
   if (se.state.droppedItems) {
     state.droppedItems = se.state.droppedItems;
   }
+  if (se.state.availableEmojis) {
+    state.availableEmojis = se.state.availableEmojis;
+  }
+  if (se.state.shownEmojis) {
+    state.shownEmojis = new Map(
+      se.state.shownEmojis.map((e) => [e.playerId, e])
+    );
+  }
 }
 
 export function handleEvent(state: State, se: ServerEvent) {
@@ -30,8 +38,8 @@ export function handleEvent(state: State, se: ServerEvent) {
     } else {
       state.animations.delete(se.event.playerId);
     }
-  } else {
-    console.error("unknown event", event);
+  } else if (se.event.tag !== "state") {
+    console.error("unknown event", se.event);
   }
   return state;
 }

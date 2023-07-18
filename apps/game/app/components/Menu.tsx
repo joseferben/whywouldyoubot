@@ -29,6 +29,41 @@ function SettingsScreen() {
   );
 }
 
+function EmojiScreen() {
+  const store = useGameStore();
+  const [emojis, setActiveMenu, showEmoji] = useStore(store, (state) => [
+    state.availableEmojis,
+    state.setActiveMenu,
+    state.showEmoji,
+  ]);
+  return (
+    <div className="max-h-[500px] overflow-y-scroll">
+      <div className="grid grid-cols-6 gap-2">
+        {emojis.map((e) => (
+          <button
+            onClick={() => {
+              showEmoji(e);
+              setActiveMenu(null);
+            }}
+            key={e.path}
+            className="btn p-0"
+          >
+            <img
+              className="z-50 h-12 w-12"
+              alt="eyes"
+              style={{
+                userSelect: "none",
+                imageRendering: "pixelated",
+              }}
+              src={e.path}
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Screen() {
   const store = useGameStore();
   const [activeMenu, setActiveMenu] = useStore(store, (state) => [
@@ -52,6 +87,9 @@ function Screen() {
   } else if (activeMenu === "settings") {
     screen = <SettingsScreen />;
     title = "Settings";
+  } else if (activeMenu === "emoji") {
+    screen = <EmojiScreen />;
+    title = "Emoji";
   }
 
   useEffect(() => {
@@ -70,6 +108,9 @@ function Screen() {
           break;
         case "4":
           setActiveMenu("settings");
+          break;
+        case "5":
+          setActiveMenu("emoji");
           break;
         default:
           break;
@@ -152,6 +193,16 @@ function Navigation() {
             style={{ imageRendering: "pixelated", userSelect: "none" }}
           />
           Bots
+        </button>
+      </li>
+      <li>
+        <button onClick={() => setActiveMenu("emoji")}>
+          <img
+            className="h-6 w-6"
+            src="/assets/ui/chat.png"
+            style={{ imageRendering: "pixelated", userSelect: "none" }}
+          />
+          Emoji
         </button>
       </li>
       <li>

@@ -7,6 +7,7 @@ import type {
   WorldMapTile,
   ClientState,
   Bot,
+  Emoji,
 } from "@wwyb/core";
 import { createContext, useContext } from "react";
 import { handleEvent } from "./handleEvent";
@@ -15,7 +16,7 @@ import { client } from "@wwyb/sdk";
 enableMapSet();
 
 export type UIState = {
-  activeMenu: null | "inventory" | "settings" | "character" | "bots";
+  activeMenu: null | "inventory" | "settings" | "character" | "bots" | "emoji";
   animations: Map<string, "walk" | "combat">;
 };
 
@@ -30,6 +31,7 @@ export type Actions = {
   setActiveMenu(menu: UIState["activeMenu"]): void;
   createBot(name: string): Promise<Bot | string>;
   deleteBot(id: string): Promise<void>;
+  showEmoji(emoji: Emoji): Promise<void | string>;
 };
 
 export type State = ClientState & UIState & HumanClientState & Actions;
@@ -40,7 +42,8 @@ export const createGameStore = (
   player: Player,
   players: Player[],
   tiles: WorldMapTile[],
-  bots: Bot[]
+  bots: Bot[],
+  availableEmojis: Emoji[]
 ) => {
   return createStore(
     immer<State>((set) => ({
@@ -55,6 +58,8 @@ export const createGameStore = (
       inventory: [],
       droppedItems: [],
       characterAnimations: new Map(),
+      availableEmojis: availableEmojis,
+      shownEmojis: new Map(),
       startWalking: (characterId?: string) => {
         set((state) => {
           const id = characterId || state.me.id;
@@ -83,6 +88,17 @@ export const createGameStore = (
       },
       walkTo: async (x: number, y: number) => {
         const result = await client.walkTo({ x, y });
+        if (typeof result === "string") return result;
+      },
+      showEmoji: async (emoji: Emoji) => {
+        set((state) => {
+          state.shownEmojis.set(state.me.id, {
+            id: "0",
+            playerId: state.me.id,
+            emoji,
+          });
+        });
+        const result = await client.showEmoji(emoji);
         if (typeof result === "string") return result;
       },
       handleEvent: (event: string | null) => {

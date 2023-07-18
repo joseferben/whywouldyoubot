@@ -9,7 +9,8 @@ export function cleanContainer(container: Container) {
   // no need to clean MapService since it's mostly static
   container.playerService.db.clean();
   container.itemService.db.clean();
-  container.clientEventService.db.clean();
+  container.serverSentService.db.clean();
+  container.emojiService.db.clean();
   container.onlineService.db.clean();
   container.botService.db.clean();
   // container.npcService.db.close();

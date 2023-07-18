@@ -1,5 +1,5 @@
 import { responseToJson } from "@wwyb/core";
-import type { Bot, SerializedClientState } from "@wwyb/core";
+import type { Bot, Emoji, SerializedClientState } from "@wwyb/core";
 
 export type Opts = {
   apiKey?: string;
@@ -65,6 +65,16 @@ export class Client {
         headers: this.withHeaders(),
         method: "post",
         body: JSON.stringify({ x: position.x, y: position.y }),
+      })
+    );
+  }
+
+  async showEmoji(emoji: Emoji): Promise<null | string> {
+    return responseToJson<null>(
+      await this.fetch("/api/emoji/show/", {
+        headers: this.withHeaders(),
+        method: "post",
+        body: JSON.stringify({ emoji: emoji }),
       })
     );
   }

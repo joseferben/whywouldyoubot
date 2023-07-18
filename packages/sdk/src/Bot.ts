@@ -1,8 +1,9 @@
 import { Client } from "./Client";
-import type {
-  ClientState,
-  SerializedClientState,
-  ServerEvent,
+import {
+  deserializeClientState,
+  type ClientState,
+  type SerializedClientState,
+  type ServerEvent,
 } from "@wwyb/core";
 
 export type Opts = {
@@ -47,18 +48,7 @@ export class Bot {
     if (typeof state === "string") {
       return console.error(state);
     }
-    const clientState = {
-      me: state.me,
-      actions: state.actions || [],
-      ground: state.ground || [],
-      npcs: state.npcs || [],
-      inventory: state.inventory || [],
-      droppedItems: state.droppedItems || [],
-      players: state.players
-        ? new Map(state.players.map((p) => [p.id, p]))
-        : new Map(),
-    };
-    console.log("tick");
+    const clientState = deserializeClientState(state);
     await this.cb?.(clientState);
   }
 

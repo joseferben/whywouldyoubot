@@ -6,7 +6,7 @@ import { container } from "~/container.server";
 export async function loader({ request }: LoaderArgs) {
   const player = await container.authService.ensurePlayer(request);
   return eventStream(request.signal, function setup(send) {
-    const playerEmitter = container.clientEventService.playerEmitter(player);
+    const playerEmitter = container.serverSentService.playerEmitter(player);
     playerEmitter.emitter.on((event: ServerEvent) => {
       try {
         send({ event: "event", data: JSON.stringify(event) });

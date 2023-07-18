@@ -1,6 +1,11 @@
 import { EventEmitter } from "node:events";
 import { initOnce } from "~/utils";
-import type { Player, SerializedClientState, ServerEvent } from "@wwyb/core";
+import type {
+  Player,
+  SerializedClientState,
+  ServerEvent,
+  ShownEmoji,
+} from "@wwyb/core";
 import { EntityDB } from "@wwyb/entitydb";
 import type { PlayerService } from "./PlayerService";
 
@@ -50,6 +55,32 @@ export class ServerEventService {
         x,
         y,
         lastStep,
+      },
+    });
+  }
+
+  playerShownEmoji(player: Player, shownEmojis: ShownEmoji[]) {
+    const state: SerializedClientState = {
+      me: player,
+      shownEmojis,
+    };
+    this.sendToAll({
+      state,
+      event: {
+        tag: "state",
+      },
+    });
+  }
+
+  playerUnshownEmoji(player: Player, shownEmojis: ShownEmoji[]) {
+    const state: SerializedClientState = {
+      me: player,
+      shownEmojis,
+    };
+    this.sendToAll({
+      state,
+      event: {
+        tag: "state",
       },
     });
   }

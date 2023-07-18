@@ -16,18 +16,21 @@ export const loader = async ({ request }: LoaderArgs) => {
   const tiles = container.mapService.findTilesByPlayer(player);
   const goldAmount = container.inventoryService.findGoldAmount(player);
   const bots = container.botService.findByOwner(player);
+  const availableEmojis = container.emojiService.emojis;
   return json({
     goldAmount,
     tiles,
     players,
     player,
     bots,
+    availableEmojis,
   });
 };
 
 export default function Game() {
-  const { tiles, players, player, bots } = useLoaderData<typeof loader>();
-  const store = createGameStore(player, players, tiles, bots);
+  const { tiles, players, player, bots, availableEmojis } =
+    useLoaderData<typeof loader>();
+  const store = createGameStore(player, players, tiles, bots, availableEmojis);
 
   return (
     <StoreContext.Provider value={store}>

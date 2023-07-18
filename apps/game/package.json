@@ -1,6 +1,7 @@
 {
   "name": "game",
   "private": true,
+  "license": "UNLICENSED",
   "sideEffects": false,
   "scripts": {
     "build": "remix build",
@@ -14,7 +15,8 @@
     "typecheck": "tsc",
     "validate": "run-p \"test -- --run\" lint typecheck",
     "repl": "tsx bin/repl.ts",
-    "exportmap": "tsx bin/exportmap.ts"
+    "exportmap": "tsx bin/exportmap.ts",
+    "rename": "tsx bin/rename.ts"
   },
   "prettier": {},
   "eslintIgnore": [

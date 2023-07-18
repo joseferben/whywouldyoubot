@@ -20,7 +20,7 @@ export class WalkService {
   easystar: easystarjs.js;
 
   constructor(
-    readonly clientEventService: ServerEventService,
+    readonly serverEventService: ServerEventService,
     readonly worldMapService: WorldMapService,
     readonly playerService: PlayerService,
     readonly onlineService: OnlineService
@@ -90,7 +90,7 @@ export class WalkService {
     this.playerService.db.update(player);
     this.db.update(walk);
     const lastStep = walk.path.length === 0;
-    this.clientEventService.playerStepped(player, player.x, player.y, lastStep);
+    this.serverEventService.playerStepped(player, player.x, player.y, lastStep);
   }
 
   startWalk(player: Player, x: number, y: number) {

@@ -180,6 +180,10 @@ type PlayerAttacked = {
   characterId: string;
 };
 
+type State = {
+  tag: "state";
+};
+
 export type WorldMapTile = {
   description: string;
   imagePaths: string[];
@@ -188,6 +192,17 @@ export type WorldMapTile = {
   obstacle: boolean;
   gid: number;
   id: string;
+};
+
+export type Emoji = {
+  id: number;
+  path: string;
+};
+
+export type ShownEmoji = {
+  id: string;
+  playerId: string;
+  emoji: Emoji;
 };
 
 export type ClientState = {
@@ -199,17 +214,36 @@ export type ClientState = {
   inventory: Item[];
   droppedItems: DroppedItem[];
   players: Map<string, Player>;
+  availableEmojis: Emoji[];
+  shownEmojis: Map<string, ShownEmoji>;
 };
 
 export type SerializedClientState = Omit<
-  Omit<Partial<ClientState>, "players">,
+  Omit<Omit<Partial<ClientState>, "players">, "shownEmojis">,
   "me"
 > & {
   me: Player;
   players?: Player[];
+  shownEmojis?: ShownEmoji[];
 };
 
-export type GameEvent = PlayerStepped | PlayerAttacked;
+export function deserializeClientState(
+  state: SerializedClientState
+): ClientState {
+  return {
+    me: state.me,
+    actions: state.actions || [],
+    ground: state.ground || [],
+    npcs: state.npcs || [],
+    inventory: state.inventory || [],
+    droppedItems: state.droppedItems || [],
+    players: new Map(state.players?.map((p) => [p.id, p])),
+    availableEmojis: state.availableEmojis || [],
+    shownEmojis: new Map(state?.shownEmojis?.map((e) => [e.playerId, e])),
+  };
+}
+
+export type GameEvent = PlayerStepped | PlayerAttacked | State;
 
 export type ServerEvent = {
   state: SerializedClientState;

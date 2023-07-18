@@ -24,7 +24,10 @@ function BotImage() {
 
 function PlayerTile({ player }: { player: Player }) {
   const store = useGameStore();
-  const animation = useStore(store, (state) => state.animations.get(player.id));
+  const [animation, shownEmoji] = useStore(store, (state) => [
+    state.animations.get(player.id),
+    state.shownEmojis.get(player.id),
+  ]);
 
   const left = tileRenderedSize * player.x;
   const top = tileRenderedSize * player.y;
@@ -33,7 +36,31 @@ function PlayerTile({ player }: { player: Player }) {
     <div>
       <div
         style={{
-          top: top - 24,
+          top: top - 64,
+          left,
+          width: tileRenderedSize + 1,
+          zIndex: 50,
+          userSelect: "none",
+        }}
+        className={`absolute flex justify-center transition-all duration-500 ${
+          shownEmoji?.emoji?.path ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {shownEmoji?.emoji?.path && (
+          <img
+            className="z-50 h-16 w-16"
+            alt="eyes"
+            style={{
+              userSelect: "none",
+              imageRendering: "pixelated",
+            }}
+            src={shownEmoji.emoji.path}
+          />
+        )}
+      </div>
+      <div
+        style={{
+          top: top - 16,
           left,
           width: tileRenderedSize + 1,
           zIndex: 55,
