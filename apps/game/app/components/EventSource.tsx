@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useEventSource } from "remix-utils";
 import { useStore } from "zustand";
+import { useEventSource } from "~/hooks/useEventSource";
 import { useGameStore } from "~/store";
 
 export function EventSource() {
