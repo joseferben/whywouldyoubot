@@ -8,6 +8,8 @@ import type {
   ClientState,
   Bot,
   Emoji,
+  PotentialAction,
+  PotentialActionMap,
 } from "@wwyb/core";
 import { createContext, useContext } from "react";
 import { handleEvent } from "./handleEvent";
@@ -22,8 +24,11 @@ export type UIState = {
 
 export type HumanClientState = {
   bots: Bot[];
+  potentialActionMap: PotentialActionMap | null;
 };
 
+// TODO instead of returning string, show error to user somehow
+// but only if it's helpful
 export type Actions = {
   handleEvent(event: string | null): void;
   startWalking(): void;
@@ -32,6 +37,8 @@ export type Actions = {
   createBot(name: string): Promise<Bot | string>;
   deleteBot(id: string): Promise<void>;
   showEmoji(emoji: Emoji): Promise<void | string>;
+  updateTileActions(position: { x: number; y: number }): void;
+  executePotentialAction(a: PotentialAction): Promise<void | string>;
 };
 
 export type State = ClientState & UIState & HumanClientState & Actions;
@@ -60,6 +67,7 @@ export const createGameStore = (
       characterAnimations: new Map(),
       availableEmojis: availableEmojis,
       shownEmojis: new Map(),
+      potentialActionMap: null,
       startWalking: (characterId?: string) => {
         set((state) => {
           const id = characterId || state.me.id;
@@ -87,6 +95,7 @@ export const createGameStore = (
         });
       },
       walkTo: async (x: number, y: number) => {
+        // TODO this can be generalized with executePotentialAction
         const result = await client.walkTo({ x, y });
         if (typeof result === "string") return result;
       },
@@ -99,6 +108,18 @@ export const createGameStore = (
           });
         });
         const result = await client.showEmoji(emoji);
+        if (typeof result === "string") return result;
+      },
+      updateTileActions: async (position: { x: number; y: number }) => {
+        const result = await client.fetchPotentialActionMap(position);
+        if (typeof result === "string") return result;
+        set((state) => {
+          state.potentialActionMap = result;
+        });
+      },
+      executePotentialAction: async (a: PotentialAction) => {
+        // TODO we might have to do some optimistic rendering stuff here already
+        const result = await client.executePotentialAction(a);
         if (typeof result === "string") return result;
       },
       handleEvent: (event: string | null) => {

@@ -256,9 +256,22 @@ type Walk = {
   y: number;
 };
 
-export type Action = Walk;
+type Hit = {
+  tag: "hit";
+};
 
-export type PotentialAction = Walk;
+export type Action = Walk | Hit;
+
+export type PotentialAction = {
+  action: Walk;
+  label: string;
+  disabled?: boolean;
+};
+
+export type PotentialActionMap = {
+  actions: Partial<Record<Action["tag"], PotentialAction>>;
+  default: Action["tag"];
+};
 
 export function getResourceKind(name: string): ResourceKind | null {
   // @ts-ignore

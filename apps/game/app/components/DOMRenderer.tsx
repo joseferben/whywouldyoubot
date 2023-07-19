@@ -1,7 +1,7 @@
 import { useStore } from "zustand";
 import { config } from "~/config";
 import { useGameStore } from "~/store";
-import type { Player, WorldMapTile } from "@wwyb/core";
+import type { Action, Player, PotentialAction, WorldMapTile } from "@wwyb/core";
 import { PlayerImage } from "~/components/PlayerImage";
 import { ContextMenu, ContextMenuItem } from "~/components/ContextMenu";
 
@@ -25,16 +25,29 @@ function BotImage() {
 
 function PlayerTile({ player }: { player: Player }) {
   const store = useGameStore();
-  const [animation, shownEmoji] = useStore(store, (state) => [
-    state.animations.get(player.id),
-    state.shownEmojis.get(player.id),
-  ]);
+  const [animation, shownEmoji, potentialActionMap, executePotentialAction] =
+    useStore(store, (state) => [
+      state.animations.get(player.id),
+      state.shownEmojis.get(player.id),
+      state.potentialActionMap,
+      state.executePotentialAction,
+    ]);
 
   const left = tileRenderedSize * player.x;
   const top = tileRenderedSize * player.y;
 
+  function executeDefaultPotentialAction() {
+    if (!potentialActionMap) return;
+    const p = potentialActionMap.actions[potentialActionMap.default];
+    if (p) executePotentialAction(p);
+  }
+
   return (
-    <div>
+    <div
+      onClick={() => {
+        executeDefaultPotentialAction();
+      }}
+    >
       <div
         style={{
           top: top - 8,
@@ -96,9 +109,10 @@ function PlayerTile({ player }: { player: Player }) {
 
 function MapTile({ tile }: { tile: WorldMapTile }) {
   const store = useGameStore();
-  const [startWalking, walkTo] = useStore(store, (state) => [
+  const [startWalking, walkTo, updateTileActions] = useStore(store, (state) => [
     state.startWalking,
     state.walkTo,
+    state.updateTileActions,
   ]);
 
   function handleClick() {
@@ -114,6 +128,7 @@ function MapTile({ tile }: { tile: WorldMapTile }) {
   return (
     <div
       onClick={handleClick}
+      onMouseEnter={() => updateTileActions({ x: tile.x, y: tile.y })}
       style={{
         top,
         left,
@@ -161,7 +176,34 @@ function PlayersLayer() {
 }
 
 function ActionLayer() {
-  return null;
+  const store = useGameStore();
+  // TODO add default action everywhere, so we don't have to
+  // wait for server (mostly walk, or interact)
+  const [potentialActionMap, executePotentialAction] = useStore(
+    store,
+    (state) => [state.potentialActionMap, state.executePotentialAction]
+  );
+
+  return (
+    <ContextMenu>
+      {potentialActionMap?.actions &&
+        Object.keys(potentialActionMap?.actions)
+          .sort()
+          .map((k) => {
+            const tileAction = potentialActionMap?.actions[
+              k as Action["tag"]
+            ] as PotentialAction;
+            return (
+              <ContextMenuItem
+                onClick={() => executePotentialAction(tileAction)}
+                key={tileAction.label}
+                label={tileAction.label}
+                disabled={tileAction.disabled}
+              />
+            );
+          })}
+    </ContextMenu>
+  );
 }
 
 function DroppedItemsLayer() {
@@ -192,13 +234,6 @@ export function DOMRenderer() {
           transform: `translate(${translateX}px, ${translateY}px)`,
         }}
       >
-        <ContextMenu>
-          <ContextMenuItem label="Walk" onClick={() => console.log("Back")} />
-          <ContextMenuItem label="Forward" />
-          <ContextMenuItem label="Reload" disabled />
-          <ContextMenuItem label="Save As..." />
-          <ContextMenuItem label="Print" />
-        </ContextMenu>
         <ActionLayer />
         <PlayersLayer />
         <DroppedItemsLayer />

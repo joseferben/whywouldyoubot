@@ -1,5 +1,11 @@
 import { responseToJson } from "@wwyb/core";
-import type { Bot, Emoji, SerializedClientState } from "@wwyb/core";
+import type {
+  Bot,
+  Emoji,
+  PotentialAction,
+  PotentialActionMap,
+  SerializedClientState,
+} from "@wwyb/core";
 
 export type Opts = {
   apiKey?: string;
@@ -75,6 +81,29 @@ export class Client {
         headers: this.withHeaders(),
         method: "post",
         body: JSON.stringify({ emoji: emoji }),
+      })
+    );
+  }
+
+  async fetchPotentialActionMap(position: {
+    x: number;
+    y: number;
+  }): Promise<PotentialActionMap | string> {
+    return responseToJson<PotentialActionMap>(
+      await this.fetch("/api/potential-actions/", {
+        headers: this.withHeaders(),
+        method: "post",
+        body: JSON.stringify({ x: position.x, y: position.y }),
+      })
+    );
+  }
+
+  async executePotentialAction(a: PotentialAction): Promise<null | string> {
+    return responseToJson<null>(
+      await this.fetch("/api/execute-potential-actions/", {
+        headers: this.withHeaders(),
+        method: "post",
+        body: JSON.stringify(a),
       })
     );
   }

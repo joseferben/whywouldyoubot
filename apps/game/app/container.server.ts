@@ -15,6 +15,7 @@ import { configServer } from "./configServer";
 import { BotService } from "./engine/BotService";
 import { CharacterCustomizationService } from "./engine/CharacterCustomizationService";
 import { EmojiService } from "./engine/EmojiService";
+import { PotentialActionService } from "./engine/PotentialActionService";
 
 export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
   const config = { ...configServer, ...providedConfig };
@@ -87,6 +88,9 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
     config.items
   );
 
+  // are tile actions and potential actions the same?
+  const potentialActionService = new PotentialActionService(walkService);
+
   // const equipmentService = new EquipmentService(itemService);
   // const combatStatsService = new CombatStatsService(
   //   itemService,
@@ -127,6 +131,7 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
     botService,
     characterCustomizationService,
     emojiService,
+    potentialActionService,
   };
 }
 
