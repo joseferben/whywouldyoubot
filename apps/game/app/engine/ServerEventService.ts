@@ -5,7 +5,6 @@ import type {
   SerializedClientState,
   ServerEvent,
   ShownEmoji,
-  WorldMapTile,
 } from "@wwyb/core";
 import { EntityDB } from "@wwyb/entitydb";
 import type { PlayerService } from "./PlayerService";
@@ -43,17 +42,10 @@ export class ServerEventService {
     });
   }
 
-  playerStepped(
-    player: Player,
-    x: number,
-    y: number,
-    lastStep: boolean,
-    ground: WorldMapTile[]
-  ) {
+  playerStepped(player: Player, x: number, y: number, lastStep: boolean) {
     const state: SerializedClientState = {
       me: player,
       players: this.playerService.findAroundPlayer(player),
-      ground,
     };
     this.sendToAll({
       state,
