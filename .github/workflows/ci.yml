@@ -1,4 +1,4 @@
-name: 🚀 Deploy
+name: 🚀 CI
 
 on:
   push:
