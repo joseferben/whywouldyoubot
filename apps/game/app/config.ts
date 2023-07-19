@@ -9,7 +9,8 @@ export const config = {
   },
   obstacleLayerName: "obstacles",
   // the client sees n tiles in each direction
-  playerVisibility: 20,
+  playerVisibilityX: 11,
+  playerVisibilityY: 6,
   mapPath: "map",
   // the local path to assets
   assetsDirPath: "public/assets",

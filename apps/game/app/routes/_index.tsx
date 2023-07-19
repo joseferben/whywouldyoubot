@@ -6,6 +6,7 @@ import { StoreContext, createGameStore } from "~/store";
 import { DOMRenderer } from "~/components/DOMRenderer";
 import { Menu } from "~/components/Menu";
 import { EventSource } from "~/components/EventSource";
+import { config } from "~/config";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const player = await container.authService.ensurePlayer(request);

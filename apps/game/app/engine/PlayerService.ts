@@ -42,7 +42,8 @@ export class PlayerService {
     readonly jsonStore: JSONStore,
     readonly mapService: WorldMapService,
     readonly onlineService: OnlineService,
-    readonly playerVisibility: number,
+    readonly playerVisibilityX: number,
+    readonly playerVisibilityY: number,
     private spawn: { x: number; y: number }
   ) {
     [this.db] = initOnce(
@@ -201,10 +202,10 @@ export class PlayerService {
 
   findAroundPlayer(player: Player) {
     return this.findInRectangleAndOnline(
-      player.x - this.playerVisibility,
-      player.y - this.playerVisibility,
-      player.x + this.playerVisibility,
-      player.y + this.playerVisibility
+      player.x - this.playerVisibilityX,
+      player.y - this.playerVisibilityY,
+      player.x + this.playerVisibilityX,
+      player.y + this.playerVisibilityY
     );
   }
 }

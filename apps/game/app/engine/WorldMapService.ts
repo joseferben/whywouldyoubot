@@ -27,7 +27,8 @@ export class WorldMapService {
 
   constructor(
     readonly obstacleLayerName: string,
-    readonly playerVisibility: number,
+    readonly playerVisibilityX: number,
+    readonly playerVisibilityY: number,
     readonly mapPath: string
   ) {
     const [db, foundInCache] = initOnce(
@@ -211,11 +212,10 @@ export class WorldMapService {
 
   findTilesByPlayer(player: Player) {
     return this.db.findByRectangle(
-      // TODO extract players view distance
-      player.x - this.playerVisibility,
-      player.y - this.playerVisibility,
-      player.x + this.playerVisibility,
-      player.y + this.playerVisibility
+      player.x - this.playerVisibilityX,
+      player.y - this.playerVisibilityY,
+      player.x + this.playerVisibilityX,
+      player.y + this.playerVisibilityY
     );
   }
 

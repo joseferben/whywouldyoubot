@@ -29,7 +29,8 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
 
   const worldMapService = new WorldMapService(
     config.obstacleLayerName,
-    config.playerVisibility,
+    config.playerVisibilityX,
+    config.playerVisibilityY,
     config.mapPath
   );
 
@@ -37,7 +38,8 @@ export function buildContainer(providedConfig: Partial<ConfigServer> = {}) {
     jsonStore,
     worldMapService,
     onlineService,
-    config.playerVisibility,
+    config.playerVisibilityX,
+    config.playerVisibilityY,
     config.spawnPosition
   );
   const botService = new BotService(
