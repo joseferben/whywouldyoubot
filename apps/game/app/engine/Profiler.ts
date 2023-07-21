@@ -137,7 +137,7 @@ export abstract class Profiler {
     return stats;
   }
 
-  resetStats() {
+  static resetStats() {
     Object.keys(methodExecutionTimes).forEach((key) => {
       delete methodExecutionTimes[key];
     });
