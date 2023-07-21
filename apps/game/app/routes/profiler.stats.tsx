@@ -1,6 +1,11 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Link, useLoaderData, useRevalidator } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  useRevalidator,
+} from "@remix-run/react";
 import { useEffect } from "react";
 import { config } from "~/config";
 import { container } from "~/container.server";
@@ -18,14 +23,14 @@ export const loader = async ({ request }: LoaderArgs) => {
 
 export default function ProfilerStats() {
   const { stats } = useLoaderData<typeof loader>();
-  const revalidator = useRevalidator();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setInterval(() => {
-      revalidator.revalidate();
+      navigate(".", { replace: true });
     }, 1000);
     return () => clearInterval(timer);
-  }, [revalidator]);
+  }, [navigate]);
 
   return (
     <div className="mx-2 pt-2">
