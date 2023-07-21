@@ -18,6 +18,7 @@ export function useEventSource(
   useEffect(() => {
     // Function to initialize the EventSource
     function initEventSource() {
+      console.log("initEventSource", url, init);
       eventSourceRef.current = new EventSource(url, init);
       eventSourceRef.current.addEventListener(event ?? "message", handler);
     }

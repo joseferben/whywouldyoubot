@@ -42,7 +42,8 @@ export abstract class Profiler {
             const result = originalMethod.apply(this, args);
             const end = process.hrtime.bigint();
 
-            const executionTime = Number(end - start) / 1000000;
+            // microseconds
+            const executionTime = Number(end - start) / 1000;
 
             methodExecutionSums[fullMethodName] =
               (methodExecutionSums[fullMethodName] || 0) + executionTime;
@@ -65,7 +66,7 @@ export abstract class Profiler {
             if (result instanceof Promise) {
               return result.then((res) => {
                 const endAsync = process.hrtime.bigint();
-                const executionTimeAsync = Number(endAsync - start) / 1000000;
+                const executionTimeAsync = Number(endAsync - start) / 1000;
 
                 methodExecutionSums[fullMethodName] +=
                   executionTimeAsync - executionTime;

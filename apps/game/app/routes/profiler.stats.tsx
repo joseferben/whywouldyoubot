@@ -31,9 +31,10 @@ export default function ProfilerStats() {
               <th>method</th>
               <th>count</th>
               <th>p50 exec time</th>
-              <th>p50 exec time * count</th>
               <th>p90 exec time</th>
               <th>p95 exec time</th>
+              <th>avg exec time</th>
+              <th>p50 * count</th>
             </tr>
           </thead>
           <tbody>
@@ -42,16 +43,18 @@ export default function ProfilerStats() {
                 <th>{stat.className}</th>
                 <th>{stat.methodName}</th>
                 <th>{stat.callCount}</th>
-                <th>{stat.p50}</th>
-                <th>{stat.p50Total}</th>
-                <th>{stat.p90}</th>
-                <th>{stat.p95}</th>
+                <th>{Math.round(stat.p50)}</th>
+                <th>{Math.round(stat.p90)}</th>
+                <th>{Math.round(stat.p95)}</th>
+                <th>{Math.round(stat.average)}</th>
+                <th>{Math.round(stat.p50Total)}</th>
               </tr>
             ))}
           </tbody>
         </table>
         <small>
-          The durations are in ms, the table is sorted by p50 exec time * count.
+          The durations are in microseconds, the table is sorted by p50 exec
+          time * count.
         </small>
       </div>
     </div>
