@@ -5,6 +5,7 @@ import type { SessionService } from "./SessionService";
 import type { Player } from "@wwyb/core";
 import type { PlayerService } from "./PlayerService";
 import type { BotService } from "./BotService";
+import { Profiler } from "./Profiler";
 
 export interface DiscordUser {
   id: DiscordProfile["id"];
@@ -18,7 +19,7 @@ export interface DiscordUser {
 }
 
 // Supports Discord authentication.
-export class AuthService {
+export class AuthService extends Profiler {
   readonly discord: Authenticator<DiscordUser>;
   constructor(
     readonly sessionService: SessionService,
@@ -28,6 +29,7 @@ export class AuthService {
     readonly discordClientSecret: string,
     readonly discordCallbackUrl: string
   ) {
+    super();
     this.discord = new Authenticator<DiscordUser>(
       sessionService.sessionStorage
     );

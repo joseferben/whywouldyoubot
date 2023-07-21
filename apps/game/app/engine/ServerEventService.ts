@@ -8,6 +8,7 @@ import type {
 } from "@wwyb/core";
 import { EntityDB } from "@wwyb/entitydb";
 import type { PlayerService } from "./PlayerService";
+import { Profiler } from "./Profiler";
 
 export type PlayerEmitter = {
   id: string;
@@ -23,9 +24,10 @@ class Emitter {
   }
 }
 
-export class ServerEventService {
+export class ServerEventService extends Profiler {
   readonly db!: EntityDB<PlayerEmitter>;
   constructor(readonly playerService: PlayerService) {
+    super();
     [this.db] = initOnce(
       this.constructor.name,
       () =>
@@ -38,6 +40,7 @@ export class ServerEventService {
 
   sendToAll(event: ServerEvent) {
     this.db.findAll().forEach((playerEmitter) => {
+      console.log("send event to player", playerEmitter.playerId);
       playerEmitter.emitter.emitter.emit("event", event);
     });
   }

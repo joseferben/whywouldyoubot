@@ -1,8 +1,9 @@
 import type { SessionStorage } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import type { PlayerService } from "./PlayerService";
+import { Profiler } from "./Profiler";
 
-export class SessionService {
+export class SessionService extends Profiler {
   sessionStorage: SessionStorage;
 
   constructor(
@@ -10,6 +11,7 @@ export class SessionService {
     readonly sessionSecret: string,
     readonly userSessionKey: string
   ) {
+    super();
     this.sessionStorage = createCookieSessionStorage({
       cookie: {
         name: "__session",

@@ -5,6 +5,7 @@ import { initOnce } from "~/utils";
 import type { JSONStore } from "@wwyb/entitydb";
 import { EntityDB } from "@wwyb/entitydb";
 import Filter from "bad-words";
+import { Profiler } from "./Profiler";
 
 function isAscii(str: string) {
   return /[\p{ASCII}]+/u.test(str);
@@ -36,7 +37,7 @@ export function validateName(name: string | undefined): string | null {
   return null;
 }
 
-export class PlayerService {
+export class PlayerService extends Profiler {
   db!: EntityDB<Player>;
   constructor(
     readonly jsonStore: JSONStore,
@@ -46,6 +47,7 @@ export class PlayerService {
     readonly playerVisibilityY: number,
     private spawn: { x: number; y: number }
   ) {
+    super();
     [this.db] = initOnce(
       this.constructor.name,
       () =>

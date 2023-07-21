@@ -12,7 +12,8 @@
     "DISCORD_CLIENT_SECRET",
     "DISCORD_CALLBACK_URL",
     "DB_FILE_PATH",
-    "REDIS_CONNECTION_STRING"
+    "REDIS_CONNECTION_STRING",
+    "SERVICE_PROFILING"
   ],
   "pipeline": {
     "test": {

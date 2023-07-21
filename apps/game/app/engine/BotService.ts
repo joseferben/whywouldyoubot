@@ -5,8 +5,9 @@ import { type Bot, type Player } from "@wwyb/core";
 import { customAlphabet } from "nanoid";
 import { validateName, type PlayerService } from "./PlayerService";
 import type { OnlineService } from "./OnlineService";
+import { Profiler } from "./Profiler";
 
-export class BotService {
+export class BotService extends Profiler {
   db!: EntityDB<Bot>;
   constructor(
     readonly jsonStore: JSONStore,
@@ -14,6 +15,7 @@ export class BotService {
     readonly onlineService: OnlineService,
     readonly maxBotsPerPlayer: number
   ) {
+    super();
     [this.db] = initOnce(
       this.constructor.name,
       () =>

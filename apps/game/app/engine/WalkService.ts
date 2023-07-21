@@ -6,6 +6,7 @@ import easystarjs from "easystarjs";
 import { initOnce } from "~/utils";
 import type { ServerEventService } from "./ServerEventService";
 import { EntityDB } from "@wwyb/entitydb";
+import { Profiler } from "./Profiler";
 
 export type Walk = {
   id: string;
@@ -15,7 +16,7 @@ export type Walk = {
   created: number;
 };
 
-export class WalkService {
+export class WalkService extends Profiler {
   db: EntityDB<Walk>;
   easystar: easystarjs.js;
 
@@ -25,6 +26,7 @@ export class WalkService {
     readonly playerService: PlayerService,
     readonly onlineService: OnlineService
   ) {
+    super();
     [this.db] = initOnce(
       this.constructor.name,
       () => new EntityDB<Walk>({ fields: ["playerId"], namespace: "wal" })

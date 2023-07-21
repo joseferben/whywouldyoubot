@@ -22,6 +22,8 @@ const configServer = {
   discordClientId: process.env.DISCORD_CLIENT_ID,
   discordClientSecret: process.env.DISCORD_CLIENT_SECRET,
   discordCallbackUrl: process.env.DISCORD_CALLBACK_URL,
+  serviceProfiling: true,
+  serviceProfilerMaxExecutions: 1000,
 };
 
 export type ConfigServer = typeof configServer;

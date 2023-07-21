@@ -7,6 +7,7 @@ import { getResourceKind } from "@wwyb/core";
 import type { Player, ResourceKind, WorldMapTile } from "@wwyb/core";
 import { initOnce } from "~/utils";
 import { EntityDB } from "@wwyb/entitydb";
+import { Profiler } from "./Profiler";
 
 export function stripPathToAssets(inputPath: string): string {
   const parts = inputPath.split("/");
@@ -20,7 +21,7 @@ export function stripPathToAssets(inputPath: string): string {
   return newPathParts.join("/");
 }
 
-export class WorldMapService {
+export class WorldMapService extends Profiler {
   db!: EntityDB<WorldMapTile>;
   jsonFilePath: string;
   tmxFilePath: string;
@@ -31,6 +32,7 @@ export class WorldMapService {
     readonly playerVisibilityY: number,
     readonly mapPath: string
   ) {
+    super();
     const [db, foundInCache] = initOnce(
       this.constructor.name,
       () => new EntityDB<WorldMapTile>({ spatial: true, namespace: "wmp" })

@@ -5,8 +5,9 @@ import path from "path";
 import { initOnce } from "~/utils";
 import type { ServerEventService } from "./ServerEventService";
 import type { PlayerService } from "./PlayerService";
+import { Profiler } from "./Profiler";
 
-export class EmojiService {
+export class EmojiService extends Profiler {
   readonly emojis: Emoji[] = [];
   readonly db!: EntityDB<ShownEmoji>;
   private emojisRoutePath: string;
@@ -19,6 +20,7 @@ export class EmojiService {
     readonly serverEventService: ServerEventService,
     readonly playerService: PlayerService
   ) {
+    super();
     this.emojisDirPath = `${assetsDirPath}/emojis`;
     this.emojisRoutePath = `${assetsRoutePath}/emojis`;
     this.loadEmojis();

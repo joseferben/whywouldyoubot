@@ -23,4 +23,5 @@ export const config = {
   userSessionKey: "user",
   items: getItemKinds(),
   maxBotsPerPlayer: 3,
+  adminUsername: "joseferben",
 };

@@ -1,10 +1,12 @@
 import type { ItemKindOpts, DroppedItem, DropTable } from "@wwyb/core";
 import { EntityDB } from "@wwyb/entitydb";
 import { pickRandomRange } from "~/engine/math";
+import { Profiler } from "./Profiler";
 
-export class DroppedItemService {
+export class DroppedItemService extends Profiler {
   db!: EntityDB<DroppedItem>;
   constructor(readonly itemKinds: { [name: string]: ItemKindOpts }) {
+    super();
     this.db = new EntityDB<DroppedItem>({
       namespace: "dit",
       spatial: true,
