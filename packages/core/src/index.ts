@@ -247,6 +247,7 @@ export type GameEvent = PlayerStepped | PlayerAttacked | State;
 
 export type ServerEvent = {
   state: SerializedClientState;
+  timestamp: number;
   event: GameEvent;
 };
 

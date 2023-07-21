@@ -52,6 +52,7 @@ export class ServerEventService extends Profiler {
     };
     this.sendToAll({
       state,
+      timestamp: Date.now(),
       event: {
         tag: "playerStepped",
         playerId: player.id,
@@ -69,6 +70,7 @@ export class ServerEventService extends Profiler {
     };
     this.sendToAll({
       state,
+      timestamp: Date.now(),
       event: {
         tag: "state",
       },
@@ -82,6 +84,7 @@ export class ServerEventService extends Profiler {
     };
     this.sendToAll({
       state,
+      timestamp: Date.now(),
       event: {
         tag: "state",
       },

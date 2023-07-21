@@ -76,6 +76,7 @@ export class WalkService extends Profiler {
   }
 
   step(playerId: string) {
+    console.log(`step ${playerId}`);
     const player = this.playerService.db.findById(playerId);
     if (!player) return;
     const walk = this.db.findOneBy("playerId", player.id);

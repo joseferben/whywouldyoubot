@@ -21,6 +21,7 @@ export type UIState = {
 };
 
 export type HumanClientState = {
+  eventTimestamp: number;
   bots: Bot[];
 };
 
@@ -47,6 +48,7 @@ export const createGameStore = (
 ) => {
   return createStore(
     immer<State>((set) => ({
+      eventTimestamp: 0,
       activeMenu: null,
       me: player,
       bots: bots,

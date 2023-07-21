@@ -27,7 +27,7 @@ export class OnlineService {
   }
 
   ensureOnline(player: Player) {
-    console.debug(`player is online: ${player.username}`);
+    console.debug(`ensure online: ${player.username}`);
     const now = Date.now();
     const found = this.db.findOneBy("playerId", player.id);
     if (!found) {
