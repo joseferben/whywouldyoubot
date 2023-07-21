@@ -19,11 +19,11 @@ export default function ProfilerStats() {
   const { stats } = useLoaderData<typeof loader>();
   return (
     <div className="mx-2 pt-2">
-      <Link className="btn mb-1" to="/profiler/reset">
+      <Link className="btn-sm btn mb-1" to="/profiler/reset">
         Reset
       </Link>
       <div className="overflow-x-auto">
-        <table className="table">
+        <table className="table-zebra table-xs table">
           {/* head */}
           <thead>
             <tr>
