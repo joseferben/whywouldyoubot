@@ -23,7 +23,7 @@ export class EmojiService extends Profiler {
     super();
     this.emojisDirPath = `${assetsDirPath}/emojis`;
     this.emojisRoutePath = `${assetsRoutePath}/emojis`;
-    this.loadEmojis();
+    initOnce("emojis.load", () => this.loadEmojis());
     [this.db] = initOnce(
       this.constructor.name,
       () =>
