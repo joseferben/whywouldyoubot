@@ -31,6 +31,7 @@ function setState(state: State, se: ServerEvent) {
 }
 
 export function handleEvent(state: State, se: ServerEvent) {
+  // TODO do we really want this?
   if (state.eventTimestamp > se.timestamp) return;
   state.eventTimestamp = se.timestamp;
   setState(state, se);

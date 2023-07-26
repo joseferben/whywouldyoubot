@@ -1,11 +1,6 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  useRevalidator,
-} from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 import { config } from "~/config";
 import { container } from "~/container.server";
